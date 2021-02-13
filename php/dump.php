@@ -48,6 +48,26 @@ function json_iterate($jd,$callback,$f){
 		}
 }
 
+function json_vals($jd,$f,&$scopes)
+{
+	$c=function($scope,$val,$f) use (&$scopes){ 
+	   foreach ($scopes as $k=>$y) {
+				if($k==$scope){
+					$scopes[$k]=$val;
+					break;
+				}
+		}
+	};
+	json_iterate($jd,$c,$f);
+}
+
+function json_val($jd,$f,$scope)
+{
+	$scopes=array($scope=>null);
+	json_vals($jd,$f,$scopes);
+	return $scopes[$scope];
+}
+
 //this just locates where these values are used / defined in the json. Runs in background while doing other useful stuff.
 $debug_json_find=array();//"chassisdef_leviathan_LVT-C","Gear_Engine_400");
 $debug_json_find_ignore=array();//"ComponentDefID");//ignores keys containing this
@@ -62,24 +82,44 @@ abstract class JSONType
 }
 $json_type_2_filenames=array();
 $json_filename_2_decoded=array();
+$json_index_2_filename=array();
+
 //presence of these scoped json vars is used to determine .json file type
 $json_type_hint = array( 
 	JSONType::MECH => array (
-		".MechTags",".ChassisID"
+		".MechTags",".ChassisID",".Description.Id"
 	),
 	JSONType::CHASSIS => array (
-		".ChassisTags",".Description"
+		".ChassisTags",".Description.Id"
 	),
 	JSONType::ENGINE => array (
 	".Custom.EngineCore.Rating"
 	)
 );
+//This is the Primary Key for lookup of each JSONType
+$json_type_pk = array( 
+	JSONType::MECH => ".Description.Id",
+	JSONType::CHASSIS => ".Description.Id",
+	JSONType::ENGINE => ".Custom.EngineCore.Rating"
+);
+
+function add_json_pk($jd,$f,$json_type)
+{
+	GLOBAL $json_index_2_filename,$json_type_pk;
+	//echo json_encode($json_type_pk).":=?".$json_type;
+	$k="[$json_type]".json_val($jd,$f,$json_type_pk[$json_type]);
+	$json_index_2_filename[$k]=$f;
+	echo "$k => $f".PHP_EOL;
+}
 
 class Dump extends Config{
    //Figure out optimal parallel load and correct load order based on sql timestamps ad table fk dependencies
    public static function main(){
+   //we construct an in memory json db
     Dump::init();
 	Dump::loadFromFiles();
+	//and dump what we need to csv
+	Dump::dumpMechs();
    }
 
    public static function init(){
@@ -90,7 +130,7 @@ class Dump extends Config{
    }
 
    public static function loadFromFiles(){
-	   GLOBAL $json_type_2_filenames,$json_filename_2_decoded;
+	   GLOBAL $json_type_2_filenames,$json_filename_2_decoded,$json_index_2_filename;
    	   echo "Parsing *.json from ".Dump::$RT_Mods_dir.PHP_EOL;
 		$files=array();
 		Dump::getJSONFiles(Dump::$RT_Mods_dir,$files);
@@ -103,6 +143,7 @@ class Dump extends Config{
 			if($json_type){
 				array_push($json_type_2_filenames[$json_type],$f);
 				$json_filename_2_decoded[$f]=$jd;
+				add_json_pk($jd,$f,$json_type);
 			}
 		}
 		echo "Loaded..".PHP_EOL;
@@ -194,6 +235,14 @@ public static function guessJSONFileType($f,$jd){
 	}
 	
 	return $type;
+}
+
+public static function dumpMechs(){
+	GLOBAL $json_type_2_filenames,$json_filename_2_decoded;
+	$csvheader=array("#MECH Id","Tons","Engine Rating","path");
+	foreach($json_type_2_filenames[JSONType::MECH] as $f){
+		$jd=$json_filename_2_decoded[$f];
+	}
 }
 
 }
