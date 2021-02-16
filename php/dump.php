@@ -83,7 +83,8 @@ abstract class JSONType
 	const MECH = 1;
 	const CHASSIS=2;
 	const ENGINE=3;
-	const MAX_TYPE = 3;
+	const COMPONENT=4;
+	const MAX_TYPE = 4;
 }
 $json_type_2_filenames=array();
 $json_filename_2_decoded=array();
@@ -98,14 +99,26 @@ $json_type_hint = array(
 		".ChassisTags",".Description.Id"
 	),
 	JSONType::ENGINE => array (
-	".Custom.EngineCore.Rating"
-	)
+	".Custom.EngineCore.Rating",".Description.Id"
+	),
+	JSONType::COMPONENT => array (
+	".ComponentType",".Description.Id"
+	),
 );
 //This is the Primary Key for lookup of each JSONType
 $json_type_pk = array( 
 	JSONType::MECH => ".Description.Id",
 	JSONType::CHASSIS => ".Description.Id",
 	JSONType::ENGINE => ".Description.Id",
+	JSONType::COMPONENT => ".Description.Id"
+);
+
+//some things are other things as well :P
+$json_additional_types = array( 
+	JSONType::MECH =>	array (),
+	JSONType::CHASSIS => array (),
+	JSONType::ENGINE => array (JSONType::COMPONENT),
+	JSONType::COMPONENT => array ()
 );
 
 function add_json_pk($jd,$f,$json_type)
@@ -114,8 +127,8 @@ function add_json_pk($jd,$f,$json_type)
 	//echo json_encode($json_type_pk).":=?".$json_type;
 	$k="[$json_type]".json_val($jd,$f,$json_type_pk[$json_type]);
 	$json_index_2_filename[$k]=$f;
-	//if($json_type==JSONType::ENGINE)
-		//echo "$k => $f".PHP_EOL;
+	if($json_type==JSONType::COMPONENT)
+		echo "$k => $f".PHP_EOL;
 }
 
 function json_for_pk($json_type,$pk){
@@ -141,7 +154,7 @@ class Dump extends Config{
    }
 
    public static function loadFromFiles(){
-	   GLOBAL $json_type_2_filenames,$json_filename_2_decoded,$json_index_2_filename;
+	   GLOBAL $json_type_2_filenames,$json_filename_2_decoded,$json_index_2_filename,$json_additional_types;
    	   echo "Parsing *.json from ".Dump::$RT_Mods_dir.PHP_EOL;
 		$files=array();
 		Dump::getJSONFiles(Dump::$RT_Mods_dir,$files);
@@ -155,12 +168,17 @@ class Dump extends Config{
 				array_push($json_type_2_filenames[$json_type],$f);
 				$json_filename_2_decoded[$f]=$jd;
 				add_json_pk($jd,$f,$json_type);
+				foreach($json_additional_types[$json_type] as $json_type_a){
+					array_push($json_type_2_filenames[$json_type_a],$f);
+					add_json_pk($jd,$f,$json_type_a);
+				}
 			}
 		}
 		echo "Loaded..".PHP_EOL;
 		echo "MECHS:".count($json_type_2_filenames[JSONType::MECH]).PHP_EOL;
 		echo "CHASSIS:".count($json_type_2_filenames[JSONType::CHASSIS]).PHP_EOL;
 		echo "ENGINE:".count($json_type_2_filenames[JSONType::ENGINE]).PHP_EOL;
+		echo "COMPONENT:".count($json_type_2_filenames[JSONType::COMPONENT]).PHP_EOL;
    }
 
 public static function getJSONFiles($dirname,&$array){
@@ -241,8 +259,10 @@ public static function guessJSONFileType($f,$jd){
 	GLOBAL $json_type_hint;
     for ($x = 1; $x <= JSONType::MAX_TYPE; $x++) {
 		//echo "[ $x ] => ".$type_match[$x]."/".count($json_type_hint["".$x]);
-		if($type_match[$x]==count($json_type_hint["".$x]) )
+		if($type_match[$x]==count($json_type_hint["".$x]) ){
 			$type=$x;
+			break;//first match
+		}
 	}
 	
 	return $type;
