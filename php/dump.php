@@ -74,8 +74,8 @@ function json_val($jd,$f,$scope)
 }
 
 //this just locates where these values are used / defined in the json. Runs in background while doing other useful stuff.
-$debug_json_find=array("emod_armorslots_clanferrolamellor");//"chassisdef_leviathan_LVT-C","Gear_Engine_400");
-$debug_json_find_ignore=array("ComponentDefID");//ignores keys containing this
+$debug_json_find=array();//"Gear_Myomer_TSM","Gear_MASC","chassisdef_leviathan_LVT-C","Gear_Engine_400");
+$debug_json_find_ignore=array();//"ComponentDefID");//ignores keys containing this
 
 abstract class JSONType
 {
@@ -127,8 +127,8 @@ function add_json_pk($jd,$f,$json_type)
 	//echo json_encode($json_type_pk).":=?".$json_type;
 	$k="[$json_type]".json_val($jd,$f,$json_type_pk[$json_type]);
 	$json_index_2_filename[$k]=$f;
-	if($json_type==JSONType::COMPONENT)
-		echo "$k => $f".PHP_EOL;
+	//if($json_type==JSONType::COMPONENT)
+		//echo "$k => $f".PHP_EOL;
 }
 
 function json_for_pk($json_type,$pk){
@@ -270,29 +270,145 @@ public static function guessJSONFileType($f,$jd){
 
 public static function dumpMechs(){
 	GLOBAL $json_type_2_filenames,$json_filename_2_decoded;
-	$csvheader=array("#MECH Id","Tons","Engine Rating","Equipment","path");
+	$csvheader=array("#MECH Id","Tons","Engine Rating","Walk_base","Walk_activated","Run_base","Run_activated"/*,"Equipment"*/,"path");
 	foreach($json_type_2_filenames[JSONType::MECH] as $f){
-	    $f="C:\games\steam\steamapps\common\BATTLETECH\Mods\Superheavys\mech\mechdef_leviathan_LVT-C.json";
+	    //$f="C:\games\steam\steamapps\common\BATTLETECH\Mods\Superheavys\mech\mechdef_leviathan_LVT-C.json";
+		//$f="C:\games\steam\steamapps\common\BATTLETECH\Mods\Jihad HeavyMetal Unique\mech\mechdef_stealth_STH-5X.json";
+		$f="C:\games\steam\steamapps\common\BATTLETECH\Mods\RogueOmnis\mech\mechdef_centurion_CN11-OX.json";
 		$mechjd=$json_filename_2_decoded[$f];
 		$chasisjd=json_for_pk(JSONType::CHASSIS,$mechjd["ChassisID"]);
 		$equipment=array();
-		$engine_rating="";
-		Dump::gatherEquipment($chasisjd,"FixedEquipment",$equipment,$engine_rating);
-		Dump::gatherEquipment($mechjd,"inventory",$equipment,$engine_rating);
-		$dump=array($mechjd["Description"]["Id"],$chasisjd["Tonnage"],$engine_rating, implode(";",$equipment) ,str_replace(Dump::$RT_Mods_dir,"",$f));
+		$einfo=array(
+		".Custom.EngineCore.Rating"=>"",
+		".Custom.EngineHeatBlock.HeatSinkCount"=>0,
+		".Custom.Cooling.HeatSinkDefId" => null,
+		".DissipationCapacity"=>0,
+		".HeatGenerated"=>0,
+		"CBTBE_RunMultiMod_base"=>0,
+		"CBTBE_RunMultiMod_activated"=>0,
+		"WalkSpeed_base"=>0,
+		"WalkSpeed_activated"=>0
+		);
+		Dump::gatherEquipment($chasisjd,"FixedEquipment",$equipment,$einfo);
+		Dump::gatherEquipment($mechjd,"inventory",$equipment,$einfo);
+		echo json_encode($einfo,JSON_PRETTY_PRINT);
+		
+		//walk/run distance
+		//https://github.com/BattletechModders/CBTBehaviorsEnhanced
+		$MovementPointDistanceMultiplier = 24;
+		$walk_base=round($einfo[".Custom.EngineCore.Rating"]/$chasisjd["Tonnage"]+($einfo["WalkSpeed_base"]/$MovementPointDistanceMultiplier));
+		$walk_activated=round($einfo[".Custom.EngineCore.Rating"]/$chasisjd["Tonnage"]+(($einfo["WalkSpeed_base"]+$einfo["WalkSpeed_activated"])/$MovementPointDistanceMultiplier));
+		$run_base=round (($einfo[".Custom.EngineCore.Rating"]/$chasisjd["Tonnage"]+($einfo["WalkSpeed_base"]/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]));
+		$run_activated=round(($einfo[".Custom.EngineCore.Rating"]/$chasisjd["Tonnage"]+(($einfo["WalkSpeed_base"]+$einfo["WalkSpeed_activated"])/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]+$einfo["CBTBE_RunMultiMod_activated"]));
+
+		$dump=array($mechjd["Description"]["Id"],$chasisjd["Tonnage"],$einfo[".Custom.EngineCore.Rating"],$walk_base,$walk_activated,$run_base,$run_activated/*, implode(";",$equipment) */ ,str_replace(Dump::$RT_Mods_dir,"",$f));
 		
 		echo implode(",", $dump) . PHP_EOL;
 		break;
 	}
 }
 
-public static function gatherEquipment($jd,$json_loc,&$e,&$engine_rating){
+public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
 	foreach($jd[$json_loc] as $item){
 		array_push($e,$item["ComponentDefID"]);
 		$enginejd=json_for_pk(JSONType::ENGINE, $item["ComponentDefID"]);
 		if($enginejd){
-			 $engine_rating=$enginejd["Custom"]["EngineCore"]["Rating"];
+			$einfo[".Custom.EngineCore.Rating"]=$enginejd["Custom"]["EngineCore"]["Rating"];
+			if(DUMP::$info)
+				echo "EINFO[.Custom.EngineCore.Rating ] : ".$einfo[".Custom.EngineCore.Rating"].PHP_EOL;
 		}
+
+		$componentjd=json_for_pk(JSONType::COMPONENT, $item["ComponentDefID"]);
+		//Heat
+		if($componentjd["Custom"] && $componentjd["Custom"]["EngineHeatBlock"] && $componentjd["Custom"]["EngineHeatBlock"]["HeatSinkCount"]){
+			$einfo[".Custom.EngineHeatBlock.HeatSinkCount"]=$einfo[".Custom.EngineHeatBlock.HeatSinkCount"]+(int)$componentjd["Custom"]["EngineHeatBlock"]["HeatSinkCount"];
+			if(DUMP::$info)
+				echo "EINFO[.Custom.EngineHeatBlock.HeatSinkCount ] : ".$einfo[".Custom.EngineHeatBlock.HeatSinkCount"].PHP_EOL;
+		}
+		if($componentjd["Custom"] && $componentjd["Custom"]["Cooling"] && $componentjd["Custom"]["Cooling"]["HeatSinkDefId"]){
+			$einfo[".Custom.Cooling.HeatSinkDefId"]=$einfo[".Custom.Cooling.HeatSinkDefId"]+(int)$componentjd["Custom"]["Cooling"]["HeatSinkDefId"];
+			if(DUMP::$info)
+				echo "EINFO[.Custom.Cooling.HeatSinkDefId ] : ".$einfo[".Custom.Cooling.HeatSinkDefId"].PHP_EOL;
+		}
+		if($componentjd["DissipationCapacity"])
+		{
+			$einfo[".DissipationCapacity"]=$einfo[".DissipationCapacity"]+(float)$componentjd["DissipationCapacity"];
+			if(DUMP::$info)
+				echo "EINFO[.DissipationCapacity ] : ".$einfo[".DissipationCapacity"].PHP_EOL;
+		}
+		if($componentjd["HeatGenerated"])
+		{
+			$einfo[".HeatGenerated"]=$einfo[".HeatGenerated"]+(float)$componentjd["HeatGenerated"];
+			if(DUMP::$info)
+				echo "EINFO[.HeatGenerated ] : ".$einfo[".HeatGenerated"].PHP_EOL;
+		}
+		//Heat
+
+		
+		if(DUMP::$info)
+			echo $item["ComponentDefID"]." ===========================> ".PHP_EOL.json_encode($componentjd,JSON_PRETTY_PRINT).PHP_EOL.PHP_EOL;
+		if($componentjd["Custom"] && $componentjd["Custom"]["ActivatableComponent"] && $componentjd["Custom"]["ActivatableComponent"]["statusEffects"]){
+			foreach($componentjd["Custom"]["ActivatableComponent"]["statusEffects"]  as $effectjd){
+				Dump::gatherEquipmentEffectInfo($effectjd,$einfo,true);
+			}
+		}
+		if($componentjd["Auras"] ){
+			foreach($componentjd["Auras"] as $aura){
+			    if($aura["statusEffects"]){
+					foreach($aura["statusEffects"]  as $effectjd){
+						Dump::gatherEquipmentEffectInfo($effectjd,$einfo);
+					}
+				}
+			}
+		}
+		if($componentjd["statusEffects"] ){
+			foreach($componentjd["statusEffects"] as $effectjd){
+				Dump::gatherEquipmentEffectInfo($effectjd,$einfo);
+			}
+		}	
+		if(DUMP::$info)
+			echo" <===========================".PHP_EOL;
+	}
+}
+
+public static function gatherEquipmentEffectInfo($effectjd,&$einfo,$force_activated=false){
+	
+	if($effectjd["targetingData"] && $effectjd["targetingData"]["effectTargetType"]=="Creator"){
+		
+		$effect=null;
+		$effectval=null;
+
+		$duration="_activated";
+
+		//$force_activated is cos CAE status effect have duration -1 but they are activateable
+		if(!$force_activated && $effectjd[ "durationData"] && $effectjd[ "durationData"]["duration"]<0)
+			$duration="_base";
+
+		if($effectjd[ "statisticData"] && $effectjd[ "statisticData"]["operation"]){
+			$effect=$effectjd[ "statisticData"]["statName"];
+			switch ($effectjd[ "statisticData"]["operation"]) {
+				case "Int_Add":
+				case "Float_Add":
+					$effectval = ($einfo[$effect.$duration] ? $einfo[$effect.$duration]:0)+(float)$effectjd[ "statisticData"]["modValue"];
+					break;
+				case "Float_Multiply":
+				case "Int_Multiply":
+					$effectval = ($einfo[$effect.$duration] ? $einfo[$effect.$duration]:1)*(float)$effectjd[ "statisticData"]["modValue"];
+					break;
+				case "Set":
+				    break;
+				default:
+					if(DUMP::$debug)
+						echo "[DEBUG] UNKNOWN OPERATION ".$effectjd[ "statisticData"]["operation"].PHP_EOL;
+					break;
+			}
+		}
+		if($effect && $effectval){
+			$einfo[$effect.$duration]=$effectval;
+			if(DUMP::$info)
+				echo "EINFO[ $effect"."$duration ] : $effectval".PHP_EOL;
+		}
+
 	}
 }
 }
