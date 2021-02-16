@@ -109,11 +109,16 @@ function add_json_pk($jd,$f,$json_type)
 	//echo json_encode($json_type_pk).":=?".$json_type;
 	$k="[$json_type]".json_val($jd,$f,$json_type_pk[$json_type]);
 	$json_index_2_filename[$k]=$f;
-	echo "$k => $f".PHP_EOL;
+	//echo "$k => $f".PHP_EOL;
+}
+
+function json_for_pk($json_type,$pk){
+   GLOBAL $json_index_2_filename,$json_filename_2_decoded;
+   $k="[$json_type]".$pk;
+   return $json_filename_2_decoded[$json_index_2_filename[$k]];
 }
 
 class Dump extends Config{
-   //Figure out optimal parallel load and correct load order based on sql timestamps ad table fk dependencies
    public static function main(){
    //we construct an in memory json db
     Dump::init();
@@ -239,12 +244,26 @@ public static function guessJSONFileType($f,$jd){
 
 public static function dumpMechs(){
 	GLOBAL $json_type_2_filenames,$json_filename_2_decoded;
-	$csvheader=array("#MECH Id","Tons","Engine Rating","path");
+	$csvheader=array("#MECH Id","Tons","Engine Rating","Equipment","path");
 	foreach($json_type_2_filenames[JSONType::MECH] as $f){
-		$jd=$json_filename_2_decoded[$f];
+	    $f="C:\games\steam\steamapps\common\BATTLETECH\Mods\Superheavys\mech\mechdef_leviathan_LVT-C.json";
+		$mechjd=$json_filename_2_decoded[$f];
+		$chasisjd=json_for_pk(JSONType::CHASSIS,$mechjd["ChassisID"]);
+		$equipment=array();
+		Dump::gatherEquipment($chasisjd,"FixedEquipment",$equipment);
+		Dump::gatherEquipment($mechjd,"inventory",$equipment);
+		$dump=array($mechjd["Description"]["Id"],$chasisjd["Tonnage"],"", implode(";",$equipment) ,str_replace(Dump::$RT_Mods_dir,"",$f));
+		
+		echo implode(",", $dump) . PHP_EOL;
+		break;
 	}
 }
 
+public static function gatherEquipment($jd,$json_loc,&$e){
+	foreach($jd[$json_loc] as $item){
+		array_push($e,$item["ComponentDefID"]);
+	}
+}
 }
 
 Dump::main();
