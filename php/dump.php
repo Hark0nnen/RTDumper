@@ -3,6 +3,11 @@
 date_default_timezone_set("UTC");
 include "config.php";
 
+function startswith( $haystack, $needle ) {
+     $length = strlen( $needle );
+     return substr( $haystack, 0, $length ) === $needle;
+}
+
 function endswith($string, $test) {
     $strlen = strlen($string);
     $testlen = strlen($test);
@@ -69,8 +74,8 @@ function json_val($jd,$f,$scope)
 }
 
 //this just locates where these values are used / defined in the json. Runs in background while doing other useful stuff.
-$debug_json_find=array();//"chassisdef_leviathan_LVT-C","Gear_Engine_400");
-$debug_json_find_ignore=array();//"ComponentDefID");//ignores keys containing this
+$debug_json_find=array("emod_armorslots_clanferrolamellor");//"chassisdef_leviathan_LVT-C","Gear_Engine_400");
+$debug_json_find_ignore=array("ComponentDefID");//ignores keys containing this
 
 abstract class JSONType
 {
@@ -100,7 +105,7 @@ $json_type_hint = array(
 $json_type_pk = array( 
 	JSONType::MECH => ".Description.Id",
 	JSONType::CHASSIS => ".Description.Id",
-	JSONType::ENGINE => ".Custom.EngineCore.Rating"
+	JSONType::ENGINE => ".Description.Id",
 );
 
 function add_json_pk($jd,$f,$json_type)
@@ -109,7 +114,8 @@ function add_json_pk($jd,$f,$json_type)
 	//echo json_encode($json_type_pk).":=?".$json_type;
 	$k="[$json_type]".json_val($jd,$f,$json_type_pk[$json_type]);
 	$json_index_2_filename[$k]=$f;
-	//echo "$k => $f".PHP_EOL;
+	//if($json_type==JSONType::ENGINE)
+		//echo "$k => $f".PHP_EOL;
 }
 
 function json_for_pk($json_type,$pk){
@@ -250,18 +256,23 @@ public static function dumpMechs(){
 		$mechjd=$json_filename_2_decoded[$f];
 		$chasisjd=json_for_pk(JSONType::CHASSIS,$mechjd["ChassisID"]);
 		$equipment=array();
-		Dump::gatherEquipment($chasisjd,"FixedEquipment",$equipment);
-		Dump::gatherEquipment($mechjd,"inventory",$equipment);
-		$dump=array($mechjd["Description"]["Id"],$chasisjd["Tonnage"],"", implode(";",$equipment) ,str_replace(Dump::$RT_Mods_dir,"",$f));
+		$engine_rating="";
+		Dump::gatherEquipment($chasisjd,"FixedEquipment",$equipment,$engine_rating);
+		Dump::gatherEquipment($mechjd,"inventory",$equipment,$engine_rating);
+		$dump=array($mechjd["Description"]["Id"],$chasisjd["Tonnage"],$engine_rating, implode(";",$equipment) ,str_replace(Dump::$RT_Mods_dir,"",$f));
 		
 		echo implode(",", $dump) . PHP_EOL;
 		break;
 	}
 }
 
-public static function gatherEquipment($jd,$json_loc,&$e){
+public static function gatherEquipment($jd,$json_loc,&$e,&$engine_rating){
 	foreach($jd[$json_loc] as $item){
 		array_push($e,$item["ComponentDefID"]);
+		$enginejd=json_for_pk(JSONType::ENGINE, $item["ComponentDefID"]);
+		if($enginejd){
+			 $engine_rating=$enginejd["Custom"]["EngineCore"]["Rating"];
+		}
 	}
 }
 }
