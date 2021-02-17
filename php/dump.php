@@ -275,6 +275,7 @@ public static function dumpMechs(){
 	GLOBAL $json_type_2_filenames,$json_filename_2_decoded,$einfo_dump;
 	$csvheader=array("#MECH Id","Tons","Engine Rating",
 	"Walk_base","Walk_activated","Run_base","Run_activated",
+	"Dissipation","Dissipation_total_+_activated","Heat_generated_excluding_jump","heat_from_jump",
 	"Equipment",
 	"path");
 	$fp = fopen('./Output/mechs.csv', 'wb');
@@ -328,13 +329,16 @@ public static function dumpMechs(){
 		$run_base=0;
 		$run_activated=0;
 		Dump::getWalkRunInfo($einfo,$engine_rating,$tonnage,$walk_base,$walk_activated,$run_base,$run_activated);
-		$dissipation_capacity=0;
+		$dissipation_capacity_base=0;
+		$dissipation_capacity_activated=0;
 		$heat_generated=0;
+		$jump_heat=0;
 
-		Dump::getHeatInfo($einfo,$engine_rating,$tonnage,$dissipation_capacity,$heat_generated);
+		Dump::getHeatInfo($einfo,$engine_rating,$tonnage,$dissipation_capacity_base,$dissipation_capacity_activated,$heat_generated,$jump_heat);
 	
 		$dump=array($mechjd["Description"]["Id"],$tonnage,$engine_rating,
 			$walk_base,$walk_activated,$run_base,$run_activated,
+			$dissipation_capacity_base,$dissipation_capacity_activated,$heat_generated,$jump_heat,
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 
@@ -362,16 +366,15 @@ public static function getWalkRunInfo($einfo,$engine_rating,$tonnage,&$walk_base
 		$run_activated=round(($engine_rating/$tonnage+(($einfo["WalkSpeed_base"]+$einfo["WalkSpeed_activated"])/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]+$einfo["CBTBE_RunMultiMod_activated"]));
 }
 
-public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$dissipation_capacity,&$heat_generated){
+public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$dissipation_capacity_base,&$dissipation_capacity_activated,&$heat_generated,&$jump_heat){
 		$internal_hs=(int)($engine_rating/25);
 		if($internal_hs>10)
 		 $internal_hs=10;
+		$internal_hs+= $einfo[".Custom.EngineHeatBlock.HeatSinkCount"];
 		$heatsinkjd=json_for_pk(JSONType::COMPONENT, $einfo[".Custom.Cooling.HeatSinkDefId"]);
 		$per_heatsink_dissipation=$heatsinkjd["DissipationCapacity"];
-		$dissipation_capacity=$internal_hs * $per_heatsink_dissipation+$einfo["DissipationCapacity"];
-		if(DUMP::$info){
-			 echo "DissipationCapacity Internal[ $internal_hs x $per_heatsink_dissipation ] + External[".$einfo["DissipationCapacity"]."] = $dissipation_capacity".PHP_EOL;
-		}
+		$dissipation_capacity_base=($internal_hs * $per_heatsink_dissipation)*(1+$einfo["heatSinkMultiplier_base"])+$einfo[".DissipationCapacity"]+$einfo["HeatSinkCapacity_base"]-$einfo["EndMoveHeat_base"];
+		$dissipation_capacity_activated=($internal_hs * $per_heatsink_dissipation)*(1+$einfo["heatSinkMultiplier_base"]+$einfo["heatSinkMultiplier_activated"])+$einfo[".DissipationCapacity"]-$einfo["HeatSinkCapacity_base"]-$einfo["EndMoveHeat_base"]-$einfo["EndMoveHeat_activated"]+$einfo["HeatSinkCapacity_activated"];
 		$heat_generated=0;
 		foreach($einfo as $key => $value) {
 			if (startswith($key,".WeaponHeatGenerated|")){
@@ -390,12 +393,27 @@ public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$dissipation_
 							if(DUMP::$info)
 								echo "X $ekey".PHP_EOL;
 						 }
+					}else if (startswith($ekey,"Weapon.|") && endswith($ekey,"|.WeaponHeatMultiplier_activated") ){
+						 if(Dump::weaponMatch($key,$ekey)){
+							if(DUMP::$info)
+								echo "Y $ekey = $h x $evalue".PHP_EOL;
+							$h=$h*$evalue;
+						 }else{
+							if(DUMP::$info)
+								echo "X $ekey".PHP_EOL;
+						 }
 					}
 				}
 				if(DUMP::$info)
 					echo "= $h ".PHP_EOL;
 				$heat_generated+=$h;
 			}
+		}
+		$jump_heat=$einfo["JumpHeat_base"]+$einfo["JumpHeat_activated"];
+		if(DUMP::$info){
+			 echo "DissipationCapacity Internal[ $internal_hs x $per_heatsink_dissipation x ".(1+$einfo["heatSinkMultiplier_base"])." ] + External[".$einfo[".DissipationCapacity"]."] + HeatSinkCapacity[".+$einfo["HeatSinkCapacity_base"]."] -EndMoveHeat =[".$einfo["EndMoveHeat_base"]."] = ".$dissipation_capacity_base.PHP_EOL;
+			 echo "Activated EndMoveHeat = ".$einfo["EndMoveHeat_activated"]." |Activatable Dissipation =".$einfo["HeatSinkCapacity_activated"]." |Activatable heatSinkMultiplier =".$einfo["heatSinkMultiplier_activated"].PHP_EOL;
+			 echo "Total Heat Generated (weapons) = $heat_generated".PHP_EOL;
 		}
 }
 
@@ -475,7 +493,10 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
 
 		if($componentjd["Custom"] && $componentjd["Custom"]["ActivatableComponent"] && $componentjd["Custom"]["ActivatableComponent"]["statusEffects"]){
 			foreach($componentjd["Custom"]["ActivatableComponent"]["statusEffects"]  as $effectjd){
-				Dump::gatherEquipmentEffectInfo($item["ComponentDefID"],$location,$effectjd,$einfo,true);
+				$force_activated=true;
+				if($componentjd["Custom"]["ActivatableComponent"]["ActiveByDefault"]===TRUE)
+				  $force_activated=false;
+				Dump::gatherEquipmentEffectInfo($item["ComponentDefID"],$location,$effectjd,$einfo,$force_activated);
 			}
 		}
 		if($componentjd["Auras"] ){
