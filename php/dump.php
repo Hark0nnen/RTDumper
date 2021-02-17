@@ -270,11 +270,14 @@ public static function guessJSONFileType($f,$jd){
 
 public static function dumpMechs(){
 	GLOBAL $json_type_2_filenames,$json_filename_2_decoded;
-	$csvheader=array("#MECH Id","Tons","Engine Rating","Walk_base","Walk_activated","Run_base","Run_activated"/*,"Equipment"*/,"path");
+	$csvheader=array("#MECH Id","Tons","Engine Rating","Walk_base","Walk_activated","Run_base","Run_activated","Equipment","path");
+	$fp = fopen('./Output/mechs.csv', 'wb');
+	fputcsv($fp, $csvheader);
 	foreach($json_type_2_filenames[JSONType::MECH] as $f){
 	    //$f="C:\games\steam\steamapps\common\BATTLETECH\Mods\Superheavys\mech\mechdef_leviathan_LVT-C.json";
 		//$f="C:\games\steam\steamapps\common\BATTLETECH\Mods\Jihad HeavyMetal Unique\mech\mechdef_stealth_STH-5X.json";
-		$f="C:\games\steam\steamapps\common\BATTLETECH\Mods\RogueOmnis\mech\mechdef_centurion_CN11-OX.json";
+		//$f="C:\games\steam\steamapps\common\BATTLETECH\Mods\RogueOmnis\mech\mechdef_centurion_CN11-OX.json";
+		//echo "!!!!!".$f.PHP_EOL;
 		$mechjd=$json_filename_2_decoded[$f];
 		$chasisjd=json_for_pk(JSONType::CHASSIS,$mechjd["ChassisID"]);
 		$equipment=array();
@@ -289,10 +292,19 @@ public static function dumpMechs(){
 		"WalkSpeed_base"=>0,
 		"WalkSpeed_activated"=>0
 		);
-		Dump::gatherEquipment($chasisjd,"FixedEquipment",$equipment,$einfo);
+		if($chasisjd["FixedEquipment"])
+			Dump::gatherEquipment($chasisjd,"FixedEquipment",$equipment,$einfo);
 		Dump::gatherEquipment($mechjd,"inventory",$equipment,$einfo);
-		echo json_encode($einfo,JSON_PRETTY_PRINT);
+		if(DUMP::$info)
+			echo json_encode($einfo,JSON_PRETTY_PRINT);
 		
+		if(!($einfo[".Custom.EngineCore.Rating"] && $chasisjd["Tonnage"]) )
+		{
+			//mechdef_deploy_director.json
+			if(DUMP::$debug)
+				echo "[DEBUG] Ignoring $f".PHP_EOL;
+			break;
+		}
 		//walk/run distance
 		//https://github.com/BattletechModders/CBTBehaviorsEnhanced
 		$MovementPointDistanceMultiplier = 24;
@@ -301,14 +313,23 @@ public static function dumpMechs(){
 		$run_base=round (($einfo[".Custom.EngineCore.Rating"]/$chasisjd["Tonnage"]+($einfo["WalkSpeed_base"]/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]));
 		$run_activated=round(($einfo[".Custom.EngineCore.Rating"]/$chasisjd["Tonnage"]+(($einfo["WalkSpeed_base"]+$einfo["WalkSpeed_activated"])/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]+$einfo["CBTBE_RunMultiMod_activated"]));
 
-		$dump=array($mechjd["Description"]["Id"],$chasisjd["Tonnage"],$einfo[".Custom.EngineCore.Rating"],$walk_base,$walk_activated,$run_base,$run_activated/*, implode(";",$equipment) */ ,str_replace(Dump::$RT_Mods_dir,"",$f));
-		
-		echo implode(",", $dump) . PHP_EOL;
-		break;
-	}
+		$dump=array($mechjd["Description"]["Id"],$chasisjd["Tonnage"],$einfo[".Custom.EngineCore.Rating"],$walk_base,$walk_activated,$run_base,$run_activated,implode(";",$equipment),str_replace(Dump::$RT_Mods_dir,"",$f));
+		if(DUMP::$info)
+			echo implode(",", $dump) . PHP_EOL;
+		fputcsv($fp, $dump);
+		//break;
+}
+	fclose($fp);
+	echo "Exported Mechs to ".'./Output/mechs.csv';
 }
 
 public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
+	if(!$jd[$json_loc])
+	{
+		if(DUMP::$debug)
+			echo "[DEBUG] Missing $json_loc in ".json_encode($jd,JSON_PRETTY_PRINT).PHP_EOL;
+		return;
+	}
 	foreach($jd[$json_loc] as $item){
 		array_push($e,$item["ComponentDefID"]);
 		$enginejd=json_for_pk(JSONType::ENGINE, $item["ComponentDefID"]);
@@ -390,6 +411,10 @@ public static function gatherEquipmentEffectInfo($effectjd,&$einfo,$force_activa
 				case "Int_Add":
 				case "Float_Add":
 					$effectval = ($einfo[$effect.$duration] ? $einfo[$effect.$duration]:0)+(float)$effectjd[ "statisticData"]["modValue"];
+					break;
+				case "Int_Subtract":
+				case "Float_Subtract":
+					$effectval = ($einfo[$effect.$duration] ? $einfo[$effect.$duration]:0)-(float)$effectjd[ "statisticData"]["modValue"];
 					break;
 				case "Float_Multiply":
 				case "Int_Multiply":
