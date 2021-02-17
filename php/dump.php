@@ -121,6 +121,7 @@ $json_additional_types = array(
 	JSONType::COMPONENT => array ()
 );
 
+
 function add_json_pk($jd,$f,$json_type)
 {
 	GLOBAL $json_index_2_filename,$json_type_pk;
@@ -136,6 +137,8 @@ function json_for_pk($json_type,$pk){
    $k="[$json_type]".$pk;
    return $json_filename_2_decoded[$json_index_2_filename[$k]];
 }
+
+$einfo_dump=array();
 
 class Dump extends Config{
    public static function main(){
@@ -269,7 +272,7 @@ public static function guessJSONFileType($f,$jd){
 }
 
 public static function dumpMechs(){
-	GLOBAL $json_type_2_filenames,$json_filename_2_decoded;
+	GLOBAL $json_type_2_filenames,$json_filename_2_decoded,$einfo_dump;
 	$csvheader=array("#MECH Id","Tons","Engine Rating","Walk_base","Walk_activated","Run_base","Run_activated","Equipment","path");
 	$fp = fopen('./Output/mechs.csv', 'wb');
 	fputcsv($fp, $csvheader);
@@ -277,8 +280,15 @@ public static function dumpMechs(){
 	    //$f="C:\games\steam\steamapps\common\BATTLETECH\Mods\Superheavys\mech\mechdef_leviathan_LVT-C.json";
 		//$f="C:\games\steam\steamapps\common\BATTLETECH\Mods\Jihad HeavyMetal Unique\mech\mechdef_stealth_STH-5X.json";
 		//$f="C:\games\steam\steamapps\common\BATTLETECH\Mods\RogueOmnis\mech\mechdef_centurion_CN11-OX.json";
+
 		//echo "!!!!!".$f.PHP_EOL;
 		$mechjd=$json_filename_2_decoded[$f];
+		if(DUMP::$debug_single_mech){
+			if($mechjd["Description"]["Id"]==DUMP::$debug_single_mech)
+				DUMP::$info=TRUE;
+			else
+			    DUMP::$info=FALSE;
+		}
 		$chasisjd=json_for_pk(JSONType::CHASSIS,$mechjd["ChassisID"]);
 		$equipment=array();
 		$einfo=array(
@@ -296,14 +306,17 @@ public static function dumpMechs(){
 			Dump::gatherEquipment($chasisjd,"FixedEquipment",$equipment,$einfo);
 		Dump::gatherEquipment($mechjd,"inventory",$equipment,$einfo);
 		if(DUMP::$info)
-			echo json_encode($einfo,JSON_PRETTY_PRINT);
+			echo json_encode($einfo,JSON_PRETTY_PRINT).PHP_EOL;
+		 if(DUMP::$debug){
+		 	 $einfo_dump=array_merge($einfo_dump, $einfo);
+		 }
 		
 		if(!($einfo[".Custom.EngineCore.Rating"] && $chasisjd["Tonnage"]) )
 		{
 			//mechdef_deploy_director.json
 			if(DUMP::$debug)
 				echo "[DEBUG] Ignoring $f".PHP_EOL;
-			break;
+			continue;
 		}
 		//walk/run distance
 		//https://github.com/BattletechModders/CBTBehaviorsEnhanced
@@ -320,7 +333,9 @@ public static function dumpMechs(){
 		//break;
 }
 	fclose($fp);
-	echo "Exported Mechs to ".'./Output/mechs.csv';
+	if(DUMP::$debug)
+		echo "***************************".PHP_EOL.json_encode($einfo_dump,JSON_PRETTY_PRINT).PHP_EOL;
+	echo "Exported Mechs to ".'./Output/mechs.csv'.PHP_EOL;
 }
 
 public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
@@ -332,6 +347,9 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
 	}
 	foreach($jd[$json_loc] as $item){
 		array_push($e,$item["ComponentDefID"]);
+		$location="ALL";
+		if($item["MountedLocation"])
+		  $location=$item["MountedLocation"];
 		$enginejd=json_for_pk(JSONType::ENGINE, $item["ComponentDefID"]);
 		if($enginejd){
 			$einfo[".Custom.EngineCore.Rating"]=$enginejd["Custom"]["EngineCore"]["Rating"];
@@ -370,21 +388,21 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
 			echo $item["ComponentDefID"]." ===========================> ".PHP_EOL.json_encode($componentjd,JSON_PRETTY_PRINT).PHP_EOL.PHP_EOL;
 		if($componentjd["Custom"] && $componentjd["Custom"]["ActivatableComponent"] && $componentjd["Custom"]["ActivatableComponent"]["statusEffects"]){
 			foreach($componentjd["Custom"]["ActivatableComponent"]["statusEffects"]  as $effectjd){
-				Dump::gatherEquipmentEffectInfo($effectjd,$einfo,true);
+				Dump::gatherEquipmentEffectInfo($item["ComponentDefID"],$location,$effectjd,$einfo,true);
 			}
 		}
 		if($componentjd["Auras"] ){
 			foreach($componentjd["Auras"] as $aura){
 			    if($aura["statusEffects"]){
 					foreach($aura["statusEffects"]  as $effectjd){
-						Dump::gatherEquipmentEffectInfo($effectjd,$einfo);
+						Dump::gatherEquipmentEffectInfo($item["ComponentDefID"],$location,$effectjd,$einfo);
 					}
 				}
 			}
 		}
 		if($componentjd["statusEffects"] ){
 			foreach($componentjd["statusEffects"] as $effectjd){
-				Dump::gatherEquipmentEffectInfo($effectjd,$einfo);
+				Dump::gatherEquipmentEffectInfo($item["ComponentDefID"],$location,$effectjd,$einfo);
 			}
 		}	
 		if(DUMP::$info)
@@ -392,7 +410,7 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
 	}
 }
 
-public static function gatherEquipmentEffectInfo($effectjd,&$einfo,$force_activated=false){
+public static function gatherEquipmentEffectInfo($componentid,$location,$effectjd,&$einfo,$force_activated=false){
 	
 	if($effectjd["targetingData"] && $effectjd["targetingData"]["effectTargetType"]=="Creator"){
 		
@@ -427,8 +445,16 @@ public static function gatherEquipmentEffectInfo($effectjd,&$einfo,$force_activa
 						echo "[DEBUG] UNKNOWN OPERATION ".$effectjd[ "statisticData"]["operation"].PHP_EOL;
 					break;
 			}
+			switch ($effectjd[ "statisticData"]["targetCollection"]) {
+				default:
+					if(DUMP::$debug)
+						echo "[DEBUG]  targetCollection ".$effectjd[ "statisticData"]["targetCollection"]." >>".$effect.$duration."( $componentid )".PHP_EOL;
+					break;
+			}
 		}
+		
 		if($effect && $effectval){
+			$effect=str_replace("{location}",$location,$effect);
 			$einfo[$effect.$duration]=$effectval;
 			if(DUMP::$info)
 				echo "EINFO[ $effect"."$duration ] : $effectval".PHP_EOL;
