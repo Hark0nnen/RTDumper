@@ -273,11 +273,14 @@ public static function guessJSONFileType($f,$jd){
 
 public static function dumpMechs(){
 	GLOBAL $json_type_2_filenames,$json_filename_2_decoded,$einfo_dump;
-	$csvheader=array("#MECH Id","Tons","Engine Rating","Walk_base","Walk_activated","Run_base","Run_activated","Equipment","path");
+	$csvheader=array("#MECH Id","Tons","Engine Rating",
+	"Walk_base","Walk_activated","Run_base","Run_activated",
+	"Equipment",
+	"path");
 	$fp = fopen('./Output/mechs.csv', 'wb');
 	fputcsv($fp, $csvheader);
 	foreach($json_type_2_filenames[JSONType::MECH] as $f){
-	    //$f="C:\games\steam\steamapps\common\BATTLETECH\Mods\Superheavys\mech\mechdef_leviathan_LVT-C.json";
+	    //$f="C:\games\steam\steamapps\common\BATTLETECH\Mods\Superheavys\mech\mechdef_leviathan_LVT-C.json";$engine_rating
 		//$f="C:\games\steam\steamapps\common\BATTLETECH\Mods\Jihad HeavyMetal Unique\mech\mechdef_stealth_STH-5X.json";
 		//$f="C:\games\steam\steamapps\common\BATTLETECH\Mods\RogueOmnis\mech\mechdef_centurion_CN11-OX.json";
 
@@ -291,12 +294,11 @@ public static function dumpMechs(){
 		}
 		$chasisjd=json_for_pk(JSONType::CHASSIS,$mechjd["ChassisID"]);
 		$equipment=array();
-		$einfo=array(
+		$einfo=array( // flattened list of all equipment effects and characteristics we extract
 		".Custom.EngineCore.Rating"=>"",
 		".Custom.EngineHeatBlock.HeatSinkCount"=>0,
 		".Custom.Cooling.HeatSinkDefId" => null,
 		".DissipationCapacity"=>0,
-		".HeatGenerated"=>0,
 		"CBTBE_RunMultiMod_base"=>0,
 		"CBTBE_RunMultiMod_activated"=>0,
 		"WalkSpeed_base"=>0,
@@ -307,26 +309,35 @@ public static function dumpMechs(){
 		Dump::gatherEquipment($mechjd,"inventory",$equipment,$einfo);
 		if(DUMP::$info)
 			echo json_encode($einfo,JSON_PRETTY_PRINT).PHP_EOL;
-		 if(DUMP::$debug){
+		if(DUMP::$debug)
 		 	 $einfo_dump=array_merge($einfo_dump, $einfo);
-		 }
+		 
 		
-		if(!($einfo[".Custom.EngineCore.Rating"] && $chasisjd["Tonnage"]) )
+		$tonnage=$chasisjd["Tonnage"];
+		$engine_rating=$einfo[".Custom.EngineCore.Rating"];
+		if(!($engine_rating && $tonnage) )
 		{
 			//mechdef_deploy_director.json
 			if(DUMP::$debug)
 				echo "[DEBUG] Ignoring $f".PHP_EOL;
 			continue;
 		}
-		//walk/run distance
-		//https://github.com/BattletechModders/CBTBehaviorsEnhanced
-		$MovementPointDistanceMultiplier = 24;
-		$walk_base=round($einfo[".Custom.EngineCore.Rating"]/$chasisjd["Tonnage"]+($einfo["WalkSpeed_base"]/$MovementPointDistanceMultiplier));
-		$walk_activated=round($einfo[".Custom.EngineCore.Rating"]/$chasisjd["Tonnage"]+(($einfo["WalkSpeed_base"]+$einfo["WalkSpeed_activated"])/$MovementPointDistanceMultiplier));
-		$run_base=round (($einfo[".Custom.EngineCore.Rating"]/$chasisjd["Tonnage"]+($einfo["WalkSpeed_base"]/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]));
-		$run_activated=round(($einfo[".Custom.EngineCore.Rating"]/$chasisjd["Tonnage"]+(($einfo["WalkSpeed_base"]+$einfo["WalkSpeed_activated"])/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]+$einfo["CBTBE_RunMultiMod_activated"]));
+		
+		$walk_base=0;
+		$walk_activated=0;
+		$run_base=0;
+		$run_activated=0;
+		Dump::getWalkRunInfo($einfo,$engine_rating,$tonnage,$walk_base,$walk_activated,$run_base,$run_activated);
+		$heat_dissipation=0;
+		$max_heat_generated=0;
 
-		$dump=array($mechjd["Description"]["Id"],$chasisjd["Tonnage"],$einfo[".Custom.EngineCore.Rating"],$walk_base,$walk_activated,$run_base,$run_activated,implode(" ",$equipment),str_replace(Dump::$RT_Mods_dir,"",$f));
+		Dump::getHeatInfo($einfo,$engine_rating,$tonnage,$heat_dissipation,$max_heat_generated);
+	
+		$dump=array($mechjd["Description"]["Id"],$tonnage,$engine_rating,
+			$walk_base,$walk_activated,$run_base,$run_activated,
+			implode(" ",$equipment),
+			str_replace(Dump::$RT_Mods_dir,"",$f));
+
 		if(DUMP::$info)
 			echo implode(",", $dump) . PHP_EOL;
 		fputcsv($fp, $dump);
@@ -339,6 +350,20 @@ public static function dumpMechs(){
 		fclose($fp);
 	}
 	echo "Exported Mechs to ".'./Output/mechs.csv'.PHP_EOL;
+}
+
+public static function getWalkRunInfo($einfo,$engine_rating,$tonnage,&$walk_base,&$walk_activated,&$run_base,&$run_activated){
+		//walk/run distance
+		//https://github.com/BattletechModders/CBTBehaviorsEnhanced
+		$MovementPointDistanceMultiplier = 24;
+		$walk_base=round($engine_rating/$tonnage+($einfo["WalkSpeed_base"]/$MovementPointDistanceMultiplier));
+		$walk_activated=round($engine_rating/$tonnage+(($einfo["WalkSpeed_base"]+$einfo["WalkSpeed_activated"])/$MovementPointDistanceMultiplier));
+		$run_base=round (($engine_rating/$tonnage+($einfo["WalkSpeed_base"]/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]));
+		$run_activated=round(($engine_rating/$tonnage+(($einfo["WalkSpeed_base"]+$einfo["WalkSpeed_activated"])/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]+$einfo["CBTBE_RunMultiMod_activated"]));
+}
+
+public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$heat_dissipation,&$max_heat_generated){
+
 }
 
 public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
@@ -361,6 +386,7 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
 		}
 
 		$componentjd=json_for_pk(JSONType::COMPONENT, $item["ComponentDefID"]);
+
 		//Heat
 		if($componentjd["Custom"] && $componentjd["Custom"]["EngineHeatBlock"] && $componentjd["Custom"]["EngineHeatBlock"]["HeatSinkCount"]){
 			$einfo[".Custom.EngineHeatBlock.HeatSinkCount"]=$einfo[".Custom.EngineHeatBlock.HeatSinkCount"]+(int)$componentjd["Custom"]["EngineHeatBlock"]["HeatSinkCount"];
@@ -380,9 +406,16 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
 		}
 		if($componentjd["HeatGenerated"])
 		{
-			$einfo[".HeatGenerated"]=$einfo[".HeatGenerated"]+(float)$componentjd["HeatGenerated"];
+			$class=
+				  "|".( (!$componentjd["Category"] || $componentjd["Category"]=="NotSet") ? "*" :$componentjd["Category"]).
+				  "|".( (!$componentjd["Type"] || $componentjd["Type"]=="NotSet") ? "*" :$componentjd["Type"]).
+				  "|".( (!$componentjd["WeaponSubType"] || $componentjd["WeaponSubType"]=="NotSet") ? "*" :$componentjd["WeaponSubType"]).
+				  "|".( (!$componentjd["AmmoCategory"] || $componentjd["AmmoCategory"]=="NotSet") ? "*" :$componentjd["AmmoCategory"]).
+				  "|.";
+		    $k=".".$componentjd["ComponentType"]."HeatGenerated".$class;
+			$einfo[$k]=($einfo[$k] ? $einfo[$k] :0) +(float)$componentjd["HeatGenerated"];
 			if(DUMP::$info)
-				echo "EINFO[.HeatGenerated ] : ".$einfo[".HeatGenerated"].PHP_EOL;
+				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
 		}
 		//Heat
 
@@ -456,8 +489,8 @@ public static function gatherEquipmentEffectInfo($componentid,$location,$effectj
 				  $class=
 				  "|".( (!$effectjd[ "statisticData"]["targetWeaponCategory"] || $effectjd[ "statisticData"]["targetWeaponCategory"]=="NotSet") ? "*" :$effectjd[ "statisticData"]["targetWeaponCategory"]).
 				  "|".( (!$effectjd[ "statisticData"]["targetWeaponType"] || $effectjd[ "statisticData"]["targetWeaponType"]=="NotSet") ? "*" :$effectjd[ "statisticData"]["targetWeaponType"]).
-				  "|".( (!$effectjd[ "statisticData"]["targetAmmoCategory"] || $effectjd[ "statisticData"]["targetAmmoCategory"]=="NotSet") ? "*" :$effectjd[ "statisticData"]["targetAmmoCategory"]).
 				  "|".( (!$effectjd[ "statisticData"]["targetWeaponSubType"] || $effectjd[ "statisticData"]["targetWeaponSubType"]=="NotSet") ? "*" :$effectjd[ "statisticData"]["targetWeaponSubType"]).
+				  "|".( (!$effectjd[ "statisticData"]["targetAmmoCategory"] || $effectjd[ "statisticData"]["targetAmmoCategory"]=="NotSet") ? "*" :$effectjd[ "statisticData"]["targetAmmoCategory"]).
 				  "|.";
 				  $effect="Weapon.".$class.$effect;
 				  $duration="_activated";//weapons have to be fired so always treat effect as activated.
