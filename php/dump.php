@@ -333,8 +333,11 @@ public static function dumpMechs(){
 		//break;
 }
 	fclose($fp);
-	if(DUMP::$debug)
-		echo "***************************".PHP_EOL.json_encode($einfo_dump,JSON_PRETTY_PRINT).PHP_EOL;
+	if(DUMP::$debug){
+		$fp = fopen('./Output/debug_einfo.json', 'wb');
+		fputs($fp,json_encode($einfo_dump,JSON_PRETTY_PRINT));
+		fclose($fp);
+	}
 	echo "Exported Mechs to ".'./Output/mechs.csv'.PHP_EOL;
 }
 
@@ -446,9 +449,21 @@ public static function gatherEquipmentEffectInfo($componentid,$location,$effectj
 					break;
 			}
 			switch ($effectjd[ "statisticData"]["targetCollection"]) {
+				case "Pilot":
+				  $effect="Pilot.".$effect;
+				  break;
+				case "Weapon":
+				  $class=
+				  "|".( (!$effectjd[ "statisticData"]["targetWeaponCategory"] || $effectjd[ "statisticData"]["targetWeaponCategory"]=="NotSet") ? "*" :$effectjd[ "statisticData"]["targetWeaponCategory"]).
+				  "|".( (!$effectjd[ "statisticData"]["targetWeaponType"] || $effectjd[ "statisticData"]["targetWeaponType"]=="NotSet") ? "*" :$effectjd[ "statisticData"]["targetWeaponType"]).
+				  "|".( (!$effectjd[ "statisticData"]["targetAmmoCategory"] || $effectjd[ "statisticData"]["targetAmmoCategory"]=="NotSet") ? "*" :$effectjd[ "statisticData"]["targetAmmoCategory"]).
+				  "|".( (!$effectjd[ "statisticData"]["targetWeaponSubType"] || $effectjd[ "statisticData"]["targetWeaponSubType"]=="NotSet") ? "*" :$effectjd[ "statisticData"]["targetWeaponSubType"]).
+				  "|.";
+				  $effect="Weapon.".$class.$effect;
+				  break;
 				default:
-					if(DUMP::$debug)
-						echo "[DEBUG]  targetCollection ".$effectjd[ "statisticData"]["targetCollection"]." >>".$effect.$duration."( $componentid )".PHP_EOL;
+					/*if(DUMP::$debug)
+						echo "[DEBUG]  targetCollection ".$effectjd[ "statisticData"]["targetCollection"]." >>".$effect.$duration."( $componentid )".PHP_EOL;*/
 					break;
 			}
 		}
