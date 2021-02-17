@@ -326,7 +326,7 @@ public static function dumpMechs(){
 		$run_base=round (($einfo[".Custom.EngineCore.Rating"]/$chasisjd["Tonnage"]+($einfo["WalkSpeed_base"]/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]));
 		$run_activated=round(($einfo[".Custom.EngineCore.Rating"]/$chasisjd["Tonnage"]+(($einfo["WalkSpeed_base"]+$einfo["WalkSpeed_activated"])/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]+$einfo["CBTBE_RunMultiMod_activated"]));
 
-		$dump=array($mechjd["Description"]["Id"],$chasisjd["Tonnage"],$einfo[".Custom.EngineCore.Rating"],$walk_base,$walk_activated,$run_base,$run_activated,implode(";",$equipment),str_replace(Dump::$RT_Mods_dir,"",$f));
+		$dump=array($mechjd["Description"]["Id"],$chasisjd["Tonnage"],$einfo[".Custom.EngineCore.Rating"],$walk_base,$walk_activated,$run_base,$run_activated,implode(" ",$equipment),str_replace(Dump::$RT_Mods_dir,"",$f));
 		if(DUMP::$info)
 			echo implode(",", $dump) . PHP_EOL;
 		fputcsv($fp, $dump);
@@ -460,6 +460,7 @@ public static function gatherEquipmentEffectInfo($componentid,$location,$effectj
 				  "|".( (!$effectjd[ "statisticData"]["targetWeaponSubType"] || $effectjd[ "statisticData"]["targetWeaponSubType"]=="NotSet") ? "*" :$effectjd[ "statisticData"]["targetWeaponSubType"]).
 				  "|.";
 				  $effect="Weapon.".$class.$effect;
+				  $duration="_activated";//weapons have to be fired so always treat effect as activated.
 				  break;
 				default:
 					/*if(DUMP::$debug)
