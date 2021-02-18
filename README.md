@@ -36,7 +36,7 @@ RTDumper looks at the mech characteristics numbers in two ways.
 
 ***Does RTDumper understand "modifier" set or used by "Mod" ?***
 
-RTDumper tries to understand how all the mods interwork. If you have an understanding of the various <Mod> configurations and want to share / discuss use the [issue tracker](https://github.com/fmnatic/RTDumper/issues).
+RTDumper tries to understand how all the mods interwork. If you have an understanding of the various <Mod> configurations and want to share / discuss use the [issue tracker](https://github.com/fmnatic/RTDumper/issues) or find me on Discord.
 
 ***Some number in the spreadsheet looks wrong?***
 
