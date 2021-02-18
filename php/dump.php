@@ -276,7 +276,7 @@ public static function dumpMechs(){
 	$csvheader=array("#MECH Id","Tons","Engine Rating",
 	"Max Walk base (hex)","Max Walk activated (hex)","Max Run base (hex)","Max Run activated (hex)",
 	"Max Jump base (hex)","Max Jump activated (hex)",
-	"Heat Sinking base","Heat Sinking activated","Alpha Strike","Jump Heat base","Jump Heat activated",
+	"Heat Sinking base","Heat Sinking activated","Alpha Strike Heat","Jump Heat base","Jump Heat activated",
 	"Equipment",
 	"path");
 	$fp = fopen('./Output/mechs.csv', 'wb');
