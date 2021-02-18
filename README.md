@@ -1,6 +1,7 @@
 # RTDumper
 
 **A set of scripts to read [RogueTech](https://www.nexusmods.com/battletech/mods/79) .json files , extract information, and dump them to spreadsheets.** 
+Sample Output [spreadsheet](https://docs.google.com/spreadsheets/d/14D3-JhOploMx3kYtepTUoQpeLiSNoSd0c2Ww06F4tMM/edit?usp=sharing).
 
 ###### Current features:
 
@@ -23,7 +24,7 @@
 
 4. Run (double click) dump.bat . Wait for it to complete. 
 
-5. Spreadsheet(s) are generated in \Output folder. Open them with you favorite spreadsheet program (rather than a text editor.) .
+5. Spreadsheet(s) are generated in \Output folder. Open them with you favorite spreadsheet program (rather than a text editor) .
 
 ###### FAQ:
 
@@ -32,7 +33,7 @@
 RTDumper looks at the mech characteristics numbers in two ways.
 
 1.  <u>Base:</u>  This is what the number is when the pilot just got into his mech and has not switched any equipment on/off. Equipment on by default is factored into base.
-2. <u>Activated:</u> This is the number if the pilot (human or AI) turns on everything in the mech. 
+2. <u>Activated:</u> This is the number if the pilot (human or AI) turns on everything in the mech. This is inclusive of base values.
 
 ***Does RTDumper understand "modifier" set or used by "Mod" ?***
 

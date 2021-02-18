@@ -275,8 +275,8 @@ public static function dumpMechs(){
 	GLOBAL $json_type_2_filenames,$json_filename_2_decoded,$einfo_dump;
 	$csvheader=array("#MECH Id","Tons","Engine Rating",
 	"Max Walk base (hex)","Max Walk activated (hex)","Max Run base (hex)","Max Run activated (hex)",
-	"Max Jump (hex)"
-	"Heat Sinking base","Heat Sinking activated","Alpha Strike","Jump Heat",
+	"Max Jump base (hex)","Max Jump activated (hex)",
+	"Heat Sinking base","Heat Sinking activated","Alpha Strike","Jump Heat base","Jump Heat activated",
 	"Equipment",
 	"path");
 	$fp = fopen('./Output/mechs.csv', 'wb');
@@ -296,7 +296,7 @@ public static function dumpMechs(){
 		}
 		$chasisjd=json_for_pk(JSONType::CHASSIS,$mechjd["ChassisID"]);
 		$equipment=array();
-		$einfo=array( // flattened list of all equipment effects and characteristics we extract
+		$einfo=array( // flattened list of all equipment effects and characteristics we extract those starting with . are manually extracted, without are effects and auto extracted
 		".Custom.EngineCore.Rating"=>"",
 		".Custom.EngineHeatBlock.HeatSinkCount"=>0,
 		".Custom.Cooling.HeatSinkDefId" => "Gear_HeatSink_Generic_Standard",
@@ -304,7 +304,10 @@ public static function dumpMechs(){
 		"CBTBE_RunMultiMod_base"=>0,
 		"CBTBE_RunMultiMod_activated"=>0,
 		"WalkSpeed_base"=>0,
-		"WalkSpeed_activated"=>0
+		"WalkSpeed_activated"=>0,
+		".JumpCapacity"=>0,
+		"JumpDistanceMultiplier_base"=>1,
+		"JumpDistanceMultiplier_activated"=>1
 		);
 		if($chasisjd["FixedEquipment"])
 			Dump::gatherEquipment($chasisjd,"FixedEquipment",$equipment,$einfo);
@@ -333,14 +336,18 @@ public static function dumpMechs(){
 		$dissipation_capacity_base=0;
 		$dissipation_capacity_activated=0;
 		$heat_generated=0;
-		$jump_heat=0;
+		$jump_heat_base=0;
+		$jump_heat_activated=0;
 
-		Dump::getHeatInfo($einfo,$engine_rating,$tonnage,$dissipation_capacity_base,$dissipation_capacity_activated,$heat_generated,$jump_heat);
+		Dump::getHeatInfo($einfo,$engine_rating,$tonnage,$dissipation_capacity_base,$dissipation_capacity_activated,$heat_generated,$jump_heat_base,$jump_heat_activated);
+
+		$jump_distance_base=(int) ($einfo[".JumpCapacity"]*$einfo["JumpDistanceMultiplier_base"]);
+		$jump_distance_activated=(int) ($einfo[".JumpCapacity"]*$einfo["JumpDistanceMultiplier_base"]*$einfo["JumpDistanceMultiplier_activated"]);
 	
 		$dump=array($mechjd["Description"]["Id"],$tonnage,$engine_rating,
 			$walk_base,$walk_activated,$run_base,$run_activated,
-			"?",
-			$dissipation_capacity_base,$dissipation_capacity_activated,$heat_generated,$jump_heat,
+			$jump_distance_base,$jump_distance_activated,
+			$dissipation_capacity_base,$dissipation_capacity_activated,$heat_generated,$jump_heat_base,$jump_heat_activated,
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 
@@ -368,7 +375,7 @@ public static function getWalkRunInfo($einfo,$engine_rating,$tonnage,&$walk_base
 		$run_activated=round(($engine_rating/$tonnage+(($einfo["WalkSpeed_base"]+$einfo["WalkSpeed_activated"])/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]+$einfo["CBTBE_RunMultiMod_activated"]));
 }
 
-public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$dissipation_capacity_base,&$dissipation_capacity_activated,&$heat_generated,&$jump_heat){
+public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$dissipation_capacity_base,&$dissipation_capacity_activated,&$heat_generated,&$jump_heat_base,&$jump_heat_activated){
 		$internal_hs=(int)($engine_rating/25);
 		if($internal_hs>10)
 		 $internal_hs=10;
@@ -378,6 +385,7 @@ public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$dissipation_
 		$dissipation_capacity_base=($internal_hs * $per_heatsink_dissipation)*(1+$einfo["heatSinkMultiplier_base"])+$einfo[".DissipationCapacity"]+$einfo["HeatSinkCapacity_base"]-$einfo["EndMoveHeat_base"];
 		$dissipation_capacity_activated=($internal_hs * $per_heatsink_dissipation)*(1+$einfo["heatSinkMultiplier_base"]+$einfo["heatSinkMultiplier_activated"])+$einfo[".DissipationCapacity"]-$einfo["HeatSinkCapacity_base"]-$einfo["EndMoveHeat_base"]-$einfo["EndMoveHeat_activated"]+$einfo["HeatSinkCapacity_activated"];
 		$heat_generated=0;
+
 		foreach($einfo as $key => $value) {
 			if (startswith($key,".WeaponHeatGenerated|")){
 				$h=$value;
@@ -411,7 +419,8 @@ public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$dissipation_
 				$heat_generated+=$h;
 			}
 		}
-		$jump_heat=$einfo["JumpHeat_base"]+$einfo["JumpHeat_activated"];
+		$jump_heat_base=0+$einfo["JumpHeat_base"];
+		$jump_heat_activated=$einfo["JumpHeat_base"]+$einfo["JumpHeat_activated"];
 		if(DUMP::$info){
 			 echo "DissipationCapacity Internal[ $internal_hs x $per_heatsink_dissipation x ".(1+$einfo["heatSinkMultiplier_base"])." ] + External[".$einfo[".DissipationCapacity"]."] + HeatSinkCapacity[".+$einfo["HeatSinkCapacity_base"]."] -EndMoveHeat =[".$einfo["EndMoveHeat_base"]."] = ".$dissipation_capacity_base.PHP_EOL;
 			 echo "Activated EndMoveHeat = ".$einfo["EndMoveHeat_activated"]." |Activatable Dissipation =".$einfo["HeatSinkCapacity_activated"]." |Activatable heatSinkMultiplier =".$einfo["heatSinkMultiplier_activated"].PHP_EOL;
@@ -476,6 +485,13 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
 			if(DUMP::$info)
 				echo "EINFO[.DissipationCapacity ] : ".$einfo[".DissipationCapacity"].PHP_EOL;
 		}
+		if($componentjd["JumpCapacity"])
+		{
+			$einfo[".JumpCapacity"]=$einfo[".JumpCapacity"]+(float)$componentjd["JumpCapacity"];
+			if(DUMP::$info)
+				echo "EINFO[.JumpCapacity ] : ".$einfo[".JumpCapacity"].PHP_EOL;
+		}
+		
 		if($componentjd["HeatGenerated"])
 		{
 			$class=
