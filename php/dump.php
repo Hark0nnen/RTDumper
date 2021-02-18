@@ -274,8 +274,9 @@ public static function guessJSONFileType($f,$jd){
 public static function dumpMechs(){
 	GLOBAL $json_type_2_filenames,$json_filename_2_decoded,$einfo_dump;
 	$csvheader=array("#MECH Id","Tons","Engine Rating",
-	"Walk_base","Walk_activated","Run_base","Run_activated",
-	"Dissipation","Dissipation_total_+_activated","Heat_generated_excluding_jump","heat_from_jump",
+	"Max Walk base (hex)","Max Walk activated (hex)","Max Run base (hex)","Max Run activated (hex)",
+	"Max Jump (hex)"
+	"Heat Sinking base","Heat Sinking activated","Alpha Strike","Jump Heat",
 	"Equipment",
 	"path");
 	$fp = fopen('./Output/mechs.csv', 'wb');
@@ -338,6 +339,7 @@ public static function dumpMechs(){
 	
 		$dump=array($mechjd["Description"]["Id"],$tonnage,$engine_rating,
 			$walk_base,$walk_activated,$run_base,$run_activated,
+			"?",
 			$dissipation_capacity_base,$dissipation_capacity_activated,$heat_generated,$jump_heat,
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
