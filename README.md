@@ -17,7 +17,7 @@ Here's a sample output [spreadsheet](https://docs.google.com/spreadsheets/d/14D3
 
 1. Requires PHP (>=v7) , installed to c:\php . You can get it [here](https://windows.php.net/downloads/releases/php-7.4.15-Win32-vc15-x64.zip) (zip) and extract it to c:\php.
 
-2. Get the latest RTDumper release from [here](https://github.com/fmnatic/RTDumper/releases) . Extract to folder of your choice.
+2. Get the latest RTDumper release Source Code (zip) from [here](https://github.com/fmnatic/RTDumper/releases) . Extract to folder of your choice.
 
 3. Edit config.php and set your RT Mods folder.
 
