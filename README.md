@@ -1,7 +1,8 @@
 # RTDumper
 
 **A set of scripts to read [RogueTech](https://www.nexusmods.com/battletech/mods/79) .json files , extract information, and dump them to spreadsheets.** 
-Sample Output [spreadsheet](https://docs.google.com/spreadsheets/d/14D3-JhOploMx3kYtepTUoQpeLiSNoSd0c2Ww06F4tMM/edit?usp=sharing).
+
+Here's a sample output [spreadsheet](https://docs.google.com/spreadsheets/d/14D3-JhOploMx3kYtepTUoQpeLiSNoSd0c2Ww06F4tMM/edit?usp=sharing).
 
 ###### Current features:
 
