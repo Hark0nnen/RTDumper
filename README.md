@@ -34,7 +34,7 @@ RTDumper looks at the mech characteristics numbers in two ways.
 1.  <u>Base:</u>  This is what the number is when the pilot just got into his mech and has not switched any equipment on/off. Equipment on by default is factored into base.
 2. <u>Activated:</u> This is the number if the pilot (human or AI) turns on everything in the mech. 
 
-***Does RTDumper understand <modifier> set or used by <some Mod> ?***
+***Does RTDumper understand "modifier" set or used by "Mod" ?***
 
 RTDumper tries to understand how all the mods interwork. If you have an understanding of the various <Mod> configurations and want to share / discuss use the [issue tracker](https://github.com/fmnatic/RTDumper/issues).
 
