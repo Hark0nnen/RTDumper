@@ -1,28 +1,5 @@
-#!/usr/bin/php
 <?php
-date_default_timezone_set("UTC");
-include "config.php";
-
-function startswith( $haystack, $needle ) {
-     $length = strlen( $needle );
-     return substr( $haystack, 0, $length ) === $needle;
-}
-
-function endswith($string, $test) {
-    $strlen = strlen($string);
-    $testlen = strlen($test);
-    if ($testlen > $strlen) return false;
-    return substr_compare($string, $test, $strlen - $testlen, $testlen) === 0;
-}
-
-function endswith_i($string, $test) {
-	$string=strtolower($string);
-	$test=strtolower($test);
-    $strlen = strlen($string);
-    $testlen = strlen($test);
-    if ($testlen > $strlen) return false;
-    return substr_compare($string, $test, $strlen - $testlen, $testlen) === 0;
-}
+include ".\php\common.php";
 
 function json_iterate($jd,$callback,$f){
 		$jsonIterator = new RecursiveIteratorIterator(
@@ -272,15 +249,10 @@ public static function guessJSONFileType($f,$jd){
 }
 
 public static function dumpMechs(){
-	GLOBAL $json_type_2_filenames,$json_filename_2_decoded,$einfo_dump;
-	$csvheader=array("#MECH Id","Tons","Engine Rating",
-	"Max Walk base (hex)","Max Walk activated (hex)","Max Run base (hex)","Max Run activated (hex)",
-	"Max Jump base (hex)","Max Jump activated (hex)",
-	"Heat Sinking base","Heat Sinking activated","Alpha Strike Heat","Jump Heat base","Jump Heat activated",
-	"Equipment",
-	"path");
+	GLOBAL $json_type_2_filenames,$json_filename_2_decoded,$einfo_dump,$csv_header;
+	
 	$fp = fopen('./Output/mechs.csv', 'wb');
-	fputcsv($fp, $csvheader);
+	fputcsv($fp, $csv_header);
 	foreach($json_type_2_filenames[JSONType::MECH] as $f){
 	    //$f="C:\games\steam\steamapps\common\BATTLETECH\Mods\Superheavys\mech\mechdef_leviathan_LVT-C.json";$engine_rating
 		//$f="C:\games\steam\steamapps\common\BATTLETECH\Mods\Jihad HeavyMetal Unique\mech\mechdef_stealth_STH-5X.json";
