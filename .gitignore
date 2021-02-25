@@ -2,3 +2,5 @@
 *.csv
 
 Output/debug_einfo.json
+
+.vs/

@@ -281,13 +281,18 @@ public static function dumpMechs(){
 		"JumpDistanceMultiplier_base"=>1,
 		"JumpDistanceMultiplier_activated"=>1
 		);
-		if($chasisjd["FixedEquipment"])
-			Dump::gatherEquipment($chasisjd,"FixedEquipment",$equipment,$einfo);
-		Dump::gatherEquipment($mechjd,"inventory",$equipment,$einfo);
-		if(DUMP::$info)
-			echo json_encode($einfo,JSON_PRETTY_PRINT).PHP_EOL;
-		if(DUMP::$debug)
-		 	 $einfo_dump=array_merge($einfo_dump, $einfo);
+		try{
+			if($chasisjd["FixedEquipment"])
+				Dump::gatherEquipment($chasisjd,"FixedEquipment",$equipment,$einfo);
+			Dump::gatherEquipment($mechjd,"inventory",$equipment,$einfo);
+			if(DUMP::$info)
+				echo json_encode($einfo,JSON_PRETTY_PRINT).PHP_EOL;
+			if(DUMP::$debug)
+		 		 $einfo_dump=array_merge($einfo_dump, $einfo);
+		}catch (Exception $e) {
+			if(DUMP::$debug)
+				echo "[DEBUG] ".$e->getMessage().PHP_EOL;
+		}	
 		 
 		
 		$tonnage=$chasisjd["Tonnage"];
@@ -425,6 +430,11 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
 	}
 	foreach($jd[$json_loc] as $item){
 		array_push($e,$item["ComponentDefID"]);
+		if(endswith_i($item["ComponentDefID"],"ReportMe"))
+		{
+			$einfo[".Custom.EngineCore.Rating"]=null;
+			throw new Exception("Component caused mech to be ignored ".$item["ComponentDefID"]);
+		}
 		$location="ALL";
 		if($item["MountedLocation"])
 		  $location=$item["MountedLocation"];
