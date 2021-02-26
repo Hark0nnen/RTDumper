@@ -270,11 +270,14 @@ public static function dumpMechs(){
 		$equipment=array();
 		$einfo=array( // flattened list of all equipment effects and characteristics we extract those starting with . are manually extracted, without are effects and auto extracted
 		".Custom.EngineCore.Rating"=>"",
+		".Custom.CASE.MaximumDamage"=>-1,
 		".Custom.EngineHeatBlock.HeatSinkCount"=>0,
 		".Custom.Cooling.HeatSinkDefId" => "Gear_HeatSink_Generic_Standard",
 		".DissipationCapacity"=>0,
 		"CBTBE_RunMultiMod_base"=>0,
 		"CBTBE_RunMultiMod_activated"=>0,
+		"CBTBE_AmmoBoxExplosionDamage"=>0,
+		"CBTBE_VolatileAmmoBoxExplosionDamage"=>0,
 		"WalkSpeed_base"=>0,
 		"WalkSpeed_activated"=>0,
 		".JumpCapacity"=>0,
@@ -320,11 +323,18 @@ public static function dumpMechs(){
 
 		$jump_distance_base=(int) ($einfo[".JumpCapacity"]*$einfo["JumpDistanceMultiplier_base"]);
 		$jump_distance_activated=(int) ($einfo[".JumpCapacity"]*$einfo["JumpDistanceMultiplier_base"]*$einfo["JumpDistanceMultiplier_activated"]);
-	
+
+		if($einfo["CBTBE_AmmoBoxExplosionDamage"]>0 && $einfo[".Custom.CASE.MaximumDamage"]>=0)
+			$einfo["CBTBE_AmmoBoxExplosionDamage"]=$einfo[".Custom.CASE.MaximumDamage"];
+		if($einfo["CBTBE_VolatileAmmoBoxExplosionDamage"]>0 && $einfo[".Custom.CASE.MaximumDamage"]>=0)
+			$einfo["CBTBE_VolatileAmmoBoxExplosionDamage"]=$einfo[".Custom.CASE.MaximumDamage"];
+
+
 		$dump=array($mechjd["Description"]["Id"],$tonnage,$engine_rating,
 			$walk_base,$walk_activated,$run_base,$run_activated,
 			$jump_distance_base,$jump_distance_activated,
 			$dissipation_capacity_base,$dissipation_capacity_activated,$heat_generated,$jump_heat_base,$jump_heat_activated,
+			$einfo["CBTBE_AmmoBoxExplosionDamage"],$einfo["CBTBE_VolatileAmmoBoxExplosionDamage"],
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 
@@ -438,6 +448,13 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
 		$location="ALL";
 		if($item["MountedLocation"])
 		  $location=$item["MountedLocation"];
+
+
+		$componentjd=json_for_pk(JSONType::COMPONENT, $item["ComponentDefID"]);
+		if(DUMP::$info)
+			echo PHP_EOL."||".$item["ComponentDefID"]." ===========================> ".PHP_EOL.json_encode($componentjd,JSON_PRETTY_PRINT).PHP_EOL.PHP_EOL;
+		
+		//engine rating
 		$enginejd=json_for_pk(JSONType::ENGINE, $item["ComponentDefID"]);
 		if($enginejd){
 			$einfo[".Custom.EngineCore.Rating"]=$enginejd["Custom"]["EngineCore"]["Rating"];
@@ -445,10 +462,34 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
 				echo "EINFO[.Custom.EngineCore.Rating ] : ".$einfo[".Custom.EngineCore.Rating"].PHP_EOL;
 		}
 
-		$componentjd=json_for_pk(JSONType::COMPONENT, $item["ComponentDefID"]);
+		//CASE 
+		if($componentjd["Custom"] && $componentjd["Custom"]["CASE"] && $componentjd["Custom"]["CASE"]["MaximumDamage"]){
+			$einfo[".Custom.CASE.MaximumDamage"]= (int)$componentjd["Custom"]["CASE"]["MaximumDamage"];
+			if(DUMP::$info)
+				echo "EINFO[.Custom.CASE.MaximumDamage ] : ".$einfo[".Custom.CASE.MaximumDamage"].PHP_EOL;
+		}
 
-		if(DUMP::$info)
-			echo $item["ComponentDefID"]." ===========================> ".PHP_EOL.json_encode($componentjd,JSON_PRETTY_PRINT).PHP_EOL.PHP_EOL;
+		//CBTBE_AmmoBoxExplosionDamage && CBTBE_VolatileAmmoBoxExplosionDamage
+		//this differs from CBTBE as it measures total explosion+heat+structure. We only take explosion damage
+		if($componentjd["Custom"] && $componentjd["Custom"]["ComponentExplosion"] && $componentjd["Capacity"]){
+			//ignore StabilityDamagePerAmmo as its non fatal
+			//ignore HeatDamagePerAmmo as it adds heat and not damage. "CriticalHeatPerLocationLight" etc are set to 0 in RT
+			$d=$componentjd["Custom"]["ComponentExplosion"]["ExplosionDamagePerAmmo"]*$componentjd["Capacity"];
+			if($componentjd["Custom"] && $componentjd["Custom"]["VolatileAmmo"]){
+				 if($componentjd["Custom"]["VolatileAmmo"]["damageWeighting"])
+					$d*=$componentjd["Custom"]["VolatileAmmo"]["damageWeighting"];
+				 if($d>$einfo["CBTBE_VolatileAmmoBoxExplosionDamage"]){
+					$einfo["CBTBE_VolatileAmmoBoxExplosionDamage"]= $d;
+					 if(DUMP::$info)
+						echo "EINFO[CBTBE_VolatileAmmoBoxExplosionDamage ] : ".$einfo["CBTBE_VolatileAmmoBoxExplosionDamage"].PHP_EOL;
+				 }
+			}
+			if($d>$einfo["CBTBE_AmmoBoxExplosionDamage"]){
+				$einfo["CBTBE_AmmoBoxExplosionDamage"]= $d;
+				if(DUMP::$info)
+					echo "EINFO[CBTBE_AmmoBoxExplosionDamage ] : ".$einfo["CBTBE_AmmoBoxExplosionDamage"].PHP_EOL;
+			}
+		}
 
 		//Heat
 		if($componentjd["Custom"] && $componentjd["Custom"]["EngineHeatBlock"] && $componentjd["Custom"]["EngineHeatBlock"]["HeatSinkCount"]){
@@ -514,7 +555,7 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
 			}
 		}	
 		if(DUMP::$info)
-			echo" <===========================".PHP_EOL;
+			echo" <===========================||".PHP_EOL;
 	}
 }
 

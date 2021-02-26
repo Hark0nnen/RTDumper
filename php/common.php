@@ -27,6 +27,7 @@ $csv_header=array("#MECH Id","Tons","Engine Rating",
 	"Max Walk base (hex)","Max Walk activated (hex)","Max Run base (hex)","Max Run activated (hex)",
 	"Max Jump base (hex)","Max Jump activated (hex)",
 	"Heat Sinking base","Heat Sinking activated","Alpha Strike Heat","Jump Heat base","Jump Heat activated",
+    "Max Ammo Explosion damage","Max Volatile Ammo Explosion damage",
 	"Equipment",
 	"path");
 
