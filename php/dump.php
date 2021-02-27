@@ -278,6 +278,8 @@ public static function dumpMechs(){
 		"CBTBE_RunMultiMod_activated"=>0,
 		"CBTBE_AmmoBoxExplosionDamage"=>0,
 		"CBTBE_VolatileAmmoBoxExplosionDamage"=>0,
+		"AMSSINGLE_HeatGenerated"=>0,
+		"AMSMULTI_HeatGenerated"=>0,
 		"WalkSpeed_base"=>0,
 		"WalkSpeed_activated"=>0,
 		".JumpCapacity"=>0,
@@ -335,6 +337,7 @@ public static function dumpMechs(){
 			$jump_distance_base,$jump_distance_activated,
 			$dissipation_capacity_base,$dissipation_capacity_activated,$heat_generated,$jump_heat_base,$jump_heat_activated,
 			$einfo["CBTBE_AmmoBoxExplosionDamage"],$einfo["CBTBE_VolatileAmmoBoxExplosionDamage"],
+			$einfo["AMSSINGLE_HeatGenerated"],$einfo["AMSMULTI_HeatGenerated"],
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 
@@ -467,6 +470,33 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
 			$einfo[".Custom.CASE.MaximumDamage"]= (int)$componentjd["Custom"]["CASE"]["MaximumDamage"];
 			if(DUMP::$info)
 				echo "EINFO[.Custom.CASE.MaximumDamage ] : ".$einfo[".Custom.CASE.MaximumDamage"].PHP_EOL;
+		}
+		
+		//AMSSINGLE_HeatGenerated && AMSMULTI_HeatGenerated
+		if($componentjd["PrefabIdentifier"]=="AMS"){
+		 //echo "{}".$item["ComponentDefID"].PHP_EOL;
+		 if($componentjd["IsAAMS"]==true && $componentjd["HeatGenerated"] && $componentjd["HeatGenerated"]>$einfo["AMSMULTI_HeatGenerated"])
+		 {
+			$einfo["AMSMULTI_HeatGenerated"]= $componentjd["HeatGenerated"];
+		 }elseif($componentjd["IsAAMS"]==true && $componentjd["HeatGenerated"] && $componentjd["HeatGenerated"]>$einfo["AMSSINGLE_HeatGenerated"]){
+			$einfo["AMSSINGLE_HeatGenerated"]=$mode["HeatGenerated"];
+		 }
+		 if(is_array($componentjd["Modes"])){
+			 foreach($componentjd["Modes"] as $mode)
+			 {
+		 		 if(($mode["IsAAMS"]==true || $componentjd["IsAAMS"]==true) && $mode["HeatGenerated"]>$einfo["AMSMULTI_HeatGenerated"])
+				 {
+					$einfo["AMSMULTI_HeatGenerated"]= $mode["HeatGenerated"];
+				 }elseif(($mode["IsAAMS"]==true || $componentjd["IsAAMS"]==true) && $mode["HeatGenerated"]>$einfo["AMSSINGLE_HeatGenerated"]){
+					$einfo["AMSSINGLE_HeatGenerated"]=$mode["HeatGenerated"];
+				 }
+			 }
+		 }
+
+		if(DUMP::$info)
+			echo "EINFO[AMSMULTI_HeatGenerated ] : ".$einfo["AMSMULTI_HeatGenerated"].PHP_EOL;
+		if(DUMP::$info)
+			echo "EINFO[AMSSINGLE_HeatGenerated ] : ".$einfo["AMSSINGLE_HeatGenerated"].PHP_EOL;
 		}
 
 		//CBTBE_AmmoBoxExplosionDamage && CBTBE_VolatileAmmoBoxExplosionDamage
