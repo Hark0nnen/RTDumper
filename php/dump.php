@@ -338,6 +338,7 @@ public static function dumpMechs(){
 			$dissipation_capacity_base,$dissipation_capacity_activated,$heat_generated,$jump_heat_base,$jump_heat_activated,
 			$einfo["CBTBE_AmmoBoxExplosionDamage"],$einfo["CBTBE_VolatileAmmoBoxExplosionDamage"],
 			$einfo["AMSSINGLE_HeatGenerated"],$einfo["AMSMULTI_HeatGenerated"],
+			0+$einfo["ReceiveHeatDamageInjury_activated"]+$einfo["ReceiveHeatDamageInjury_base"],
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 
@@ -618,6 +619,13 @@ public static function gatherEquipmentEffectInfo($componentid,$location,$effectj
 					$effectval = ($einfo[$effect.$duration] ? $einfo[$effect.$duration]:1)*(float)$effectjd[ "statisticData"]["modValue"];
 					break;
 				case "Set":
+				    if ($effectjd[ "statisticData"]["modType"]=="System.Boolean") {
+	                          if ($effectjd[ "statisticData"]["modValue"]=="true"){
+								$effectval =1;
+							  }else {
+								$effectval =0;
+                              }
+                    } 
 				    break;
 				default:
 					if(DUMP::$debug)
@@ -644,8 +652,7 @@ public static function gatherEquipmentEffectInfo($componentid,$location,$effectj
 					break;
 			}
 		}
-		
-		if($effect && $effectval){
+		if($effect!==null && $effectval!==null){
 			$effect=str_replace("{location}",$location,$effect);
 			$einfo[$effect.$duration]=$effectval;
 			if(DUMP::$info)

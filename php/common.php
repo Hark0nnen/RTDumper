@@ -29,6 +29,7 @@ $csv_header=array("#MECH Id","Tons","Engine Rating",
 	"Heat Sinking base","Heat Sinking activated","Alpha Strike Heat","Jump Heat base","Jump Heat activated",
     "Max Ammo Explosion damage","Max Volatile Ammo Explosion damage",
     "AMS Single Heat","AMS Multi Heat",
+    "Heat Damage Injury",
 	"Equipment",
 	"path");
 
