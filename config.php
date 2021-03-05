@@ -6,5 +6,5 @@ class Config{
    public static $debug=FALSE;
    public static $info=FALSE;
   //mechdef_hephaistos_HM-OA
-   public static $debug_single_mech='mechdef_kugelblitz_SNV-KB';
+   public static $debug_single_mech='mechdef_commando_COM-QS2';//'mechdef_valkyrie_ii_VLK-II-SIG';
 }

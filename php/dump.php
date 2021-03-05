@@ -273,6 +273,7 @@ public static function dumpMechs(){
 		".Custom.CASE.MaximumDamage"=>-1,
 		".Custom.EngineHeatBlock.HeatSinkCount"=>0,
 		".Custom.Cooling.HeatSinkDefId" => "Gear_HeatSink_Generic_Standard",
+		".Custom.ActivatableComponent.AutoActivateOnHeat"=>0,
 		".DissipationCapacity"=>0,
 		"CBTBE_RunMultiMod_base"=>0,
 		"CBTBE_RunMultiMod_activated"=>0,
@@ -335,7 +336,7 @@ public static function dumpMechs(){
 		$dump=array($mechjd["Description"]["Id"],$tonnage,$engine_rating,
 			$walk_base,$walk_activated,$run_base,$run_activated,
 			$jump_distance_base,$jump_distance_activated,
-			$dissipation_capacity_base,$dissipation_capacity_activated,$heat_generated,$jump_heat_base,$jump_heat_activated,
+			$dissipation_capacity_base,$dissipation_capacity_activated,$einfo[".Custom.ActivatableComponent.AutoActivateOnHeat"],$heat_generated,$jump_heat_base,$jump_heat_activated,
 			$einfo["CBTBE_AmmoBoxExplosionDamage"],$einfo["CBTBE_VolatileAmmoBoxExplosionDamage"],
 			$einfo["AMSSINGLE_HeatGenerated"],$einfo["AMSMULTI_HeatGenerated"],
 			0+$einfo["ReceiveHeatDamageInjury_activated"]+$einfo["ReceiveHeatDamageInjury_base"],
@@ -561,6 +562,12 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
 		}
 		//Heat
 
+		if($componentjd["Custom"] && $componentjd["Custom"]["ActivatableComponent"] && $componentjd["Custom"]["ActivatableComponent"]["AutoActivateOnHeat"]){
+			if($componentjd["Custom"]["ActivatableComponent"]["AutoActivateOnHeat"]>$einfo[".Custom.ActivatableComponent.AutoActivateOnHeat"])
+				$einfo[".Custom.ActivatableComponent.AutoActivateOnHeat"]=(int) $componentjd["Custom"]["ActivatableComponent"]["AutoActivateOnHeat"];
+			if(DUMP::$info)
+				echo "EINFO[.Custom.ActivatableComponent.AutoActivateOnHeat ] : ".$einfo[".Custom.ActivatableComponent.AutoActivateOnHeat"].PHP_EOL;
+		}
 		
 
 		if($componentjd["Custom"] && $componentjd["Custom"]["ActivatableComponent"] && $componentjd["Custom"]["ActivatableComponent"]["statusEffects"]){

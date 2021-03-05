@@ -5,15 +5,14 @@ Dump dumps the mech characteristics
 DumpStats compares mechs against each other.
 AItags translates the stats into actionable ai info
 
-Overall two kinds of stats:
-1. Rating {R} [0-1]. Based on the max/min/average/standard deviation of a stat.
-2. Boolean {B} [0/1]. false / true based on if a mech has a characteristic.
+stats are rated.
+Rating {R} [0-1]. Based on the max/min/average/standard deviation of a stat.
+Boolean false / true based on if a mech has a characteristic , are also converted to rating {R} [0/1]. 
 
 For each AI tag determine a value between [0-1] . Each AI tag, is grouped into low(<.2), med (.2-.8) , high > .8 
 
 *1. Heat: how it handles heat
-RTDumper understands CASE , AmmoExplosions , Volatile AmmoExplosions , AMS Heat
-TODO injury AMS  Vibro blade TSM
+RTDumper understands CASE , AmmoExplosions , Volatile AmmoExplosions , AMS Heat , heat damage injury, heat activated components
 ={R Max Ammo Explosion damage} * ? + {R Max Volatile Ammo Explosion damage} * ? + {R AMS_heat } * ? + {B Has Pilot injury on overheat}*?
 
 low - avoids overheating, has volatile ammo 

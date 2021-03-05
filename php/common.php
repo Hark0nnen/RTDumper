@@ -26,7 +26,7 @@ function endswith_i($string, $test) {
 $csv_header=array("#MECH Id","Tons","Engine Rating",
 	"Max Walk base (hex)","Max Walk activated (hex)","Max Run base (hex)","Max Run activated (hex)",
 	"Max Jump base (hex)","Max Jump activated (hex)",
-	"Heat Sinking base","Heat Sinking activated","Alpha Strike Heat","Jump Heat base","Jump Heat activated",
+	"Heat Sinking base","Heat Sinking activated","Auto Activation Heat","Alpha Strike Heat","Jump Heat base","Jump Heat activated",
     "Max Ammo Explosion damage","Max Volatile Ammo Explosion damage",
     "AMS Single Heat","AMS Multi Heat",
     "Heat Damage Injury",
@@ -35,6 +35,6 @@ $csv_header=array("#MECH Id","Tons","Engine Rating",
 
 //these are processed to find mean/std dev
 $csv_min_stat=1;
-$csv_max_stat=17;
+$csv_max_stat=19;
  
 ?>
