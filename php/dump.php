@@ -321,8 +321,9 @@ public static function dumpMechs(){
 		$heat_generated=0;
 		$jump_heat_base=0;
 		$jump_heat_activated=0;
+		$heat_efficency=100;
 
-		Dump::getHeatInfo($einfo,$engine_rating,$tonnage,$dissipation_capacity_base,$dissipation_capacity_activated,$heat_generated,$jump_heat_base,$jump_heat_activated);
+		Dump::getHeatInfo($einfo,$engine_rating,$tonnage,$dissipation_capacity_base,$dissipation_capacity_activated,$heat_generated,$jump_heat_base,$jump_heat_activated,$heat_efficency);
 
 		$jump_distance_base=(int) ($einfo[".JumpCapacity"]*$einfo["JumpDistanceMultiplier_base"]);
 		$jump_distance_activated=(int) ($einfo[".JumpCapacity"]*$einfo["JumpDistanceMultiplier_base"]*$einfo["JumpDistanceMultiplier_activated"]);
@@ -339,7 +340,7 @@ public static function dumpMechs(){
 			$dissipation_capacity_base,$dissipation_capacity_activated,$einfo[".Custom.ActivatableComponent.AutoActivateOnHeat"],$heat_generated,$jump_heat_base,$jump_heat_activated,
 			$einfo["CBTBE_AmmoBoxExplosionDamage"],$einfo["CBTBE_VolatileAmmoBoxExplosionDamage"],
 			$einfo["AMSSINGLE_HeatGenerated"],$einfo["AMSMULTI_HeatGenerated"],
-			0+$einfo["ReceiveHeatDamageInjury_activated"]+$einfo["ReceiveHeatDamageInjury_base"],
+			0+$einfo["ReceiveHeatDamageInjury_activated"]+$einfo["ReceiveHeatDamageInjury_base"],$heat_efficency,
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 
@@ -367,7 +368,7 @@ public static function getWalkRunInfo($einfo,$engine_rating,$tonnage,&$walk_base
 		$run_activated=round(($engine_rating/$tonnage+(($einfo["WalkSpeed_base"]+$einfo["WalkSpeed_activated"])/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]+$einfo["CBTBE_RunMultiMod_activated"]));
 }
 
-public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$dissipation_capacity_base,&$dissipation_capacity_activated,&$heat_generated,&$jump_heat_base,&$jump_heat_activated){
+public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$dissipation_capacity_base,&$dissipation_capacity_activated,&$heat_generated,&$jump_heat_base,&$jump_heat_activated,&$heat_efficency){
 		$internal_hs=(int)($engine_rating/25);
 		if($internal_hs>10)
 		 $internal_hs=10;
@@ -418,6 +419,7 @@ public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$dissipation_
 			 echo "Activated EndMoveHeat = ".$einfo["EndMoveHeat_activated"]." |Activatable Dissipation =".$einfo["HeatSinkCapacity_activated"]." |Activatable heatSinkMultiplier =".$einfo["heatSinkMultiplier_activated"].PHP_EOL;
 			 echo "Total Heat Generated (weapons) = $heat_generated".PHP_EOL;
 		}
+		$heat_efficency=(1-(($heat_generated-$dissipation_capacity_activated)/$dissipation_capacity_activated))*100;
 }
 
 public static function weaponMatch($key,$ekey){

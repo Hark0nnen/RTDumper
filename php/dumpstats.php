@@ -1,22 +1,5 @@
 <?php
 include ".\php\common.php";
-
-$data_collect=array();
-
-$stat_min=array();
-$stat_max=array();
-$stat_avg=array();
-$stat_stddev=array();
-
-// Function to calculate square of value - mean
-function sd_square($x, $mean) { return pow($x - $mean,2); }
-
-// Function to calculate standard deviation (uses sd_square)   
-function sd($array,$mean) {
-   
-	// square root of sum of squares devided by N-1
-	return sqrt(array_sum(array_map("sd_square", $array, array_fill(0,count($array),$mean) ) ) / (count($array)-1) );
-}
  
 class DumpStats extends Config{
    public static function main(){
@@ -34,7 +17,7 @@ class DumpStats extends Config{
    }
 
      public static function processStats(){
-	   GLOBAL $csv_header,$stat_min,$stat_max,$stat_avg,$stat_stddev,$data_collect,$csv_min_stat,$csv_max_stat,$csv_header;;
+	   GLOBAL $csv_header,$stat_min,$stat_max,$stat_avg,$stat_stddev,$data_collect,$csv_min_stat,$csv_max_stat,$csv_header,$ai_tags,$ai_tags_calc,$ai_tags_weights,$ai_tags_reverserating;
 	   $file = fopen('./Output/mechs.csv', 'r');
 		while (($line = fgetcsv($file)) !== FALSE) {
 		   if(!startswith($line[0],"#"))
@@ -54,7 +37,12 @@ class DumpStats extends Config{
 		}	
 		$file = fopen('./Output/mechs.csv', 'r');
 		$fp = fopen('./Output/mechratings.csv', 'wb');
-		fputcsv($fp, $csv_header);
+		$csv_header_r=array();
+		$csv_header_r=$csv_header_r+ $csv_header;
+		for($x=0; $x<count($ai_tags); $x++){
+			$csv_header_r[]=$ai_tags[$x]." Value";
+		}
+		fputcsv($fp, $csv_header_r);
 		while (($line = fgetcsv($file)) !== FALSE) {
 		   if(startswith($line[0],"#"))
 				continue;
@@ -78,6 +66,8 @@ class DumpStats extends Config{
 					$minsd=$avg-$stat_stddev[$x];
 					if($minsd<$min)
 					  $minsd=$min;
+
+					//normalize all stats to 0-1 scale <0.2 & >0.8 are for statistical outliers <= & => avg+-standard deviation
 					if($data<=$minsd){
 					  if($minsd==$min)
 						$dump[$x]=0;
@@ -93,6 +83,17 @@ class DumpStats extends Config{
 					}
 
 			}	
+			for ($x = 0; $x < count($ai_tags); $x++) {
+				$t=0;
+				for ($y = 0; $y < count($ai_tags_calc[$x]); $y++) {
+					$rating=$dump[$ai_tags_calc[$x][$y]]*$ai_tags_weights[$x][$y];
+					if($ai_tags_reverserating[$x][$y]){
+						$rating=1-$rating;
+					}
+					$t+=$rating;
+				}
+				$dump[]=$t;
+			}
 			if(DumpStats::$info)
 				echo implode(",", $dump) . PHP_EOL;
 			fputcsv($fp, $dump);
