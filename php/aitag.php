@@ -12,11 +12,10 @@ Boolean false / true based on if a mech has a characteristic , are also converte
 For each AI tag determine a value between [0-1] . Each AI tag, is grouped into low(<.2), med (.2-.8) , high > .8 
 
 *1. Heat: how it handles heat
-RTDumper understands CASE , AmmoExplosions , Volatile AmmoExplosions , AMS Heat , heat damage injury, heat activated components
-It also understands heat efficency. But we ignore heat efficency because mechdef_direstar_DS-Prime and like exist.
+RTDumper understands CASE , AmmoExplosions , Volatile AmmoExplosions , AMS Heat , heat damage injury, heat activated components, heat efficency.
 
 tag based on:
-{R Max Ammo Explosion damage}  {R Max Volatile Ammo Explosion damage}  {R "AMS Single Heat"}  {R "AMS Multi Heat" }  {R Heat Damage Injury}
+{R Max Ammo Explosion damage}  {R Max Volatile Ammo Explosion damage}  {R "AMS Single Heat"}  {R "AMS Multi Heat" }  {R Heat Damage Injury} {R Heat Efficency }
 
 low - avoids overheating, has volatile ammo 
 normal - will run hot but be carefull, basically most mechs
@@ -25,7 +24,7 @@ high - will ride the redline hard, for units like the nova
 Desired AI Behaviour:
 * low: Turn OFF AMS,heat generating components when redlined. Avoid overheating.
 * normal/high: switch ON AMS Overload if available. Switch ON heat generating components (TSM/Hotseat cockpit/Vibro blade).
-* high: run near the readline, use alpha strike even if it can't dissipate heat. Overheat.
+* high: run near the readline, use alpha strike even if it can't dissipate heat. Overheat. Turn of injury causing components before alpha strike.
 
 */
 

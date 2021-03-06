@@ -6,5 +6,5 @@ class Config{
    public static $debug=FALSE;
    public static $info=FALSE;
   
-   public static $debug_single_mech='mechdef_direstar_DS-Prime';
+   public static $debug_single_mech='mechdef_nova_cat_NCT-D';
 }

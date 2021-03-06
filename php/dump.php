@@ -419,7 +419,8 @@ public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$dissipation_
 			 echo "Activated EndMoveHeat = ".$einfo["EndMoveHeat_activated"]." |Activatable Dissipation =".$einfo["HeatSinkCapacity_activated"]." |Activatable heatSinkMultiplier =".$einfo["heatSinkMultiplier_activated"].PHP_EOL;
 			 echo "Total Heat Generated (weapons) = $heat_generated".PHP_EOL;
 		}
-		$heat_efficency=(1-(($heat_generated-$dissipation_capacity_activated)/$dissipation_capacity_activated))*100;
+
+		$heat_efficency=($dissipation_capacity_activated-$heat_generated)/$dissipation_capacity_activated*100;
 }
 
 public static function weaponMatch($key,$ekey){

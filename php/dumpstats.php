@@ -88,7 +88,7 @@ class DumpStats extends Config{
 				for ($y = 0; $y < count($ai_tags_calc[$x]); $y++) {
 					$rating=$dump[$ai_tags_calc[$x][$y]]*$ai_tags_weights[$x][$y];
 					if($ai_tags_reverserating[$x][$y]){
-						$rating=1-$rating;
+						$rating=(1*$ai_tags_weights[$x][$y])-$rating;
 					}
 					$t+=$rating;
 				}
