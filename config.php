@@ -6,5 +6,5 @@ class Config{
    public static $debug=FALSE;
    public static $info=FALSE;
   
-   public static $debug_single_mech='mechdef_nova_cat_NCT-D';
+   public static $debug_single_mech='mechdef_highlander_HGN-738';
 }

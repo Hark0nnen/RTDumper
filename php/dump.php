@@ -61,7 +61,8 @@ abstract class JSONType
 	const CHASSIS=2;
 	const ENGINE=3;
 	const COMPONENT=4;
-	const MAX_TYPE = 4;
+	const MODJSON=5;
+	const MAX_TYPE = 5;
 }
 $json_type_2_filenames=array();
 $json_filename_2_decoded=array();
@@ -81,13 +82,17 @@ $json_type_hint = array(
 	JSONType::COMPONENT => array (
 	".ComponentType",".Description.Id"
 	),
+	JSONType::MODJSON => array (
+	".Name",".DependsOn",".ConflictsWith",".Settings"
+	),
 );
 //This is the Primary Key for lookup of each JSONType
 $json_type_pk = array( 
 	JSONType::MECH => ".Description.Id",
 	JSONType::CHASSIS => ".Description.Id",
 	JSONType::ENGINE => ".Description.Id",
-	JSONType::COMPONENT => ".Description.Id"
+	JSONType::COMPONENT => ".Description.Id",
+	JSONType::MODJSON => ".Name"
 );
 
 //some things are other things as well :P
@@ -95,7 +100,8 @@ $json_additional_types = array(
 	JSONType::MECH =>	array (),
 	JSONType::CHASSIS => array (),
 	JSONType::ENGINE => array (JSONType::COMPONENT),
-	JSONType::COMPONENT => array ()
+	JSONType::COMPONENT => array (),
+	JSONType::MODJSON => array (),
 );
 
 
@@ -105,8 +111,8 @@ function add_json_pk($jd,$f,$json_type)
 	//echo json_encode($json_type_pk).":=?".$json_type;
 	$k="[$json_type]".json_val($jd,$f,$json_type_pk[$json_type]);
 	$json_index_2_filename[$k]=$f;
-	//if($json_type==JSONType::COMPONENT)
-		//echo "$k => $f".PHP_EOL;
+	/*if($json_type==JSONType::MODJSON)
+		echo "$k => $f".PHP_EOL;*/
 }
 
 function json_for_pk($json_type,$pk){
@@ -159,6 +165,7 @@ class Dump extends Config{
 		echo "CHASSIS:".count($json_type_2_filenames[JSONType::CHASSIS]).PHP_EOL;
 		echo "ENGINE:".count($json_type_2_filenames[JSONType::ENGINE]).PHP_EOL;
 		echo "COMPONENT:".count($json_type_2_filenames[JSONType::COMPONENT]).PHP_EOL;
+		echo "MODJSON:".count($json_type_2_filenames[JSONType::MODJSON]).PHP_EOL;
    }
 
 public static function getJSONFiles($dirname,&$array){
@@ -279,6 +286,8 @@ public static function dumpMechs(){
 		"CBTBE_RunMultiMod_activated"=>0,
 		"CBTBE_AmmoBoxExplosionDamage"=>0,
 		"CBTBE_VolatileAmmoBoxExplosionDamage"=>0,
+		"CBTBE_DFA_Attacker_Damage_Multi_base"=>1,
+		"CBTBE_DFA_Attacker_Damage_Multi_activated"=>1,
 		"AMSSINGLE_HeatGenerated"=>0,
 		"AMSMULTI_HeatGenerated"=>0,
 		"WalkSpeed_base"=>0,
@@ -328,10 +337,15 @@ public static function dumpMechs(){
 		$jump_distance_base=(int) ($einfo[".JumpCapacity"]*$einfo["JumpDistanceMultiplier_base"]);
 		$jump_distance_activated=(int) ($einfo[".JumpCapacity"]*$einfo["JumpDistanceMultiplier_base"]*$einfo["JumpDistanceMultiplier_activated"]);
 
+		//CASE Explosion reduction
 		if($einfo["CBTBE_AmmoBoxExplosionDamage"]>0 && $einfo[".Custom.CASE.MaximumDamage"]>=0)
 			$einfo["CBTBE_AmmoBoxExplosionDamage"]=$einfo[".Custom.CASE.MaximumDamage"];
 		if($einfo["CBTBE_VolatileAmmoBoxExplosionDamage"]>0 && $einfo[".Custom.CASE.MaximumDamage"]>=0)
 			$einfo["CBTBE_VolatileAmmoBoxExplosionDamage"]=$einfo[".Custom.CASE.MaximumDamage"];
+
+		$DFAAttackerDamage=0;
+		$DFATargetDamage=0;
+		Dump::getDFAInfo($einfo,$tonnage,$DFAAttackerDamage,$DFATargetDamage);
 
 
 		$dump=array($mechjd["Description"]["Id"],$tonnage,$engine_rating,
@@ -367,6 +381,40 @@ public static function getWalkRunInfo($einfo,$engine_rating,$tonnage,&$walk_base
 		$run_base=round (($engine_rating/$tonnage+($einfo["WalkSpeed_base"]/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]));
 		$run_activated=round(($engine_rating/$tonnage+(($einfo["WalkSpeed_base"]+$einfo["WalkSpeed_activated"])/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]+$einfo["CBTBE_RunMultiMod_activated"]));
 }
+
+public static function getDFAInfo($einfo,$tonnage,&$DFAAttackerDamage,&$DFATargetDamage){
+	//derived from RTdumper avg stats for tonnage 58.x
+	$avg_tonnage=60;
+
+	//Calculations from MechExtensions.cs in CBTBehaviorsEnhanced
+	$modjson=json_for_pk(JSONType::MODJSON,"CBTBehaviorsEnhanced");
+	$AttackerDamagePerTargetTon=$modjson['Settings']['Melee']['DFA']['AttackerDamagePerTargetTon'];
+	$CBTBE_DFA_Attacker_Damage_Mod=$einfo['CBTBE_DFA_Attacker_Damage_Mod_base'] + $einfo['CBTBE_DFA_Attacker_Damage_Mod_activated'];
+	$CBTBE_DFA_Attacker_Damage_Multi=$einfo['$CBTBE_DFA_Attacker_Damage_Multi_base'] + $einfo['CBTBE_DFA_Attacker_Damage_Multi_activated'];
+	$DFAAttackerDamage=ceil ( (($AttackerDamagePerTargetTon*$avg_tonnage)+$CBTBE_DFA_Attacker_Damage_Mod)*$CBTBE_DFA_Attacker_Damage_Multi );
+	if(DUMP::$info){
+			echo " (AttackerDamagePerTargetTon x targetTonnage ( $AttackerDamagePerTargetTon x $avg_tonnage ) + CBTBE_DFA_Attacker_Damage_Mod ($CBTBE_DFA_Attacker_Damage_Mod) )* CBTBE_DFA_Attacker_Damage_Multi ($CBTBE_DFA_Attacker_Damage_Multi)".PHP_EOL;
+			echo " DFAAttackerDamage=$DFAAttackerDamage".PHP_EOL;
+	}
+}
+
+/*    public static float DFAAttackerDamage(this Mech mech, float targetTonnage)
+    {
+      float num1 = (float) Math.Ceiling((double) Mod.Config.Melee.DFA.AttackerDamagePerTargetTon * (double) targetTonnage);
+      ModLogWriter? debug = Mod.MeleeLog.Debug;
+      ref ModLogWriter? local1 = ref debug;
+      if (local1.HasValue)
+        local1.GetValueOrDefault().Write(string.Format("DFA Attacker baseDamage: {0} x ", (object) Mod.Config.Melee.DFA.AttackerDamagePerTargetTon) + string.Format("target tonnage: {0} = {1}", (object) targetTonnage, (object) num1));
+      float num2 = mech.StatCollection.ContainsStatistic("CBTBE_DFA_Attacker_Damage_Mod") ? (float) mech.StatCollection.GetValue<int>("CBTBE_DFA_Attacker_Damage_Mod") : 0.0f;
+      float num3 = mech.StatCollection.ContainsStatistic("CBTBE_DFA_Attacker_Damage_Multi") ? mech.StatCollection.GetValue<float>("CBTBE_DFA_Attacker_Damage_Multi") : 1f;
+      float num4 = (float) Math.Ceiling(((double) num1 + (double) num2) * (double) num3);
+      debug = Mod.MeleeLog.Debug;
+      ref ModLogWriter? local2 = ref debug;
+      if (local2.HasValue)
+        local2.GetValueOrDefault().Write(string.Format(" - Attacker damage => final: {0} = (raw: {1} + mod: {2}) x multi: {3}", (object) num4, (object) num1, (object) num2, (object) num3));
+      return num4;
+    }
+*/
 
 public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$dissipation_capacity_base,&$dissipation_capacity_activated,&$heat_generated,&$jump_heat_base,&$jump_heat_activated,&$heat_efficency){
 		$internal_hs=(int)($engine_rating/25);
