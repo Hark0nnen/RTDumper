@@ -23,8 +23,16 @@ high - will ride the redline hard, for units like the nova
 
 Desired AI Behaviour:
 * low: Turn OFF AMS,heat generating components when redlined. Avoid overheating.
-* normal/high: switch ON AMS Overload if available. Switch ON heat generating components (TSM/Hotseat cockpit/Vibro blade).
+* normal/high: switch ON AMS Overload if available. Switch ON heat generating components (Hotseat cockpit/Vibro blade etc).
 * high: run near the readline, use alpha strike even if it can't dissipate heat. Overheat. Turn of injury causing components before alpha strike.
+
+
+*2 dfa: likelyhood to dfa
+low - avoids DFA at all cost
+normal - may dfa when reasonable
+high - has dfa buffing gear and wants to jump in their face
+
+{R DFA Damage}  {R DFA Self Damage} 
 
 */
 
