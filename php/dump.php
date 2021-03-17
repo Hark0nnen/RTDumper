@@ -379,6 +379,11 @@ public static function dumpMechs(){
 			$einfo["CBTBE_AmmoBoxExplosionDamage"],$einfo["CBTBE_VolatileAmmoBoxExplosionDamage"],
 			$einfo["AMSSINGLE_HeatGenerated"],$einfo["AMSMULTI_HeatGenerated"],
 			0+$einfo["ReceiveHeatDamageInjury_activated"]+$einfo["ReceiveHeatDamageInjury_base"],$heat_efficency,
+			$ChargeAttackerDamage,$ChargeTargetDamage,$ChargeAttackerInstability,$ChargeTargetInstability,
+			$DFAAttackerDamage,$DFATargetDamage,$DFAAttackerInstability,$DFATargetInstability,
+			$KickDamage,$KickInstability,
+			$PhysicalWeaponDamage,$PhysicalWeaponInstability,
+			$PunchDamage,$PunchInstability,
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 

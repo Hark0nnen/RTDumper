@@ -49,6 +49,11 @@ $csv_header=array("#MECH Id","Tons","Engine Rating",//x,1,2
     "Max Ammo Explosion damage","Max Volatile Ammo Explosion damage",//15,16
     "AMS Single Heat","AMS Multi Heat",//17,18
     "Heat Damage Injury","Heat Efficency",//19,20
+    "Charge Attacker Damage","Charge Target Damage","Charge Attacker Instability","Charge Target Instability",//21,22,23,24
+	"DFA Attacker Damage","DFA Target Damage","DFA Attacker Instability","DFA Target Instability",//25,26,27,28
+	"Kick Damage","Kick Instability",//29,30
+	"Physical Weapon Damage","Physical Weapon Instability",//31,32
+	"Punch Damage","Punch Instability",//33,34
 	"Equipment",
 	"path");
 
@@ -67,6 +72,6 @@ $ai_tags_reverserating=array(
 
 //these are processed to find mean/std dev
 $csv_min_stat=1;
-$csv_max_stat=20;
+$csv_max_stat=34;
  
 ?>
