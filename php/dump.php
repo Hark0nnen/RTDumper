@@ -373,7 +373,7 @@ public static function dumpMechs(){
 
 		Dump::getPhysicalInfo($einfo,$tonnage,$ChargeAttackerDamage,$ChargeTargetDamage,$ChargeAttackerInstability,$ChargeTargetInstability,$DFAAttackerDamage,$DFATargetDamage,$DFAAttackerInstability,$DFATargetInstability,$KickDamage,$KickInstability,$PhysicalWeaponDamage,$PhysicalWeaponInstability,$PunchDamage,$PunchInstability);
 
-		Dump::getDefensiveInfo($einfo,$chasisjd,$armor,$structure,$leg_armor,$leg_structure);
+		Dump::getDefensiveInfo($einfo,$chasisjd,$armor,$structure,$leg_armor,$leg_structure,$armor_repair,$structure_repair,$leg_armor_repair,$leg_structure_repair);
 
 		$dump=array($mechjd["Description"]["Id"],$tonnage,$engine_rating,
 			$walk_base,$walk_activated,$run_base,$run_activated,
@@ -413,11 +413,15 @@ public static function getWalkRunInfo($einfo,$engine_rating,$tonnage,&$walk_base
 		$run_base=round (($engine_rating/$tonnage+($einfo["WalkSpeed_base"]/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]));
 		$run_activated=round(($engine_rating/$tonnage+(($einfo["WalkSpeed_base"]+$einfo["WalkSpeed_activated"])/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]+$einfo["CBTBE_RunMultiMod_activated"]));
 }
-public static function getDefensiveInfo($einfo,$chasisjd,&$armor,&$structure,&$leg_armor,&$leg_structure){
+public static function getDefensiveInfo($einfo,$chasisjd,&$armor,&$structure,&$leg_armor,&$leg_structure,&$armor_repair,&$structure_repair,&$leg_armor_repair,&$leg_structure_repair){
 	$armor=0;
 	$structure=0;
 	$leg_armor=0;
 	$leg_structure=0;
+	$armor_repair=0;
+	$structure_repair=0;
+	$leg_armor_repair=0;
+	$leg_structure_repair=0;
 	$locations=$chasisjd['Locations'];
 	foreach($locations as $l) {
 		if(DUMP::$info){
@@ -432,13 +436,19 @@ public static function getDefensiveInfo($einfo,$chasisjd,&$armor,&$structure,&$l
 				echo "\tInternalStructure ".$l['InternalStructure'].PHP_EOL;
 		    }
 			if($einfo[$l['Location'].".Armor_base"]>0){
-				echo "\t.Armor_base ".$einfo[$l['Location'].".Armor_base"];
+				echo "\t.Armor_base ".$einfo[$l['Location'].".Armor_base"].PHP_EOL;
 			}
 			if($einfo[$l['Location'].".RearArmor_base"]>0){
-				echo "\t.RearArmor_base ".$einfo[$l['Location'].".RearArmor_base"];
+				echo "\t.RearArmor_base ".$einfo[$l['Location'].".RearArmor_base"].PHP_EOL;
 			}
 			if($einfo[$l['Location'].".Structure_base"]>0){
-				echo "\t.Structure_base ".$einfo[$l['Location'].".Structure_base"];
+				echo "\t.Structure_base ".$einfo[$l['Location'].".Structure_base"].PHP_EOL;
+			}
+			if($einfo[$l['Location'].".Custom.ActivatableComponent.Repair.Armor"]>0){
+				echo "\t.Custom.ActivatableComponent.Repair.Armor ".$einfo[$l['Location'].".Custom.ActivatableComponent.Repair.Armor"].PHP_EOL;
+			}
+			if($einfo[$l['Location'].".Custom.ActivatableComponent.Repair.InnerStructure"]>0){
+				echo "\t.Custom.ActivatableComponent.Repair.InnerStructure ".$einfo[$l['Location'].".Custom.ActivatableComponent.Repair.InnerStructure"].PHP_EOL;
 			}
 		}
 		if($l['MaxArmor']>0){
@@ -471,10 +481,23 @@ public static function getDefensiveInfo($einfo,$chasisjd,&$armor,&$structure,&$l
 			if(endswith($l['Location'],"Leg"))
 				$leg_structure+=$einfo[$l['Location'].".Structure_base"];
 		}
+		
+		if($einfo[$l['Location'].".Custom.ActivatableComponent.Repair.Armor"]>0){
+			$armor_repair+=$einfo[$l['Location'].".Custom.ActivatableComponent.Repair.Armor"];
+			if(endswith($l['Location'],"Leg"))
+				$leg_armor_repair+=$einfo[$l['Location'].".Custom.ActivatableComponent.Repair.Armor"];
+		}
+		if($einfo[$l['Location'].".Custom.ActivatableComponent.Repair.InnerStructure"]>0){
+			$structure_repair+=$einfo[$l['Location'].".Custom.ActivatableComponent.Repair.InnerStructure"];
+			if(endswith($l['Location'],"Leg"))
+				$leg_structure_repair+=$einfo[$l['Location'].".Custom.ActivatableComponent.Repair.InnerStructure"];
+		}
 	}
 	if(DUMP::$info){
 			echo "armor: $armor leg_armor: $leg_armor structure: $structure leg_structure=$leg_structure".PHP_EOL;
+			echo "armor_repair: $armor_repair leg_armor_repair: $leg_armor_repair structure_repair: $structure_repair leg_structure_repair=$leg_structure_repair".PHP_EOL;
 	}
+	
 }
 public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$ChargeTargetDamage,&$ChargeAttackerInstability,&$ChargeTargetInstability,&$DFAAttackerDamage,&$DFATargetDamage,&$DFAAttackerInstability,&$DFATargetInstability,&$KickDamage,&$KickInstability,&$PhysicalWeaponDamage,&$PhysicalWeaponInstability,&$PunchDamage,&$PunchInstability){
 
@@ -868,7 +891,30 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
 			if(DUMP::$info)
 				echo "EINFO[.Custom.ActivatableComponent.AutoActivateOnHeat ] : ".$einfo[".Custom.ActivatableComponent.AutoActivateOnHeat"].PHP_EOL;
 		}
-		
+
+		//Repair
+		if($componentjd["Custom"] && $componentjd["Custom"]["ActivatableComponent"] && $componentjd["Custom"]["ActivatableComponent"]["Repair"] && !$componentjd["Custom"]["ActivatableComponent"]["Repair"]["AffectInstalledLocation"]){
+			//TODO
+			echo "|WARNING| Repair non installation location not handled.".PHP_EOL;
+			echo "||". $item["ComponentDefID"].PHP_EOL.json_encode($componentjd["Custom"]["ActivatableComponent"]["Repair"],JSON_PRETTY_PRINT).PHP_EOL;
+		}
+
+		if($componentjd["Custom"] && $componentjd["Custom"]["ActivatableComponent"] && $componentjd["Custom"]["ActivatableComponent"]["Repair"] && $componentjd["Custom"]["ActivatableComponent"]["Repair"]["AffectInstalledLocation"]){
+			if($componentjd["Custom"]["ActivatableComponent"]["Repair"]["InnerStructure"]>0){
+				$einfo[$location.".Custom.ActivatableComponent.Repair.InnerStructure"]+=$componentjd["Custom"]["ActivatableComponent"]["Repair"]["InnerStructure"];
+				if($componentjd["Custom"]["ActivatableComponent"]["Repair"]["TurnsSinceDamage"]>0)
+					$einfo[$location.".Custom.ActivatableComponent.Repair.InnerStructure"]*=$componentjd["Custom"]["ActivatableComponent"]["Repair"]["TurnsSinceDamage"];
+				if(DUMP::$info)
+					echo "EINFO[".$location.".Custom.ActivatableComponent.Repair.InnerStructure ] : ".$einfo[$location.".Custom.ActivatableComponent.Repair.InnerStructure"].PHP_EOL;
+			}
+			if($componentjd["Custom"]["ActivatableComponent"]["Repair"]["Armor"]>0){
+				$einfo[$location.".Custom.ActivatableComponent.Repair.Armor"]+=$componentjd["Custom"]["ActivatableComponent"]["Repair"]["Armor"];
+				if($componentjd["Custom"]["ActivatableComponent"]["Repair"]["TurnsSinceDamage"]>0)
+					$einfo[$location.".Custom.ActivatableComponent.Repair.Armor"]*=$componentjd["Custom"]["ActivatableComponent"]["Repair"]["TurnsSinceDamage"];
+				if(DUMP::$info)
+					echo "EINFO[".$location.".Custom.ActivatableComponent.Repair.Armor ] : ".$einfo[$location.".Custom.ActivatableComponent.Repair.Armor"].PHP_EOL;
+			}
+		}
 
 		if($componentjd["Custom"] && $componentjd["Custom"]["ActivatableComponent"] && $componentjd["Custom"]["ActivatableComponent"]["statusEffects"]){
 			foreach($componentjd["Custom"]["ActivatableComponent"]["statusEffects"]  as $effectjd){
@@ -923,6 +969,8 @@ public static function gatherEquipmentEffectInfo($componentid,$location,$effectj
 					break;
 				case "Float_Multiply":
 				case "Int_Multiply":
+					if($effect=="{location}.Armor"||$effect=="{location}.Structure")
+						$effect = $effect."_Multi";//both multiplier and add / sub are used.
 					$effectval = ($einfo[$effect.$duration] ? $einfo[$effect.$duration]:1)*(float)$effectjd[ "statisticData"]["modValue"];
 					break;
 				case "Set":
