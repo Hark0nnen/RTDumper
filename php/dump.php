@@ -314,6 +314,8 @@ public static function dumpMechs(){
 		"CBTBE_Punch_Target_Damage_Multi_activated"=>1,
 		"CBTBE_Physical_Weapon_Target_Instability_Multi_base"=>1,
 		"CBTBE_Physical_Weapon_Target_Instability_Multi_activated"=>1,
+		"CBTBE_Punch_Target_Instability_Multi_base"=>1,
+		"CBTBE_Punch_Target_Instability_Multi_activated"=>1,
 		"AMSSINGLE_HeatGenerated"=>0,
 		"AMSMULTI_HeatGenerated"=>0,
 		"WalkSpeed_base"=>0,
@@ -513,7 +515,7 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 	$CBTBE_Kick_Target_Damage_Mod=$einfo['CBTBE_Kick_Target_Damage_Mod_base'] + $einfo['CBTBE_Kick_Target_Damage_Mod_activated'];
 	$CBTBE_Kick_Target_Damage_Multi=$einfo['CBTBE_Kick_Target_Damage_Multi_base'] + $einfo['CBTBE_Kick_Target_Damage_Multi_activated'];
 	//LegActuatorDamageReduction does not apply as we are calculating based on undamaged mech
-	$KickDamage=ceil ( (ceil($TargetDamagePerAttackerTon*$tonnage)+$CBTBE_DFA_Attacker_Damage_Mod)*$CBTBE_DFA_Attacker_Damage_Multi );
+	$KickDamage=ceil ( (ceil($TargetDamagePerAttackerTon*$tonnage)+$CBTBE_Kick_Target_Damage_Mod)*$CBTBE_Kick_Target_Damage_Multi );
 	if($einfo['CBTBE_Kick_Extra_Hits_Count'] && !$modjson['Settings']['Melee']['ExtraHitsAverageAllDamage'])
 		$KickDamage=$KickDamage*(1+$einfo['CBTBE_Kick_Extra_Hits_Count']);
 	if(DUMP::$info){
@@ -541,7 +543,7 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 	 $DamagePerAttackerTon=$modjson['Settings']['Melee']['PhysicalWeapon']['DefaultDamagePerAttackerTon'];
 	$CBTBE_Physical_Weapon_Target_Damage_Mod=$einfo['CBTBE_Physical_Weapon_Target_Damage_Mod_base'] + $einfo['CBTBE_Physical_Weapon_Target_Damage_Mod_activated'];
 	$CBTBE_Physical_Weapon_Target_Damage_Multi=$einfo['CBTBE_Physical_Weapon_Target_Damage_Multi_base'] + $einfo['CBTBE_Physical_Weapon_Target_Damage_Multi_activated'];
-	$PhysicalWeaponDamage=ceil ( (ceil($AttackerDamagePerTargetTon*$tonnage)+$CBTBE_Physical_Weapon_Target_Damage_Mod)*$CBTBE_Physical_Weapon_Target_Damage_Multi );
+	$PhysicalWeaponDamage=ceil ( (ceil($DamagePerAttackerTon*$tonnage)+$CBTBE_Physical_Weapon_Target_Damage_Mod)*$CBTBE_Physical_Weapon_Target_Damage_Multi );
 	if($einfo['CBTBE_Physical_Weapon_Extra_Hits_Count'] && !$modjson['Settings']['Melee']['ExtraHitsAverageAllDamage'])
 		$PhysicalWeaponDamage=$PhysicalWeaponDamage*(1+$einfo['CBTBE_Physical_Weapon_Extra_Hits_Count']);
 	if(DUMP::$info){
@@ -573,7 +575,7 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 	$CBTBE_Punch_Target_Damage_Mod=$einfo['CBTBE_Punch_Target_Damage_Mod_base'] + $einfo['CBTBE_Punch_Target_Damage_Mod_activated'];
 	$CBTBE_Punch_Target_Damage_Multi=$einfo['CBTBE_Punch_Target_Damage_Multi_base'] + $einfo['CBTBE_Punch_Target_Damage_Multi_activated'];
 	//ArmActuatorDamageReduction does not apply as we are calculating based on undamaged mech
-	$PunchDamage=ceil ( (ceil($DamagePerAttackerTon*$tonnage)+$CBTBE_DFA_Attacker_Damage_Mod)*$CBTBE_DFA_Attacker_Damage_Multi );
+	$PunchDamage=ceil ( (ceil($DamagePerAttackerTon*$tonnage)+$CBTBE_Punch_Target_Damage_Mod)*$CBTBE_Punch_Target_Damage_Multi );
 	if($einfo['CBTBE_Punch_Extra_Hits_Count'] && !$modjson['Settings']['Melee']['ExtraHitsAverageAllDamage'])
 		$PunchDamage=$PunchDamage*(1+$einfo['CBTBE_Kick_Extra_Hits_Count']);
 	if(DUMP::$info){
@@ -595,49 +597,6 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 			echo " (CBTBE_Punch_Target_Instability_Per_Attacker_Ton/TargetInstabilityPerAttackerTon x tonnage ( $TargetInstabilityPerAttackerTon x $tonnage ) + CBTBE_Punch_Target_Instability_Mod ($CBTBE_Punch_Target_Instability_Mod) )* CBTBE_Punch_Target_Instability_Multi ($CBTBE_Punch_Target_Instability_Multi)".PHP_EOL;
 			echo " PunchInstability=$PunchInstability".PHP_EOL;
 	}
-
-	/*
-	public static float PunchInstability(this Mech mech, MechMeleeCondition attackerCondition)
-    {
-      if (!attackerCondition.CanPunch())
-        return 0.0f;
-      float num1 = !mech.StatCollection.ContainsStatistic("PunchInstability") || (double) mech.StatCollection.GetValue<float>("CBTBE_Punch_Target_Instability_Per_Attacker_Ton") <= 0.0 ? Mod.Config.Melee.Punch.TargetInstabilityPerAttackerTon : mech.StatCollection.GetValue<float>("CBTBE_Punch_Target_Instability_Per_Attacker_Ton");
-      float num2 = (float) Math.Ceiling((double) num1 * (double) mech.tonnage);
-      ModLogWriter? debug1 = Mod.MeleeLog.Debug;
-      ref ModLogWriter? local1 = ref debug1;
-      if (local1.HasValue)
-        local1.GetValueOrDefault().Write(string.Format("PUNCH instability => tonnageMulti: {0} x attacker tonnage: {1} = raw: {2}", (object) num1, (object) mech.tonnage, (object) num2));
-      float num3 = mech.StatCollection.ContainsStatistic("CBTBE_Punch_Target_Instability_Mod") ? (float) mech.StatCollection.GetValue<int>("CBTBE_Punch_Target_Instability_Mod") : 0.0f;
-      float num4 = mech.StatCollection.ContainsStatistic("CBTBE_Punch_Target_Instability_Multi") ? mech.StatCollection.GetValue<float>("CBTBE_Punch_Target_Instability_Multi") : 1f;
-      float num5 = 1f;
-      int num6 = 2 - attackerCondition.LeftArmActuatorsCount;
-      for (int index = 0; index < num6; ++index)
-        num5 *= Mod.Config.Melee.Punch.ArmActuatorDamageReduction;
-      ModLogWriter? debug2 = Mod.MeleeLog.Debug;
-      ref ModLogWriter? local2 = ref debug2;
-      if (local2.HasValue)
-        local2.GetValueOrDefault().Write(string.Format(" - Left actuator damage multi is: {0}", (object) num5));
-      float num7 = 1f;
-      int num8 = 2 - attackerCondition.RightArmActuatorsCount;
-      for (int index = 0; index < num8; ++index)
-        num7 *= Mod.Config.Melee.Punch.ArmActuatorDamageReduction;
-      ModLogWriter? debug3 = Mod.MeleeLog.Debug;
-      ref ModLogWriter? local3 = ref debug3;
-      if (local3.HasValue)
-        local3.GetValueOrDefault().Write(string.Format(" - Right actuator damage multi is: {0}", (object) num7));
-      float num9 = (double) num5 >= (double) num7 ? num5 : num7;
-      ModLogWriter? debug4 = Mod.MeleeLog.Debug;
-      ref ModLogWriter? local4 = ref debug4;
-      if (local4.HasValue)
-        local4.GetValueOrDefault().Write(string.Format(" - Using actuator damage multi of: {0}", (object) num9));
-      float num10 = (float) Math.Ceiling(((double) num2 + (double) num3) * (double) num4 * (double) num9);
-      ModLogWriter? info = Mod.MeleeLog.Info;
-      ref ModLogWriter? local5 = ref info;
-      if (local5.HasValue)
-        local5.GetValueOrDefault().Write(string.Format(" - Target instability => final: {0} = (raw: {1} + mod: {2}) x ", (object) num10, (object) num2, (object) num3) + string.Format("multi: {0} x actuatorMulti: {1}", (object) num4, (object) num9));
-      return num10;
-    }
-	*/
 	
 
 }
