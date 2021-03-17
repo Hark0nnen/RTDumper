@@ -373,6 +373,7 @@ public static function dumpMechs(){
 
 		Dump::getPhysicalInfo($einfo,$tonnage,$ChargeAttackerDamage,$ChargeTargetDamage,$ChargeAttackerInstability,$ChargeTargetInstability,$DFAAttackerDamage,$DFATargetDamage,$DFAAttackerInstability,$DFATargetInstability,$KickDamage,$KickInstability,$PhysicalWeaponDamage,$PhysicalWeaponInstability,$PunchDamage,$PunchInstability);
 
+		Dump::getDefensiveInfo($einfo,$chasisjd,$armor,$structure,$leg_armor,$leg_structure);
 
 		$dump=array($mechjd["Description"]["Id"],$tonnage,$engine_rating,
 			$walk_base,$walk_activated,$run_base,$run_activated,
@@ -412,7 +413,69 @@ public static function getWalkRunInfo($einfo,$engine_rating,$tonnage,&$walk_base
 		$run_base=round (($engine_rating/$tonnage+($einfo["WalkSpeed_base"]/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]));
 		$run_activated=round(($engine_rating/$tonnage+(($einfo["WalkSpeed_base"]+$einfo["WalkSpeed_activated"])/$MovementPointDistanceMultiplier))*(1.5+$einfo["CBTBE_RunMultiMod_base"]+$einfo["CBTBE_RunMultiMod_activated"]));
 }
-
+public static function getDefensiveInfo($einfo,$chasisjd,&$armor,&$structure,&$leg_armor,&$leg_structure){
+	$armor=0;
+	$structure=0;
+	$leg_armor=0;
+	$leg_structure=0;
+	$locations=$chasisjd['Locations'];
+	foreach($locations as $l) {
+		if(DUMP::$info){
+			echo "Location:".$l['Location'].PHP_EOL;
+			if($l['MaxArmor']>0){
+				echo "\tMaxArmor ".$l['MaxArmor'].PHP_EOL;
+			}
+			if($l['MaxRearArmor']>0){
+				echo "\tMaxRearArmor ".$l['MaxRearArmor'].PHP_EOL;
+			}
+			if($l['InternalStructure']>0){
+				echo "\tInternalStructure ".$l['InternalStructure'].PHP_EOL;
+		    }
+			if($einfo[$l['Location'].".Armor_base"]>0){
+				echo "\t.Armor_base ".$einfo[$l['Location'].".Armor_base"];
+			}
+			if($einfo[$l['Location'].".RearArmor_base"]>0){
+				echo "\t.RearArmor_base ".$einfo[$l['Location'].".RearArmor_base"];
+			}
+			if($einfo[$l['Location'].".Structure_base"]>0){
+				echo "\t.Structure_base ".$einfo[$l['Location'].".Structure_base"];
+			}
+		}
+		if($l['MaxArmor']>0){
+			$armor+=$l['MaxArmor'];
+			if(endswith($l['Location'],"Leg"))
+				$leg_armor+=$l['MaxArmor'];
+		}
+		if($l['MaxRearArmor']>0){
+			$armor+=$l['MaxRearArmor'];
+			if(endswith($l['Location'],"Leg"))
+				$leg_armor+=$l['MaxRearArmor'];
+		}
+		if($l['InternalStructure']>0){
+			$structure+=$l['InternalStructure'];
+			if(endswith($l['Location'],"Leg"))
+				$leg_structure+=$l['InternalStructure'];
+		}
+		if($einfo[$l['Location'].".Armor_base"]>0){
+			$armor+=$einfo[$l['Location'].".Armor_base"];
+			if(endswith($l['Location'],"Leg"))
+				$leg_armor+=$einfo[$l['Location'].".Armor_base"];
+		}
+		if($einfo[$l['Location'].".RearArmor_base"]>0){
+			$armor+=$einfo[$l['Location'].".RearArmor_base"];
+			if(endswith($l['Location'],"Leg"))
+				$leg_armor+=$einfo[$l['Location'].".RearArmor_base"];
+		}
+		if($einfo[$l['Location'].".Structure_base"]>0){
+			$structure+=$einfo[$l['Location'].".Structure_base"];
+			if(endswith($l['Location'],"Leg"))
+				$leg_structure+=$einfo[$l['Location'].".Structure_base"];
+		}
+	}
+	if(DUMP::$info){
+			echo "armor: $armor leg_armor: $leg_armor structure: $structure leg_structure=$leg_structure".PHP_EOL;
+	}
+}
 public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$ChargeTargetDamage,&$ChargeAttackerInstability,&$ChargeTargetInstability,&$DFAAttackerDamage,&$DFATargetDamage,&$DFAAttackerInstability,&$DFATargetInstability,&$KickDamage,&$KickInstability,&$PhysicalWeaponDamage,&$PhysicalWeaponInstability,&$PunchDamage,&$PunchInstability){
 
 	//Watch https://github.com/BattletechModders/CBTBehaviorsEnhanced/commits/master/CBTBehaviorsEnhanced/CBTBehaviorsEnhanced/Extensions/MechExtensions.cs
@@ -427,7 +490,7 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 	//$ChargeAttackerDamage
 	$AttackerDamagePerTargetTon=$modjson['Settings']['Melee']['Charge']['AttackerDamagePerTargetTon'];
 	$CBTBE_Charge_Attacker_Damage_Mod=$einfo['CBTBE_Charge_Attacker_Damage_Mod_base'] + $einfo['CBTBE_Charge_Attacker_Damage_Mod_activated'];
-	$CBTBE_Charge_Attacker_Damage_Multi=$einfo['CBTBE_Charge_Attacker_Damage_Multi_base'] + $einfo['CBTBE_Charge_Attacker_Damage_Multi_activated'];
+	$CBTBE_Charge_Attacker_Damage_Multi=$einfo['CBTBE_Charge_Attacker_Damage_Multi_base'] * $einfo['CBTBE_Charge_Attacker_Damage_Multi_activated'];
 	$ChargeAttackerDamage=ceil ( (ceil($AttackerDamagePerTargetTon*$avg_tonnage)+$CBTBE_Charge_Attacker_Damage_Mod)*$CBTBE_Charge_Attacker_Damage_Multi );
 	if(DUMP::$info){
 			echo " (AttackerDamagePerTargetTon x targetTonnage ( $AttackerDamagePerTargetTon x $avg_tonnage ) + CBTBE_Charge_Attacker_Damage_Mod ($CBTBE_Charge_Attacker_Damage_Mod) )* CBTBE_Charge_Attacker_Damage_Multi ($CBTBE_Charge_Attacker_Damage_Multi)".PHP_EOL;
@@ -438,7 +501,7 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 
 	$AttackerDamagePerTargetTon=$modjson['Settings']['Melee']['DFA']['AttackerDamagePerTargetTon'];
 	$CBTBE_DFA_Attacker_Damage_Mod=$einfo['CBTBE_DFA_Attacker_Damage_Mod_base'] + $einfo['CBTBE_DFA_Attacker_Damage_Mod_activated'];
-	$CBTBE_DFA_Attacker_Damage_Multi=$einfo['CBTBE_DFA_Attacker_Damage_Multi_base'] + $einfo['CBTBE_DFA_Attacker_Damage_Multi_activated'];
+	$CBTBE_DFA_Attacker_Damage_Multi=$einfo['CBTBE_DFA_Attacker_Damage_Multi_base'] * $einfo['CBTBE_DFA_Attacker_Damage_Multi_activated'];
 	$DFAAttackerDamage=ceil ( (ceil($AttackerDamagePerTargetTon*$avg_tonnage)+$CBTBE_DFA_Attacker_Damage_Mod)*$CBTBE_DFA_Attacker_Damage_Multi );
 	if(DUMP::$info){
 			echo " (AttackerDamagePerTargetTon x targetTonnage ( $AttackerDamagePerTargetTon x $avg_tonnage ) + CBTBE_DFA_Attacker_Damage_Mod ($CBTBE_DFA_Attacker_Damage_Mod) )* CBTBE_DFA_Attacker_Damage_Multi ($CBTBE_DFA_Attacker_Damage_Multi)".PHP_EOL;
@@ -448,7 +511,7 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 	//$DFATargetDamage
 	$TargetDamagePerAttackerTon=$modjson['Settings']['Melee']['DFA']['TargetDamagePerAttackerTon'];
 	$CBTBE_DFA_Target_Damage_Mod=$einfo['CBTBE_DFA_Target_Damage_Mod_base'] + $einfo['CBTBE_DFA_Target_Damage_Mod_activated'];
-	$CBTBE_DFA_Target_Damage_Multi=$einfo['CBTBE_DFA_Target_Damage_Multi_base'] + $einfo['CBTBE_DFA_Target_Damage_Multi_activated'];
+	$CBTBE_DFA_Target_Damage_Multi=$einfo['CBTBE_DFA_Target_Damage_Multi_base'] * $einfo['CBTBE_DFA_Target_Damage_Multi_activated'];
 	$DFATargetDamage=ceil ( (ceil($TargetDamagePerAttackerTon*$tonnage)+$CBTBE_DFA_Target_Damage_Mod)*$CBTBE_DFA_Target_Damage_Multi );
 	if(DUMP::$info){
 			echo " (TargetDamagePerAttackerTon x tonnage ( $TargetDamagePerAttackerTon x $tonnage ) + CBTBE_DFA_Target_Damage_Mod ($CBTBE_DFA_Target_Damage_Mod) )* CBTBE_DFA_Target_Damage_Multi ($CBTBE_DFA_Target_Damage_Multi)".PHP_EOL;
@@ -459,7 +522,7 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 	
 	$TargetDamagePerAttackerTon=$modjson['Settings']['Melee']['Charge']['TargetDamagePerAttackerTon'];
 	$CBTBE_Charge_Target_Damage_Mod=$einfo['CBTBE_Charge_Target_Damage_Mod_base'] + $einfo['CBTBE_Charge_Target_Damage_Mod_activated'];
-	$CBTBE_Charge_Target_Damage_Multi=$einfo['CBTBE_Charge_Target_Damage_Multi_base'] + $einfo['CBTBE_Charge_Target_Damage_Multi_activated'];
+	$CBTBE_Charge_Target_Damage_Multi=$einfo['CBTBE_Charge_Target_Damage_Multi_base'] * $einfo['CBTBE_Charge_Target_Damage_Multi_activated'];
 	$ChargeTargetDamage=ceil ( (ceil($TargetDamagePerAttackerTon*$tonnage*$avg_hexesMoved)+$CBTBE_Charge_Target_Damage_Mod)*$CBTBE_Charge_Target_Damage_Multi );
 	if(DUMP::$info){
 			echo " (TargetDamagePerAttackerTon x tonnage x hexesMoved ( $TargetDamagePerAttackerTon x $tonnage x $avg_hexesMoved ) + CBTBE_Charge_Target_Damage_Mod ($CBTBE_Charge_Target_Damage_Mod) )* CBTBE_Charge_Target_Damage_Multi ($CBTBE_Charge_Target_Damage_Multi)".PHP_EOL;
@@ -470,7 +533,7 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 
 	$AttackerInstabilityPerTargetTon=$modjson['Settings']['Melee']['Charge']['AttackerInstabilityPerTargetTon'];
 	$CBTBE_Charge_Attacker_Instability_Mod=$einfo['CBTBE_Charge_Attacker_Instability_Mod_base'] + $einfo['CBTBE_Charge_Attacker_Instability_Mod_activated'];
-	$CBTBE_Charge_Attacker_Instability_Multi=$einfo['CBTBE_Charge_Attacker_Instability_Multi_base'] + $einfo['CBTBE_Charge_Attacker_Instability_Multi_activated'];
+	$CBTBE_Charge_Attacker_Instability_Multi=$einfo['CBTBE_Charge_Attacker_Instability_Multi_base'] * $einfo['CBTBE_Charge_Attacker_Instability_Multi_activated'];
 	$ChargeAttackerInstability=ceil ( (ceil($AttackerInstabilityPerTargetTon*$avg_tonnage*$avg_hexesMoved)+$CBTBE_Charge_Attacker_Instability_Mod)*$CBTBE_Charge_Attacker_Instability_Multi );
 	if(DUMP::$info){
 			echo " (AttackerInstabilityPerTargetTon x targetTonnage x hexesMoved ( $AttackerInstabilityPerTargetTon x $avg_tonnage x $avg_hexesMoved ) + CBTBE_Charge_Attacker_Instability_Mod ($CBTBE_Charge_Attacker_Instability_Mod) )* CBTBE_Charge_Attacker_Instability_Multi ($CBTBE_Charge_Attacker_Instability_Multi)".PHP_EOL;
@@ -481,7 +544,7 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 
 	$TargetInstabilityPerAttackerTon=$modjson['Settings']['Melee']['Charge']['TargetInstabilityPerAttackerTon'];
 	$CBTBE_Charge_Target_Instability_Mod=$einfo['CBTBE_Charge_Target_Instability_Mod_base'] + $einfo['CBTBE_Charge_Target_Instability_Mod_activated'];
-	$CBTBE_Charge_Target_Instability_Multi=$einfo['CBTBE_Charge_Target_Instability_Multi_base'] + $einfo['CBTBE_Charge_Target_Instability_Multi_activated'];
+	$CBTBE_Charge_Target_Instability_Multi=$einfo['CBTBE_Charge_Target_Instability_Multi_base'] * $einfo['CBTBE_Charge_Target_Instability_Multi_activated'];
 	$ChargeTargetInstability=ceil ( (ceil($TargetInstabilityPerAttackerTon*$tonnage*$avg_hexesMoved)+$CBTBE_Charge_Target_Instability_Mod)*$CBTBE_Charge_Target_Instability_Multi );
 	if(DUMP::$info){
 			echo " (TargetInstabilityPerAttackerTon x tonnage x hexesMoved ( $TargetInstabilityPerAttackerTon x $tonnage x $avg_hexesMoved ) + CBTBE_Charge_Target_Instability_Mod ($CBTBE_Charge_Target_Instability_Mod) )* CBTBE_Charge_Target_Instability_Multi ($CBTBE_Charge_Target_Instability_Multi)".PHP_EOL;
@@ -492,7 +555,7 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 	
 	$AttackerInstabilityPerTargetTon=$modjson['Settings']['Melee']['DFA']['AttackerInstabilityPerTargetTon'];
 	$CBTBE_DFA_Attacker_Instability_Mod=$einfo['CBTBE_DFA_Attacker_Instability_Mod_base'] + $einfo['CBTBE_DFA_Attacker_Instability_Mod_activated'];
-	$CBTBE_DFA_Attacker_Instability_Multi=$einfo['CBTBE_DFA_Attacker_Instability_Multi_base'] + $einfo['CBTBE_DFA_Attacker_Instability_Multi_activated'];
+	$CBTBE_DFA_Attacker_Instability_Multi=$einfo['CBTBE_DFA_Attacker_Instability_Multi_base'] * $einfo['CBTBE_DFA_Attacker_Instability_Multi_activated'];
 	$DFAAttackerInstability=ceil ( (ceil($AttackerInstabilityPerTargetTon*$avg_tonnage)+$CBTBE_DFA_Attacker_Instability_Mod)*$CBTBE_DFA_Attacker_Instability_Multi );
 	if(DUMP::$info){
 			echo " (AttackerInstabilityPerTargetTon x targetTonnage ( $AttackerInstabilityPerTargetTon x $avg_tonnage ) + CBTBE_DFA_Attacker_Instability_Mod ($CBTBE_DFA_Attacker_Instability_Mod) )* CBTBE_DFA_Attacker_Instability_Multi ($CBTBE_DFA_Attacker_Instability_Multi)".PHP_EOL;
@@ -503,7 +566,7 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 
 	$TargetInstabilityPerAttackerTon=$modjson['Settings']['Melee']['DFA']['TargetInstabilityPerAttackerTon'];
 	$CBTBE_DFA_Target_Instability_Mod=$einfo['CBTBE_DFA_Target_Instability_Mod_base'] + $einfo['CBTBE_DFA_Target_Instability_Mod_activated'];
-	$CBTBE_DFA_Target_Instability_Multi=$einfo['CBTBE_DFA_Target_Instability_Multi_base'] + $einfo['CBTBE_DFA_Target_Instability_Multi_activated'];
+	$CBTBE_DFA_Target_Instability_Multi=$einfo['CBTBE_DFA_Target_Instability_Multi_base'] * $einfo['CBTBE_DFA_Target_Instability_Multi_activated'];
 	$DFATargetInstability=ceil ( (ceil($TargetInstabilityPerAttackerTon*$tonnage)+$CBTBE_DFA_Attacker_Instability_Mod)*$CBTBE_DFA_Target_Instability_Multi );
 	if(DUMP::$info){
 			echo " (TargetInstabilityPerAttackerTon x tonnage ( $TargetInstabilityPerAttackerTon x $tonnage ) + CBTBE_DFA_Target_Instability_Mod ($CBTBE_DFA_Target_Instability_Mod) )* CBTBE_DFA_Target_Instability_Multi ($CBTBE_DFA_Target_Instability_Multi)".PHP_EOL;
@@ -513,7 +576,7 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 	//$KickDamage
 	$TargetDamagePerAttackerTon=$modjson['Settings']['Melee']['Kick']['TargetDamagePerAttackerTon'];
 	$CBTBE_Kick_Target_Damage_Mod=$einfo['CBTBE_Kick_Target_Damage_Mod_base'] + $einfo['CBTBE_Kick_Target_Damage_Mod_activated'];
-	$CBTBE_Kick_Target_Damage_Multi=$einfo['CBTBE_Kick_Target_Damage_Multi_base'] + $einfo['CBTBE_Kick_Target_Damage_Multi_activated'];
+	$CBTBE_Kick_Target_Damage_Multi=$einfo['CBTBE_Kick_Target_Damage_Multi_base'] * $einfo['CBTBE_Kick_Target_Damage_Multi_activated'];
 	//LegActuatorDamageReduction does not apply as we are calculating based on undamaged mech
 	$KickDamage=ceil ( (ceil($TargetDamagePerAttackerTon*$tonnage)+$CBTBE_Kick_Target_Damage_Mod)*$CBTBE_Kick_Target_Damage_Multi );
 	if($einfo['CBTBE_Kick_Extra_Hits_Count'] && !$modjson['Settings']['Melee']['ExtraHitsAverageAllDamage'])
@@ -528,7 +591,7 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 	//$KickInstability
 	$TargetInstabilityPerAttackerTon=$modjson['Settings']['Melee']['Kick']['TargetInstabilityPerAttackerTon'];
 	$CBTBE_Kick_Target_Instability_Mod=$einfo['CBTBE_Kick_Target_Instability_Mod_base'] + $einfo['CBTBE_Kick_Target_Instability_Mod_activated'];
-	$CBTBE_Kick_Target_Instability_Multi=$einfo['CBTBE_Kick_Target_Instability_Multi_base'] + $einfo['CBTBE_Kick_Target_Instability_Multi_activated'];
+	$CBTBE_Kick_Target_Instability_Multi=$einfo['CBTBE_Kick_Target_Instability_Multi_base'] * $einfo['CBTBE_Kick_Target_Instability_Multi_activated'];
 	$KickInstability=ceil ( (ceil($AttackerInstabilityPerTargetTon*$tonnage)+$CBTBE_Kick_Target_Instability_Mod)*$CBTBE_Kick_Target_Instability_Multi );
 	//LegActuatorDamageReduction does not apply as we are calculating based on undamaged mech
 	if(DUMP::$info){
@@ -542,7 +605,7 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 	if($DamagePerAttackerTon<=0)
 	 $DamagePerAttackerTon=$modjson['Settings']['Melee']['PhysicalWeapon']['DefaultDamagePerAttackerTon'];
 	$CBTBE_Physical_Weapon_Target_Damage_Mod=$einfo['CBTBE_Physical_Weapon_Target_Damage_Mod_base'] + $einfo['CBTBE_Physical_Weapon_Target_Damage_Mod_activated'];
-	$CBTBE_Physical_Weapon_Target_Damage_Multi=$einfo['CBTBE_Physical_Weapon_Target_Damage_Multi_base'] + $einfo['CBTBE_Physical_Weapon_Target_Damage_Multi_activated'];
+	$CBTBE_Physical_Weapon_Target_Damage_Multi=$einfo['CBTBE_Physical_Weapon_Target_Damage_Multi_base'] * $einfo['CBTBE_Physical_Weapon_Target_Damage_Multi_activated'];
 	$PhysicalWeaponDamage=ceil ( (ceil($DamagePerAttackerTon*$tonnage)+$CBTBE_Physical_Weapon_Target_Damage_Mod)*$CBTBE_Physical_Weapon_Target_Damage_Multi );
 	if($einfo['CBTBE_Physical_Weapon_Extra_Hits_Count'] && !$modjson['Settings']['Melee']['ExtraHitsAverageAllDamage'])
 		$PhysicalWeaponDamage=$PhysicalWeaponDamage*(1+$einfo['CBTBE_Physical_Weapon_Extra_Hits_Count']);
@@ -558,7 +621,7 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 	if($InstabilityPerAttackerTon<=0)
 	 $InstabilityPerAttackerTon=$modjson['Settings']['Melee']['PhysicalWeapon']['DefaultInstabilityPerAttackerTon'];
 	$CBTBE_Physical_Weapon_Target_Instability_Mod=$einfo['CBTBE_Physical_Weapon_Target_Instability_Mod_base'] + $einfo['CBTBE_Physical_Weapon_Target_Instability_Mod_activated'];
-	$CBTBE_Physical_Weapon_Target_Instability_Multi=$einfo['CBTBE_Physical_Weapon_Target_Instability_Multi_base'] + $einfo['CBTBE_Physical_Weapon_Target_Instability_Multi_activated'];
+	$CBTBE_Physical_Weapon_Target_Instability_Multi=$einfo['CBTBE_Physical_Weapon_Target_Instability_Multi_base'] * $einfo['CBTBE_Physical_Weapon_Target_Instability_Multi_activated'];
 	$PhysicalWeaponInstability=ceil ( (ceil($InstabilityPerAttackerTon*$tonnage)+$CBTBE_Physical_Weapon_Target_Instability_Mod)*$CBTBE_Physical_Weapon_Target_Instability_Multi );
 	//LegActuatorDamageReduction does not apply as we are calculating based on undamaged mech
 	if(DUMP::$info){
@@ -573,7 +636,7 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 	 $DamagePerAttackerTon=$modjson['Settings']['Melee']['Punch']['TargetDamagePerAttackerTon'];
 	$TargetDamagePerAttackerTon=$modjson['Settings']['Melee']['Kick']['CBTBE_Punch_Target_Damage_Per_Attacker_Ton'];
 	$CBTBE_Punch_Target_Damage_Mod=$einfo['CBTBE_Punch_Target_Damage_Mod_base'] + $einfo['CBTBE_Punch_Target_Damage_Mod_activated'];
-	$CBTBE_Punch_Target_Damage_Multi=$einfo['CBTBE_Punch_Target_Damage_Multi_base'] + $einfo['CBTBE_Punch_Target_Damage_Multi_activated'];
+	$CBTBE_Punch_Target_Damage_Multi=$einfo['CBTBE_Punch_Target_Damage_Multi_base'] * $einfo['CBTBE_Punch_Target_Damage_Multi_activated'];
 	//ArmActuatorDamageReduction does not apply as we are calculating based on undamaged mech
 	$PunchDamage=ceil ( (ceil($DamagePerAttackerTon*$tonnage)+$CBTBE_Punch_Target_Damage_Mod)*$CBTBE_Punch_Target_Damage_Multi );
 	if($einfo['CBTBE_Punch_Extra_Hits_Count'] && !$modjson['Settings']['Melee']['ExtraHitsAverageAllDamage'])
@@ -590,7 +653,7 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 	if($TargetInstabilityPerAttackerTon<=0)
 		$TargetInstabilityPerAttackerTon=$modjson['Settings']['Melee']['Punch']['TargetInstabilityPerAttackerTon'];
 	$CBTBE_Punch_Target_Instability_Mod=$einfo['CBTBE_Punch_Target_Instability_Mod_base'] + $einfo['CBTBE_Punch_Target_Instability_Mod_activated'];
-	$CBTBE_Punch_Target_Instability_Multi=$einfo['CBTBE_Punch_Target_Instability_Multi_base'] + $einfo['CBTBE_Punch_Target_Instability_Multi_activated'];
+	$CBTBE_Punch_Target_Instability_Multi=$einfo['CBTBE_Punch_Target_Instability_Multi_base'] * $einfo['CBTBE_Punch_Target_Instability_Multi_activated'];
 	$PunchInstability=ceil ( (ceil($TargetInstabilityPerAttackerTon*$tonnage)+$CBTBE_Punch_Target_Instability_Mod)*$CBTBE_Punch_Target_Instability_Multi );
 	//ArmActuatorDamageReduction does not apply as we are calculating based on undamaged mech
 	if(DUMP::$info){
