@@ -68,6 +68,9 @@ $json_type_2_filenames=array();
 $json_filename_2_decoded=array();
 $json_index_2_filename=array();
 
+//used to debug
+$stat2operation=array();
+
 //presence of these scoped json vars is used to determine .json file type
 $json_type_hint = array( 
 	JSONType::MECH => array (
@@ -256,7 +259,7 @@ public static function guessJSONFileType($f,$jd){
 }
 
 public static function dumpMechs(){
-	GLOBAL $json_type_2_filenames,$json_filename_2_decoded,$einfo_dump,$csv_header;
+	GLOBAL $json_type_2_filenames,$json_filename_2_decoded,$einfo_dump,$csv_header,$stat2operation;
 	
 	$fp = fopen('./Output/mechs.csv', 'wb');
 	fputcsv($fp, $csv_header);
@@ -399,6 +402,11 @@ public static function dumpMechs(){
 	if(DUMP::$debug){
 		$fp = fopen('./Output/debug_einfo.json', 'wb');
 		fputs($fp,json_encode($einfo_dump,JSON_PRETTY_PRINT));
+		fclose($fp);
+		$fp = fopen('./Output/debug_statoperation.json', 'wb');
+		fputs($fp,json_encode(array_filter($stat2operation, function($v, $k) {
+			return count($v)>1;
+		}, ARRAY_FILTER_USE_BOTH),JSON_PRETTY_PRINT));
 		fclose($fp);
 	}
 	echo "Exported Mechs to ".'./Output/mechs.csv'.PHP_EOL;
@@ -945,6 +953,7 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo){
 
 public static function gatherEquipmentEffectInfo($componentid,$location,$effectjd,&$einfo,$force_activated=false){
 	
+	GLOBAL $stat2operation;
 	if($effectjd["targetingData"] && $effectjd["targetingData"]["effectTargetType"]=="Creator"){
 		
 		$effect=null;
@@ -969,8 +978,8 @@ public static function gatherEquipmentEffectInfo($componentid,$location,$effectj
 					break;
 				case "Float_Multiply":
 				case "Int_Multiply":
-					if($effect=="{location}.Armor"||$effect=="{location}.Structure")
-						$effect = $effect."_Multi";//both multiplier and add / sub are used.
+					//if($effect=="{location}.Armor"||$effect=="{location}.Structure")
+						//$effect = $effect."_Multi";//both multiplier and add / sub are used.
 					$effectval = ($einfo[$effect.$duration] ? $einfo[$effect.$duration]:1)*(float)$effectjd[ "statisticData"]["modValue"];
 					break;
 				case "Set":
@@ -1008,6 +1017,14 @@ public static function gatherEquipmentEffectInfo($componentid,$location,$effectj
 			}
 		}
 		if($effect!==null && $effectval!==null){
+			if(DUMP::$debug){
+				if(!$stat2operation[$effect]){
+					$stat2operation[$effect]=array();
+				}
+				if(!in_array ( $effectjd[ "statisticData"]["operation"] , $stat2operation[$effect] )){
+					$stat2operation[$effect][]=$effectjd[ "statisticData"]["operation"];
+				}
+			}
 			$effect=str_replace("{location}",$location,$effect);
 			$einfo[$effect.$duration]=$effectval;
 			if(DUMP::$info)
