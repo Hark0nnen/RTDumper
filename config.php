@@ -5,6 +5,7 @@ class Config{
    #These are meant for developers
    public static $debug=FALSE;
    public static $info=FALSE;
+   public static $warn=FALSE;
   
-   public static $debug_single_mech='mechdef_highlander_HGN-738';
+   public static $debug_single_mech='mechdef_sorcerer_SRC-1X';
 }

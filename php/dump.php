@@ -345,7 +345,9 @@ public static function dumpMechs(){
 		"WalkSpeed_activated"=>0,
 		".JumpCapacity"=>0,
 		"JumpDistanceMultiplier_base"=>1,
-		"JumpDistanceMultiplier_activated"=>1
+		"JumpDistanceMultiplier_activated"=>1,
+		"JumpHeat_base"=>0,
+		"JumpHeat_activated"=>0,
 		);
 		try{
 			if($chasisjd["FixedEquipment"])
@@ -385,9 +387,6 @@ public static function dumpMechs(){
 			echo "PROCESSED EINFO:".PHP_EOL.json_encode($einfo,JSON_PRETTY_PRINT).PHP_EOL;
 		}
 
-		if(DUMP::$debug)
-		 		$einfo_dump=array_merge($einfo_dump, $einfo);
-		
 		Dump::getMoveInfo($einfo,$engine_rating,$tonnage,$walk_base,$walk_activated,$run_base,$run_activated,$jump_distance_base,$jump_distance_activated);
 		Dump::getHeatInfo($einfo,$engine_rating,$tonnage,$dissipation_capacity_base,$dissipation_capacity_activated,$heat_generated,$jump_heat_base,$jump_heat_activated,$heat_efficency);
 
@@ -401,13 +400,16 @@ public static function dumpMechs(){
 
 		Dump::getDefensiveInfo($einfo,$chasisjd,$armor,$structure,$leg_armor,$leg_structure,$armor_repair,$structure_repair,$leg_armor_repair,$leg_structure_repair);
 
+		if(DUMP::$debug)
+		 		$einfo_dump=array_merge($einfo_dump, $einfo);
+
 		$dump=array($mechjd["Description"]["Id"],$tonnage,$engine_rating,
 			$walk_base,$walk_activated,$run_base,$run_activated,
 			$jump_distance_base,$jump_distance_activated,
 			$dissipation_capacity_base,$dissipation_capacity_activated,$einfo[".Custom.ActivatableComponent.AutoActivateOnHeat"],$heat_generated,$jump_heat_base,$jump_heat_activated,
 			$einfo[".CBTBE_AmmoBoxExplosionDamage"],$einfo[".CBTBE_VolatileAmmoBoxExplosionDamage"],
 			$einfo[".AMSSINGLE_HeatGenerated"],$einfo[".AMSMULTI_HeatGenerated"],
-			0+$einfo["ReceiveHeatDamageInjury_activated"]+$einfo["ReceiveHeatDamageInjury_base"],$heat_efficency,
+			0+$einfo["ReceiveHeatDamageInjury_activated"],$heat_efficency,
 			$ChargeAttackerDamage,$ChargeTargetDamage,$ChargeAttackerInstability,$ChargeTargetInstability,
 			$DFAAttackerDamage,$DFATargetDamage,$DFAAttackerInstability,$DFATargetInstability,
 			$KickDamage,$KickInstability,
@@ -437,17 +439,139 @@ public static function dumpMechs(){
 
 
 public static function processStatusEffects(&$einfo,&$effects){
+		$MEmodjson=json_for_pk(JSONType::MODJSON,"#MESettings");
 
+		//OrderedStatusEffects
+		$order=$MEmodjson["OrderedStatusEffects"] ["Order"];
+		$order[]="Set";
+		foreach(array_keys($effects) as $k){
+		   if(in_array($k,$MEmodjson["OrderedStatusEffects"]["FilterStatistics"])){
+		   //https://github.com/BattletechModders/MechEngineer/blob/master/source/Features/OrderedStatusEffects/OrderedStatusEffectsFeature.cs
+		   		if(DUMP::$info)
+					echo "^ |OrderedStatusEffects for $k |^".PHP_EOL;
+				usort($effects[$k],
+					function ($a, $b) use ($order)
+					{
+						$av=array_search($a["operation"],$order)*2;
+						if($a["activated"])
+							$av++;
+						$bv=array_search($b["operation"],$order)*2;
+						if($b["activated"])
+							$bv++;
+						return $av-$bv;
+					});
+		   }else{
+			    usort($effects[$k],
+						function ($a, $b) use ($order)
+						{
+							    if ($a["activated"] == $b["activated"]) {
+									return 0;
+								}
+								return ($a["activated"]) ? 1 : -1;
+						});
+		   }
+		}
+
+		//Compute EINFO _base and _activated
+		foreach($effects as $k=>$v){
+			 $base_val=0;
+			 if($einfo[$k])
+				$base_val=$einfo[$k];
+			
+			 for ($x = 0; $x <= count($v); $x++) {
+		            $operation= $v[$x]["operation"];
+					$modValue=$v[$x]["modValue"];
+					$activated=$v[$x]["activated"];
+					$componentid=$v[$x]["from"];
+						switch ($operation) {
+							case "Int_Add":
+							case "Float_Add":
+								if($x==0 && !$einfo[$k])
+								    $base_val=0;
+								if(!$activated)
+									$base_val= $base_val + $modValue;
+								break;
+							case "Int_Subtract":
+							case "Float_Subtract":
+								if($x==0 && !$einfo[$k])
+								    $base_val=0;
+								if(!$activated)
+									$base_val= $base_val - $modValue;
+								break;
+							case "Float_Multiply":
+							case "Int_Multiply":
+								if($x==0 && !$einfo[$k])
+								    $base_val=1;
+								if(!$activated)
+									$base_val= $base_val * $modValue;
+								break;
+							case "Set":
+								if(!$activated)
+									$base_val=$modValue;
+								break;
+							default:
+								break;
+						}
+			 }
+
+			 $activated_val=0;
+			 if($einfo[$k])
+				$activated_val=$einfo[$k];
+			 for ($x = 0; $x <= count($v); $x++) {
+		            $operation= $v[$x]["operation"];
+					$modValue=$v[$x]["modValue"];
+					$activated=$v[$x]["activated"];
+					$componentid=$v[$x]["from"];
+						switch ($operation) {
+							case "Int_Add":
+							case "Float_Add":
+									if($x==0 && !$einfo[$k])
+										$activated_val=0;
+									$activated_val= $activated_val + $modValue;
+								break;
+							case "Int_Subtract":
+							case "Float_Subtract":
+								   if($x==0 && !$einfo[$k])
+										$activated_val=0;
+								   $activated_val= $activated_val - $modValue;
+								break;
+							case "Float_Multiply":
+							case "Int_Multiply":
+								if($x==0 && !$einfo[$k])
+								    $activated_val=1;
+								$activated_val= $activated_val * $modValue;
+								break;
+							case "Set":
+									$activated_val=$modValue;
+								break;
+							default:
+								break;
+						}
+			 }
+			 unset($einfo[$k]);
+			 $einfo[$k."_base"]=$base_val;
+			 $einfo[$k."_activated"]=$activated_val;
+		}
+
+		foreach(array_keys($einfo) as $k){
+		  if(!startswith($k,".") && !endswith($k,"_base") && !endswith($k,"_activated"))
+		  {
+		  	 $v=$einfo[$k];
+			 unset($einfo[$k]);
+			 $einfo[$k."_base"]=$v;
+			 $einfo[$k."_activated"]=$v;
+		  }
+		}
 }
 
-public static function initMoveRunInfo(&$einfo,$engine_rating,$tonnage){
+public static function initMoveInfo(&$einfo,$engine_rating,$tonnage){
 		//walk/run distance
 		//https://github.com/BattletechModders/CBTBehaviorsEnhanced
 		$CBTmodjson=json_for_pk(JSONType::MODJSON,"CBTBehaviorsEnhanced");
 		$MEmodjson=json_for_pk(JSONType::MODJSON,"#MESettings");
 
-		if(DUMP::$debug && $CBTmodjson["Move"]["MPMetersPerHex"]!=$MEmodjson["Engine"]["MovementPointDistanceMultiplier"]){
-			echo "WARNING: CBTBE MPMetersPerHex != ME MovementPointDistanceMultiplier";
+		if(DUMP::$warn && $CBTmodjson["Move"]["MPMetersPerHex"]!=$MEmodjson["Engine"]["MovementPointDistanceMultiplier"]){
+			echo "WARNING: CBTBE MPMetersPerHex != ME MovementPointDistanceMultiplier".PHP_EOL;
 		}
 
 		$einfo["WalkSpeed"]=$engine_rating/$tonnage*$MEmodjson["Engine"]["MovementPointDistanceMultiplier"];
@@ -467,7 +591,7 @@ public static function getMoveInfo($einfo,$engine_rating,$tonnage,&$walk_base,&$
 		$walk_base=round($einfo["WalkSpeed_base"]/$MovementPointDistanceMultiplier);
 		$walk_activated=round($einfo["WalkSpeed_activated"]/$MovementPointDistanceMultiplier);
 		$run_base=round (($einfo["WalkSpeed_base"]/$MovementPointDistanceMultiplier)*($RunMulti+$einfo["CBTBE_RunMultiMod_base"]));
-		$run_activated=round(($einfo["WalkSpeed_activated"])/$MovementPointDistanceMultiplier)*($RunMulti+$einfo["CBTBE_RunMultiMod_activated"]));
+		$run_activated=round(($einfo["WalkSpeed_activated"]/$MovementPointDistanceMultiplier)*($RunMulti+$einfo["CBTBE_RunMultiMod_activated"]));
 		$jump_distance_base=(int) ($einfo[".JumpCapacity"]*$einfo["JumpDistanceMultiplier_base"]);
 		$jump_distance_activated=(int) ($einfo[".JumpCapacity"]*$einfo["JumpDistanceMultiplier_activated"]);
 }
