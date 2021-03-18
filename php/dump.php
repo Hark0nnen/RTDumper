@@ -941,7 +941,7 @@ public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$dissipation_
 		$jump_heat_activated=$einfo["JumpHeat_activated"];
 		if(DUMP::$info){
 			 echo "DissipationCapacity Internal[ $internal_hs x $per_heatsink_dissipation x ".(1+$einfo["heatSinkMultiplier_base"])." ] + External[".$einfo[".DissipationCapacity"]."] + HeatSinkCapacity[".+$einfo["HeatSinkCapacity_base"]."] -EndMoveHeat =[".$einfo["EndMoveHeat_base"]."] = ".$dissipation_capacity_base.PHP_EOL;
-			 echo "Activated EndMoveHeat = ".$einfo["EndMoveHeat_activated"]." |Activatable Dissipation =".$einfo["HeatSinkCapacity_activated"]." |Activatable heatSinkMultiplier =".$einfo["heatSinkMultiplier_activated"].PHP_EOL;
+			 echo "Activated EndMoveHeat = ".$einfo["EndMoveHeat_activated"]." |Activatable HeatSinkCapacity=".$einfo["HeatSinkCapacity_activated"]." |Activatable heatSinkMultiplier =".$einfo["heatSinkMultiplier_activated"].PHP_EOL;
 			 echo "Total Heat Generated (weapons) = $heat_generated".PHP_EOL;
 		}
 

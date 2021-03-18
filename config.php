@@ -7,5 +7,5 @@ class Config{
    public static $info=FALSE;
    public static $warn=FALSE;
   
-   public static $debug_single_mech='mechdef_berkut_SHX-OF';
+   public static $debug_single_mech='mechdef_wolfhound_WLF-RX';
 }
