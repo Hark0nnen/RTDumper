@@ -54,6 +54,8 @@ function json_val($jd,$f,$scope)
 $debug_json_find=array();//"Gear_Myomer_TSM","Gear_MASC","chassisdef_leviathan_LVT-C","Gear_Engine_400");
 $debug_json_find_ignore=array();//"ComponentDefID");//ignores keys containing this
 
+$ignore_json_files=array("Settings.defaults.json","Settings.last.json");
+
 abstract class JSONType
 {
     const UNKNOWN = 0;
@@ -62,7 +64,8 @@ abstract class JSONType
 	const ENGINE=3;
 	const COMPONENT=4;
 	const MODJSON=5;
-	const MAX_TYPE = 5;
+	const MESETTINGSJSON=6;
+	const MAX_TYPE = 6;
 }
 $json_type_2_filenames=array();
 $json_filename_2_decoded=array();
@@ -88,6 +91,9 @@ $json_type_hint = array(
 	JSONType::MODJSON => array (
 	".Name",".DependsOn",".ConflictsWith",".Settings"
 	),
+	JSONType::MESETTINGSJSON => array (
+	".OrderedStatusEffects",".OrderedStatusEffects.FilterStatistics",".OrderedStatusEffects.Order",".Engine"
+	),
 );
 //This is the Primary Key for lookup of each JSONType
 $json_type_pk = array( 
@@ -95,7 +101,8 @@ $json_type_pk = array(
 	JSONType::CHASSIS => ".Description.Id",
 	JSONType::ENGINE => ".Description.Id",
 	JSONType::COMPONENT => ".Description.Id",
-	JSONType::MODJSON => ".Name"
+	JSONType::MODJSON => ".Name",
+	JSONType::MESETTINGSJSON => "#MESettings",//PKs starting with # are used as is and not looked up in json
 );
 
 //some things are other things as well :P
@@ -105,16 +112,22 @@ $json_additional_types = array(
 	JSONType::ENGINE => array (JSONType::COMPONENT),
 	JSONType::COMPONENT => array (),
 	JSONType::MODJSON => array (),
+	JSONType::MESETTINGSJSON => array (JSONType::MODJSON)
 );
 
 
-function add_json_pk($jd,$f,$json_type)
+function add_json_pk($jd,$f,$json_type,$base_type=null)
 {
 	GLOBAL $json_index_2_filename,$json_type_pk;
 	//echo json_encode($json_type_pk).":=?".$json_type;
-	$k="[$json_type]".json_val($jd,$f,$json_type_pk[$json_type]);
+	$pk=$json_type_pk[$json_type];
+	if(!startswith($pk,"#"))
+		$pk=json_val($jd,$f,$json_type_pk[$json_type]);
+	if($base_type!=null && startswith($json_type_pk[$base_type],"#") )
+		$pk=$json_type_pk[$base_type];
+	$k="[$json_type]".$pk;
 	$json_index_2_filename[$k]=$f;
-	/*if($json_type==JSONType::MODJSON)
+	/*if($json_type==JSONType::MESETTINGSJSON || $json_type==JSONType::MODJSON)
 		echo "$k => $f".PHP_EOL;*/
 }
 
@@ -143,7 +156,7 @@ class Dump extends Config{
    }
 
    public static function loadFromFiles(){
-	   GLOBAL $json_type_2_filenames,$json_filename_2_decoded,$json_index_2_filename,$json_additional_types;
+	   GLOBAL $json_type_2_filenames,$json_filename_2_decoded,$json_index_2_filename,$json_additional_types,$ignore_json_files;
    	   echo "Parsing *.json from ".Dump::$RT_Mods_dir.PHP_EOL;
 		$files=array();
 		Dump::getJSONFiles(Dump::$RT_Mods_dir,$files);
@@ -152,6 +165,10 @@ class Dump extends Config{
 			if(!$jd)
 			  continue;
 			//echo ">>>".$f.PHP_EOL;
+			foreach($ignore_json_files as $if){
+				if(endswith_i($f,$if))
+					continue 2;
+			}
 			$json_type=Dump::guessJSONFileType($f,$jd);
 			if($json_type){
 				array_push($json_type_2_filenames[$json_type],$f);
@@ -159,7 +176,7 @@ class Dump extends Config{
 				add_json_pk($jd,$f,$json_type);
 				foreach($json_additional_types[$json_type] as $json_type_a){
 					array_push($json_type_2_filenames[$json_type_a],$f);
-					add_json_pk($jd,$f,$json_type_a);
+					add_json_pk($jd,$f,$json_type_a,$json_type);
 				}
 			}
 		}
@@ -169,6 +186,8 @@ class Dump extends Config{
 		echo "ENGINE:".count($json_type_2_filenames[JSONType::ENGINE]).PHP_EOL;
 		echo "COMPONENT:".count($json_type_2_filenames[JSONType::COMPONENT]).PHP_EOL;
 		echo "MODJSON:".count($json_type_2_filenames[JSONType::MODJSON]).PHP_EOL;
+		echo "MESETTINGSJSON:".count($json_type_2_filenames[JSONType::MESETTINGSJSON]).PHP_EOL;
+		//echo json_encode(json_for_pk(JSONType::MODJSON,"#MESettings"));
    }
 
 public static function getJSONFiles($dirname,&$array){
@@ -405,7 +424,7 @@ public static function dumpMechs(){
 		fclose($fp);
 		$fp = fopen('./Output/debug_statoperation.json', 'wb');
 		fputs($fp,json_encode(array_filter($stat2operation, function($v, $k) {
-			return count($v)>1;
+			return true;//count($v)>1;//<-log only those stats with multiple operation
 		}, ARRAY_FILTER_USE_BOTH),JSON_PRETTY_PRINT));
 		fclose($fp);
 	}
@@ -992,8 +1011,15 @@ public static function gatherEquipmentEffectInfo($componentid,$location,$effectj
                     } 
 				    break;
 				default:
-					if(DUMP::$debug)
+					if(DUMP::$debug){
 						echo "[DEBUG] UNKNOWN OPERATION ".$effectjd[ "statisticData"]["operation"].PHP_EOL;
+						if(!$stat2operation[$effect]){
+							$stat2operation[$effect]=array();
+						}
+						if(!in_array ( $effectjd[ "statisticData"]["operation"] , $stat2operation[$effect] )){
+							$stat2operation[$effect][]=$effectjd[ "statisticData"]["operation"];
+						}
+					}
 					break;
 			}
 			switch ($effectjd[ "statisticData"]["targetCollection"]) {
