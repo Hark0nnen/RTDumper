@@ -710,8 +710,38 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 			echo " (CBTBE_Punch_Target_Instability_Per_Attacker_Ton/TargetInstabilityPerAttackerTon x tonnage ( $TargetInstabilityPerAttackerTon x $tonnage ) + CBTBE_Punch_Target_Instability_Mod ($CBTBE_Punch_Target_Instability_Mod) )* CBTBE_Punch_Target_Instability_Multi ($CBTBE_Punch_Target_Instability_Multi)".PHP_EOL;
 			echo " PunchInstability=$PunchInstability".PHP_EOL;
 	}
-	
 
+	if(DUMP::$info){
+		echo "ChargeTargetDamage=$ChargeTargetDamage, DFATargetDamage=$DFATargetDamage, KickDamage=$KickDamage, PhysicalWeaponDamage=$PhysicalWeaponDamage, PunchDamage=$PunchDamage, PunchInstability=$PunchInstability".PHP_EOL;
+	}
+	//Fake key to figure out damage reduction
+	$key=".WeaponDamagePerShot|something|something|Melee|something|.";
+	if(DUMP::$info)
+		echo "DamagePerShot from $key = <various> ".PHP_EOL;
+				
+	foreach($einfo as $ekey => $evalue) {
+		if (startswith($ekey,"Weapon.|") && endswith($ekey,"|.DamagePerShot_activated") ){
+				if(Dump::weaponMatch($key,$ekey)){
+					if(DUMP::$info)
+						echo "Y $ekey = <various> x $evalue".PHP_EOL;
+					$ChargeTargetDamage=$ChargeTargetDamage*$evalue;
+					$DFATargetDamage=$DFATargetDamage*$evalue;
+					$KickDamage=$KickDamage*$evalue;
+					$PhysicalWeaponDamage=$PhysicalWeaponDamage*$evalue;
+					$PunchDamage=$PunchDamage*$evalue;
+					$PunchInstability=$PunchInstability*$evalue;
+					}else{
+					if(DUMP::$info)
+						echo "X $ekey".PHP_EOL;
+					}
+		}
+	}
+	if(DUMP::$info){
+		echo "ChargeTargetDamage=$ChargeTargetDamage, DFATargetDamage=$DFATargetDamage, KickDamage=$KickDamage, PhysicalWeaponDamage=$PhysicalWeaponDamage, PunchDamage=$PunchDamage, PunchInstability=$PunchInstability".PHP_EOL;
+	}
+
+	
+	
 }
 
 
