@@ -17,7 +17,7 @@ class DumpStats extends Config{
    }
 
      public static function processStats(){
-	   GLOBAL $csv_header,$stat_min,$stat_max,$stat_avg,$stat_stddev,$data_collect,$csv_min_stat,$csv_max_stat,$csv_header,$ai_tags,$ai_tags_calc,$ai_tags_weights,$ai_tags_reverserating;
+	   GLOBAL $csv_header,$stat_min,$stat_max,$stat_avg,$stat_stddev,$data_collect,$csv_min_stat,$csv_max_stat,$csv_header,$ai_tags,$ai_tags_calc,$ai_tags_weights,$ai_tags_reverserating,$stats_ignore_zeros;
 	   $file = fopen('./Output/mechs.csv', 'r');
 		while (($line = fgetcsv($file)) !== FALSE) {
 		   if(!startswith($line[0],"#"))
@@ -29,11 +29,18 @@ class DumpStats extends Config{
 		}
 		fclose($file);
 		for ($x = $csv_min_stat; $x <= $csv_max_stat; $x++) {
-				$stat_min[$x]=min($data_collect[$x]);
-				$stat_max[$x]=max($data_collect[$x]);
-				$stat_avg[$x]=(array_sum($data_collect[$x]) / count($data_collect[$x]));
-				$stat_stddev[$x]=sd($data_collect[$x],$stat_avg[$x]);
-				echo str_pad ( $csv_header[$x],25)." MIN: ".str_pad ( $stat_min[$x],8)." AVG: ".str_pad ( number_format($stat_avg[$x],2),8)." MAX: ".str_pad ( $stat_max[$x],8)."  STD DEV: ".str_pad ( number_format($stat_stddev[$x],2),8).PHP_EOL;
+				$data=$data_collect[$x];
+				//echo json_encode($stats_ignore_zeros)."<>".$x.PHP_EOL;
+				$ignore_zeros=in_array ($x , $stats_ignore_zeros );
+				if($ignore_zeros){
+					$data=array_filter($data, function($a) { return ($a != 0); });
+					//echo json_encode($data).PHP_EOL;
+				}
+				$stat_min[$x]=min($data);
+				$stat_max[$x]=max($data);
+				$stat_avg[$x]=(array_sum($data) / count($data));
+				$stat_stddev[$x]=sd($data,$stat_avg[$x]);
+				echo str_pad ( $csv_header[$x],25)." MIN: ".str_pad ( $stat_min[$x],8)." AVG: ".str_pad ( number_format($stat_avg[$x],2),8)." MAX: ".str_pad ( $stat_max[$x],8)."  STD DEV: ".str_pad ( number_format($stat_stddev[$x],2),8)." N=".count($data).PHP_EOL;
 		}	
 		$file = fopen('./Output/mechs.csv', 'r');
 		$fp = fopen('./Output/mechratings.csv', 'wb');

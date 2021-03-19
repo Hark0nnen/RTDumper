@@ -7,5 +7,5 @@ class Config{
    public static $info=FALSE;
    public static $warn=FALSE;
   
-   public static $debug_single_mech='mechdef_black_queen_LVT-BKQN';
+   public static $debug_single_mech='mechdef_ajax_AJX-A2';//'mechdef_black_queen_LVT-BKQN';
 }

@@ -352,6 +352,8 @@ public static function dumpMechs(){
 		"JumpDistanceMultiplier_activated"=>1,
 		"JumpHeat_base"=>0,
 		"JumpHeat_activated"=>0,
+		"DFASelfDamage_base"=>1,
+		"DFASelfDamage_activated"=>1
 		);
 		try{
 			if($chasisjd["FixedEquipment"])
@@ -376,8 +378,8 @@ public static function dumpMechs(){
 
 		DUMP::initMoveInfo($einfo,$engine_rating,$tonnage);
 		Dump::initHeatInfo($einfo,$engine_rating,$tonnage);
-		Dump::initPhysicalInfo($einfo,$tonnage);
 		Dump::initDefensiveInfo($einfo,$chasisjd,$mechjd);
+		Dump::initPhysicalInfo($einfo,$tonnage);
 
 		if(DUMP::$info){
 			echo "BASE EFFECTS:".PHP_EOL.json_encode($effects,JSON_PRETTY_PRINT).PHP_EOL;
@@ -400,9 +402,11 @@ public static function dumpMechs(){
 		if($einfo[".CBTBE_VolatileAmmoBoxExplosionDamage"]>0 && $einfo[".Custom.CASE.MaximumDamage"]>=0)
 			$einfo[".CBTBE_VolatileAmmoBoxExplosionDamage"]=$einfo[".Custom.CASE.MaximumDamage"];
 
-		Dump::getPhysicalInfo($einfo,$tonnage,$jump_distance_activated,$ChargeAttackerDamage,$ChargeTargetDamage,$ChargeAttackerInstability,$ChargeTargetInstability,$DFAAttackerDamage,$DFATargetDamage,$DFAAttackerInstability,$DFATargetInstability,$KickDamage,$KickInstability,$PhysicalWeaponDamage,$PhysicalWeaponInstability,$PunchDamage,$PunchInstability);
-
 		Dump::getDefensiveInfo($einfo,$chasisjd,$armor,$structure,$leg_armor,$leg_structure,$armor_repair,$structure_repair,$leg_armor_repair,$leg_structure_repair);
+
+		Dump::getPhysicalInfo($einfo,$tonnage,$jump_distance_activated,$leg_armor,$leg_structure,$leg_armor_repair,$leg_structure_repair,$ChargeAttackerDamage,$ChargeTargetDamage,$ChargeAttackerInstability,$ChargeTargetInstability,$DFAAttackerDamage,$DFATargetDamage,$DFAAttackerInstability,$DFATargetInstability,$KickDamage,$KickInstability,$PhysicalWeaponDamage,$PhysicalWeaponInstability,$PunchDamage,$PunchInstability,$dfa_self_damage_efficency,$dfa_damage_efficency);
+
+		
 
 		if(DUMP::$debug)
 		 		$einfo_dump=array_merge($einfo_dump, $einfo);
@@ -421,6 +425,7 @@ public static function dumpMechs(){
 			$PunchDamage,$PunchInstability,
 			$armor,$leg_armor,$structure,$leg_structure,
 			$armor_repair,$leg_armor_repair,$structure_repair,$leg_structure_repair,
+			$dfa_self_damage_efficency,$dfa_damage_efficency,
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 
@@ -711,7 +716,7 @@ public static function initPhysicalInfo(&$einfo,$tonnage){
 
 }
 
-public static function getPhysicalInfo($einfo,$tonnage,$jump_distance_activated, &$ChargeAttackerDamage,&$ChargeTargetDamage,&$ChargeAttackerInstability,&$ChargeTargetInstability,&$DFAAttackerDamage,&$DFATargetDamage,&$DFAAttackerInstability,&$DFATargetInstability,&$KickDamage,&$KickInstability,&$PhysicalWeaponDamage,&$PhysicalWeaponInstability,&$PunchDamage,&$PunchInstability){
+public static function getPhysicalInfo($einfo,$tonnage,$jump_distance_activated,$leg_armor,$leg_structure,$leg_armor_repair,$leg_structure_repair, &$ChargeAttackerDamage,&$ChargeTargetDamage,&$ChargeAttackerInstability,&$ChargeTargetInstability,&$DFAAttackerDamage,&$DFATargetDamage,&$DFAAttackerInstability,&$DFATargetInstability,&$KickDamage,&$KickInstability,&$PhysicalWeaponDamage,&$PhysicalWeaponInstability,&$PunchDamage,&$PunchInstability,&$dfa_self_damage_efficency,&$dfa_damage_efficency){
 
 	//Watch https://github.com/BattletechModders/CBTBehaviorsEnhanced/commits/master/CBTBehaviorsEnhanced/CBTBehaviorsEnhanced/Extensions/MechExtensions.cs
 
@@ -738,8 +743,11 @@ public static function getPhysicalInfo($einfo,$tonnage,$jump_distance_activated,
 	$CBTBE_DFA_Attacker_Damage_Mod=$einfo['CBTBE_DFA_Attacker_Damage_Mod_activated'];
 	$CBTBE_DFA_Attacker_Damage_Multi=$einfo['CBTBE_DFA_Attacker_Damage_Multi_activated'];
 	$DFAAttackerDamage=ceil ( (ceil($AttackerDamagePerTargetTon*$avg_tonnage)+$CBTBE_DFA_Attacker_Damage_Mod)*$CBTBE_DFA_Attacker_Damage_Multi );
+	$DFAAttackerDamage*=$einfo["DFASelfDamage_activated"];
 	if(DUMP::$info){
 			echo " (AttackerDamagePerTargetTon x targetTonnage ( $AttackerDamagePerTargetTon x $avg_tonnage ) + CBTBE_DFA_Attacker_Damage_Mod ($CBTBE_DFA_Attacker_Damage_Mod) )* CBTBE_DFA_Attacker_Damage_Multi ($CBTBE_DFA_Attacker_Damage_Multi)".PHP_EOL;
+			if($einfo["DFASelfDamage_activated"]!=1)
+				echo " x DFASelfDamage_activated (".$einfo["DFASelfDamage_activated"].")".PHP_EOL;
 			echo " DFAAttackerDamage=$DFAAttackerDamage".PHP_EOL;
 	}
 
@@ -907,7 +915,7 @@ public static function getPhysicalInfo($einfo,$tonnage,$jump_distance_activated,
 	if(DUMP::$info){
 		echo "ChargeTargetDamage=$ChargeTargetDamage, DFATargetDamage=$DFATargetDamage, KickDamage=$KickDamage, PhysicalWeaponDamage=$PhysicalWeaponDamage, PunchDamage=$PunchDamage, PunchInstability=$PunchInstability".PHP_EOL;
 	}
-	//Fake key to figure out damage reduction
+	//Fake key to figure out damage multiplier
 	$key=".WeaponDamagePerShot|something|something|Melee|something|.";
 	if(DUMP::$info)
 		echo "DamagePerShot from $key = <various> ".PHP_EOL;
@@ -929,8 +937,41 @@ public static function getPhysicalInfo($einfo,$tonnage,$jump_distance_activated,
 					}
 		}
 	}
+
+	$key=".WeaponDamagePerShot|something|something|DFA|something|.";
+	if(DUMP::$info)
+		echo "DamagePerShot from $key = $DFATargetDamage ".PHP_EOL;
+				
+	foreach($einfo as $ekey => $evalue) {
+		if (startswith($ekey,"Weapon.|") && endswith($ekey,"|.DamagePerShot_activated") ){
+				if(Dump::weaponMatch($key,$ekey)){
+					if(DUMP::$info)
+						echo "Y $ekey = $DFATargetDamage x $evalue".PHP_EOL;
+						$DFATargetDamage=$DFATargetDamage*$evalue;
+					}else{
+					if(DUMP::$info)
+						echo "X $ekey".PHP_EOL;
+					}
+		}
+	}
+
+
+
+	//DFA Self Damage Efficency is how many a DFAs a mech can perform before both its legs break
+	//<check> revisit this for mechs with leg repair, its delibrately incorrect as mechs with repair could infinitely survive DFA ?
+	$dfa_self_damage_efficency=0;
+	if($DFAAttackerDamage>0){
+		$dfa_self_damage_efficency=($leg_armor+$leg_structure)/$DFAAttackerDamage;
+		if($leg_armor_repair>0 || $leg_structure_repair>0)
+		  $dfa_self_damage_efficency+=(/*turns*/$dfa_self_damage_efficency*min((/*repaired armour/struct*/$leg_armor_repair+$leg_structure_repair)/2,$DFAAttackerDamage)/*repair duration adjust*/)/$DFAAttackerDamage;
+	}
+	$dfa_self_damage_efficency=ceil($dfa_self_damage_efficency);
+	//DFA Damage Efficency is DFA damage per mech(attacker) tonnage
+	$dfa_damage_efficency=$DFATargetDamage/$tonnage;
+
 	if(DUMP::$info){
 		echo "ChargeTargetDamage=$ChargeTargetDamage, DFATargetDamage=$DFATargetDamage, KickDamage=$KickDamage, PhysicalWeaponDamage=$PhysicalWeaponDamage, PunchDamage=$PunchDamage, PunchInstability=$PunchInstability".PHP_EOL;
+		echo "dfa_self_damage_efficency=$dfa_self_damage_efficency, dfa_damage_efficency=$dfa_damage_efficency".PHP_EOL;
 	}
 
 	
@@ -1170,14 +1211,14 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo,&$effects){
 				if($componentjd["Custom"]["ActivatableComponent"]["Repair"]["TurnsSinceDamage"]>0)
 					$einfo[".".$location.".Custom.ActivatableComponent.Repair.InnerStructure"]*=$componentjd["Custom"]["ActivatableComponent"]["Repair"]["TurnsSinceDamage"];
 				if(DUMP::$info)
-					echo "EINFO[.".$location.".Custom.ActivatableComponent.Repair.InnerStructure ] : ".$einfo[$location.".Custom.ActivatableComponent.Repair.InnerStructure"].PHP_EOL;
+					echo "EINFO[.".$location.".Custom.ActivatableComponent.Repair.InnerStructure ] : ".$einfo[".".$location.".Custom.ActivatableComponent.Repair.InnerStructure"].PHP_EOL;
 			}
 			if($componentjd["Custom"]["ActivatableComponent"]["Repair"]["Armor"]>0){
 				$einfo[".".$location.".Custom.ActivatableComponent.Repair.Armor"]+=$componentjd["Custom"]["ActivatableComponent"]["Repair"]["Armor"];
 				if($componentjd["Custom"]["ActivatableComponent"]["Repair"]["TurnsSinceDamage"]>0)
 					$einfo[".".$location.".Custom.ActivatableComponent.Repair.Armor"]*=$componentjd["Custom"]["ActivatableComponent"]["Repair"]["TurnsSinceDamage"];
 				if(DUMP::$info)
-					echo "EINFO[.".$location.".Custom.ActivatableComponent.Repair.Armor ] : ".$einfo[$location.".Custom.ActivatableComponent.Repair.Armor"].PHP_EOL;
+					echo "EINFO[.".$location.".Custom.ActivatableComponent.Repair.Armor ] : ".$einfo[".".$location.".Custom.ActivatableComponent.Repair.Armor"].PHP_EOL;
 			}
 		}
 
