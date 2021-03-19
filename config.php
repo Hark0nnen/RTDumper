@@ -7,5 +7,5 @@ class Config{
    public static $info=FALSE;
    public static $warn=FALSE;
   
-   public static $debug_single_mech='mechdef_archangel_C-ANG-O_dam';
+   public static $debug_single_mech='mechdef_black_queen_LVT-BKQN';
 }

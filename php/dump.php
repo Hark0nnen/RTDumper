@@ -400,7 +400,7 @@ public static function dumpMechs(){
 		if($einfo[".CBTBE_VolatileAmmoBoxExplosionDamage"]>0 && $einfo[".Custom.CASE.MaximumDamage"]>=0)
 			$einfo[".CBTBE_VolatileAmmoBoxExplosionDamage"]=$einfo[".Custom.CASE.MaximumDamage"];
 
-		Dump::getPhysicalInfo($einfo,$tonnage,$ChargeAttackerDamage,$ChargeTargetDamage,$ChargeAttackerInstability,$ChargeTargetInstability,$DFAAttackerDamage,$DFATargetDamage,$DFAAttackerInstability,$DFATargetInstability,$KickDamage,$KickInstability,$PhysicalWeaponDamage,$PhysicalWeaponInstability,$PunchDamage,$PunchInstability);
+		Dump::getPhysicalInfo($einfo,$tonnage,$jump_distance_activated,$ChargeAttackerDamage,$ChargeTargetDamage,$ChargeAttackerInstability,$ChargeTargetInstability,$DFAAttackerDamage,$DFATargetDamage,$DFAAttackerInstability,$DFATargetInstability,$KickDamage,$KickInstability,$PhysicalWeaponDamage,$PhysicalWeaponInstability,$PunchDamage,$PunchInstability);
 
 		Dump::getDefensiveInfo($einfo,$chasisjd,$armor,$structure,$leg_armor,$leg_structure,$armor_repair,$structure_repair,$leg_armor_repair,$leg_structure_repair);
 
@@ -711,7 +711,7 @@ public static function initPhysicalInfo(&$einfo,$tonnage){
 
 }
 
-public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$ChargeTargetDamage,&$ChargeAttackerInstability,&$ChargeTargetInstability,&$DFAAttackerDamage,&$DFATargetDamage,&$DFAAttackerInstability,&$DFATargetInstability,&$KickDamage,&$KickInstability,&$PhysicalWeaponDamage,&$PhysicalWeaponInstability,&$PunchDamage,&$PunchInstability){
+public static function getPhysicalInfo($einfo,$tonnage,$jump_distance_activated, &$ChargeAttackerDamage,&$ChargeTargetDamage,&$ChargeAttackerInstability,&$ChargeTargetInstability,&$DFAAttackerDamage,&$DFATargetDamage,&$DFAAttackerInstability,&$DFATargetInstability,&$KickDamage,&$KickInstability,&$PhysicalWeaponDamage,&$PhysicalWeaponInstability,&$PunchDamage,&$PunchInstability){
 
 	//Watch https://github.com/BattletechModders/CBTBehaviorsEnhanced/commits/master/CBTBehaviorsEnhanced/CBTBehaviorsEnhanced/Extensions/MechExtensions.cs
 
@@ -895,7 +895,15 @@ public static function getPhysicalInfo($einfo,$tonnage,&$ChargeAttackerDamage,&$
 			echo " (CBTBE_Punch_Target_Instability_Per_Attacker_Ton/TargetInstabilityPerAttackerTon x tonnage ( $TargetInstabilityPerAttackerTon x $tonnage ) + CBTBE_Punch_Target_Instability_Mod ($CBTBE_Punch_Target_Instability_Mod) )* CBTBE_Punch_Target_Instability_Multi ($CBTBE_Punch_Target_Instability_Multi)".PHP_EOL;
 			echo " PunchInstability=$PunchInstability".PHP_EOL;
 	}
-
+	if($jump_distance_activated<1){
+		 $DFAAttackerDamage=0;
+		 $DFATargetDamage=0;
+		 $DFAAttackerInstability=0;
+		 $DFATargetInstability=0;
+		 	if(DUMP::$info){
+				echo "NO JJ NO DFA !!";
+			}
+	}
 	if(DUMP::$info){
 		echo "ChargeTargetDamage=$ChargeTargetDamage, DFATargetDamage=$DFATargetDamage, KickDamage=$KickDamage, PhysicalWeaponDamage=$PhysicalWeaponDamage, PunchDamage=$PunchDamage, PunchInstability=$PunchInstability".PHP_EOL;
 	}
