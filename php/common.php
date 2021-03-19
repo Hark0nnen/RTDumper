@@ -63,13 +63,13 @@ $csv_header=array("#MECH Id","Tons","Engine Rating",//x,1,2
 
 $ai_tags=array("ai_heat");
 $ai_tags_calc=array(
-    array(15,16,17,18,19,20)//ai_heat={R Max Ammo Explosion damage}  {R Max Volatile Ammo Explosion damage}  {R "AMS Single Heat"}  {R "AMS Multi Heat" }  {R Heat Damage Injury}  {R Heat Efficency }
+    array(15,16,17,18,19,20,11)//ai_heat={R Max Ammo Explosion damage}  {R Max Volatile Ammo Explosion damage}  {R "AMS Single Heat"}  {R "AMS Multi Heat" }  {R Heat Damage Injury}  {R Heat Efficency } {R Auto Activation Heat}
 );
 $ai_tags_weights=array(
-    array(2,2,1,1,0.5,3)//ai_heat
+    array(2,2,1,1,0.5,4,2)//ai_heat
 );
 $ai_tags_reverserating=array(
-    array(true,true,true,true,true,true)//ai_heat
+    array(true,true,true,true,true,true,false)//ai_heat
 );
 
 //these are processed to find mean/std dev

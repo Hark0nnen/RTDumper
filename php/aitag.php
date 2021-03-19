@@ -15,7 +15,7 @@ For each AI tag determine a value between [0-1] . Each AI tag, is grouped into l
 RTDumper understands CASE , AmmoExplosions , Volatile AmmoExplosions , AMS Heat , heat damage injury, heat activated components, heat efficency.
 
 tag based on:
-{R Max Ammo Explosion damage}  {R Max Volatile Ammo Explosion damage}  {R "AMS Single Heat"}  {R "AMS Multi Heat" }  {R Heat Damage Injury} {R Heat Efficency }
+{R Max Ammo Explosion damage}  {R Max Volatile Ammo Explosion damage}  {R "AMS Single Heat"}  {R "AMS Multi Heat" }  {R Heat Damage Injury} {R Heat Efficency } {R Auto Activation Heat}
 
 low - avoids overheating, has volatile ammo 
 normal - will run hot but be carefull, basically most mechs
