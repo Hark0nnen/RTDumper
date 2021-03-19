@@ -54,6 +54,8 @@ $csv_header=array("#MECH Id","Tons","Engine Rating",//x,1,2
 	"Kick Damage","Kick Instability",//29,30
 	"Physical Weapon Damage","Physical Weapon Instability",//31,32
 	"Punch Damage","Punch Instability",//33,34
+    "Armor","Leg Armor","Structure","Leg Structure",//35,36,37,38
+    "Repair Armor","Repair Leg Armor","Repair Structure","Repair Leg Structure",//39,40,41,42
 	"Equipment",
 	"path");
 
@@ -72,6 +74,6 @@ $ai_tags_reverserating=array(
 
 //these are processed to find mean/std dev
 $csv_min_stat=1;
-$csv_max_stat=34;
+$csv_max_stat=42;
  
 ?>

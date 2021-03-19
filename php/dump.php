@@ -296,6 +296,10 @@ public static function dumpMechs(){
 			    DUMP::$info=FALSE;
 		}
 		$chasisjd=json_for_pk(JSONType::CHASSIS,$mechjd["ChassisID"]);
+		if(DUMP::$info){
+			echo "CHASIS:".PHP_EOL.json_encode($chasisjd,JSON_PRETTY_PRINT).PHP_EOL;
+			echo "MECH:".PHP_EOL.json_encode($mechjd,JSON_PRETTY_PRINT).PHP_EOL;
+		}
 		$equipment=array();
 		$effects=array();//tree of effects that can be ordered (ME OrderedStatusEffects) or default order, before computing into $einfo
 		$einfo=array( // flattened list of all equipment effects and characteristics . Those starting with . are manually extracted, without are effects and auto extracted
@@ -373,7 +377,7 @@ public static function dumpMechs(){
 		DUMP::initMoveInfo($einfo,$engine_rating,$tonnage);
 		Dump::initHeatInfo($einfo,$engine_rating,$tonnage);
 		Dump::initPhysicalInfo($einfo,$tonnage);
-		Dump::initDefensiveInfo($einfo,$chasisjd);
+		Dump::initDefensiveInfo($einfo,$chasisjd,$mechjd);
 
 		if(DUMP::$info){
 			echo "BASE EFFECTS:".PHP_EOL.json_encode($effects,JSON_PRETTY_PRINT).PHP_EOL;
@@ -415,6 +419,8 @@ public static function dumpMechs(){
 			$KickDamage,$KickInstability,
 			$PhysicalWeaponDamage,$PhysicalWeaponInstability,
 			$PunchDamage,$PunchInstability,
+			$armor,$leg_armor,$structure,$leg_structure,
+			$armor_repair,$leg_armor_repair,$structure_repair,$leg_structure_repair,
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 
@@ -596,7 +602,46 @@ public static function getMoveInfo($einfo,$engine_rating,$tonnage,&$walk_base,&$
 		$jump_distance_activated=(int) ($einfo[".JumpCapacity"]*$einfo["JumpDistanceMultiplier_activated"]);
 }
 
-public static function initDefensiveInfo(&$einfo,$chasisjd){
+public static function initDefensiveInfo(&$einfo,$chasisjd,$mechjd){
+	$locations=$chasisjd['Locations'];
+	foreach($locations as $l) {
+			if(DUMP::$info){
+				echo "Location:".$l['Location'].PHP_EOL;
+				if($l['MaxArmor']>0){
+					echo "\tMaxArmor ".$l['MaxArmor'].PHP_EOL;
+				}
+				if($l['MaxRearArmor']>0){
+					echo "\tMaxRearArmor ".$l['MaxRearArmor'].PHP_EOL;
+				}
+				if($l['InternalStructure']>0){
+					echo "\tInternalStructure ".$l['InternalStructure'].PHP_EOL;
+				}
+			}
+	}
+	$locations=$mechjd['Locations'];
+	foreach($locations as $l) {
+			if(DUMP::$info){
+				echo "Location:".$l['Location'].PHP_EOL;
+				if($l['CurrentArmor']>0){
+					echo "\tCurrentArmor ".$l['CurrentArmor'].PHP_EOL;
+				}
+				if($l['CurrentRearArmor']>0){
+					echo "\tCurrentRearArmor ".$l['CurrentRearArmor'].PHP_EOL;
+				}
+				if($l['CurrentInternalStructure']>0){
+					echo "\tCurrentInternalStructure ".$l['CurrentInternalStructure'].PHP_EOL;
+				}
+			}
+			if($l['CurrentArmor']>0){
+				$einfo[$l['Location'].".Armor"]+=$l['CurrentArmor'];
+			}
+			if($l['CurrentRearArmor']>0){
+				$einfo[$l['Location'].".RearArmor"]+=$l['CurrentRearArmor'];
+			}
+			if($l['CurrentInternalStructure']>0){
+				$einfo[$l['Location'].".Structure"]+=$l['CurrentInternalStructure'];
+			}
+	}
 }
 
 public static function getDefensiveInfo($einfo,$chasisjd,&$armor,&$structure,&$leg_armor,&$leg_structure,&$armor_repair,&$structure_repair,&$leg_armor_repair,&$leg_structure_repair){
@@ -612,15 +657,6 @@ public static function getDefensiveInfo($einfo,$chasisjd,&$armor,&$structure,&$l
 	foreach($locations as $l) {
 		if(DUMP::$info){
 			echo "Location:".$l['Location'].PHP_EOL;
-			if($l['MaxArmor']>0){
-				echo "\tMaxArmor ".$l['MaxArmor'].PHP_EOL;
-			}
-			if($l['MaxRearArmor']>0){
-				echo "\tMaxRearArmor ".$l['MaxRearArmor'].PHP_EOL;
-			}
-			if($l['InternalStructure']>0){
-				echo "\tInternalStructure ".$l['InternalStructure'].PHP_EOL;
-		    }
 			if($einfo[$l['Location'].".Armor_base"]>0){
 				echo "\t.Armor_base ".$einfo[$l['Location'].".Armor_base"].PHP_EOL;
 			}
@@ -630,27 +666,12 @@ public static function getDefensiveInfo($einfo,$chasisjd,&$armor,&$structure,&$l
 			if($einfo[$l['Location'].".Structure_base"]>0){
 				echo "\t.Structure_base ".$einfo[$l['Location'].".Structure_base"].PHP_EOL;
 			}
-			if($einfo[$l['Location'].".Custom.ActivatableComponent.Repair.Armor"]>0){
-				echo "\t.Custom.ActivatableComponent.Repair.Armor ".$einfo[$l['Location'].".Custom.ActivatableComponent.Repair.Armor"].PHP_EOL;
+			if($einfo[".".$l['Location'].".Custom.ActivatableComponent.Repair.Armor"]>0){
+				echo "\t.Custom.ActivatableComponent.Repair.Armor ".$einfo[".".$l['Location'].".Custom.ActivatableComponent.Repair.Armor"].PHP_EOL;
 			}
-			if($einfo[$l['Location'].".Custom.ActivatableComponent.Repair.InnerStructure"]>0){
-				echo "\t.Custom.ActivatableComponent.Repair.InnerStructure ".$einfo[$l['Location'].".Custom.ActivatableComponent.Repair.InnerStructure"].PHP_EOL;
+			if($einfo[".".$l['Location'].".Custom.ActivatableComponent.Repair.InnerStructure"]>0){
+				echo "\t.Custom.ActivatableComponent.Repair.InnerStructure ".$einfo[".".$l['Location'].".Custom.ActivatableComponent.Repair.InnerStructure"].PHP_EOL;
 			}
-		}
-		if($l['MaxArmor']>0){
-			$armor+=$l['MaxArmor'];
-			if(endswith($l['Location'],"Leg"))
-				$leg_armor+=$l['MaxArmor'];
-		}
-		if($l['MaxRearArmor']>0){
-			$armor+=$l['MaxRearArmor'];
-			if(endswith($l['Location'],"Leg"))
-				$leg_armor+=$l['MaxRearArmor'];
-		}
-		if($l['InternalStructure']>0){
-			$structure+=$l['InternalStructure'];
-			if(endswith($l['Location'],"Leg"))
-				$leg_structure+=$l['InternalStructure'];
 		}
 		if($einfo[$l['Location'].".Armor_base"]>0){
 			$armor+=$einfo[$l['Location'].".Armor_base"];
@@ -668,15 +689,15 @@ public static function getDefensiveInfo($einfo,$chasisjd,&$armor,&$structure,&$l
 				$leg_structure+=$einfo[$l['Location'].".Structure_base"];
 		}
 		
-		if($einfo[$l['Location'].".Custom.ActivatableComponent.Repair.Armor"]>0){
-			$armor_repair+=$einfo[$l['Location'].".Custom.ActivatableComponent.Repair.Armor"];
+		if($einfo[".".$l['Location'].".Custom.ActivatableComponent.Repair.Armor"]>0){
+			$armor_repair+=$einfo[".".$l['Location'].".Custom.ActivatableComponent.Repair.Armor"];
 			if(endswith($l['Location'],"Leg"))
-				$leg_armor_repair+=$einfo[$l['Location'].".Custom.ActivatableComponent.Repair.Armor"];
+				$leg_armor_repair+=$einfo[".".$l['Location'].".Custom.ActivatableComponent.Repair.Armor"];
 		}
-		if($einfo[$l['Location'].".Custom.ActivatableComponent.Repair.InnerStructure"]>0){
-			$structure_repair+=$einfo[$l['Location'].".Custom.ActivatableComponent.Repair.InnerStructure"];
+		if($einfo[".".$l['Location'].".Custom.ActivatableComponent.Repair.InnerStructure"]>0){
+			$structure_repair+=$einfo[".".$l['Location'].".Custom.ActivatableComponent.Repair.InnerStructure"];
 			if(endswith($l['Location'],"Leg"))
-				$leg_structure_repair+=$einfo[$l['Location'].".Custom.ActivatableComponent.Repair.InnerStructure"];
+				$leg_structure_repair+=$einfo[".".$l['Location'].".Custom.ActivatableComponent.Repair.InnerStructure"];
 		}
 	}
 	if(DUMP::$info){
@@ -1137,18 +1158,18 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo,&$effects){
 
 		if($componentjd["Custom"] && $componentjd["Custom"]["ActivatableComponent"] && $componentjd["Custom"]["ActivatableComponent"]["Repair"] && $componentjd["Custom"]["ActivatableComponent"]["Repair"]["AffectInstalledLocation"]){
 			if($componentjd["Custom"]["ActivatableComponent"]["Repair"]["InnerStructure"]>0){
-				$einfo[$location.".Custom.ActivatableComponent.Repair.InnerStructure"]+=$componentjd["Custom"]["ActivatableComponent"]["Repair"]["InnerStructure"];
+				$einfo[".".$location.".Custom.ActivatableComponent.Repair.InnerStructure"]+=$componentjd["Custom"]["ActivatableComponent"]["Repair"]["InnerStructure"];
 				if($componentjd["Custom"]["ActivatableComponent"]["Repair"]["TurnsSinceDamage"]>0)
-					$einfo[$location.".Custom.ActivatableComponent.Repair.InnerStructure"]*=$componentjd["Custom"]["ActivatableComponent"]["Repair"]["TurnsSinceDamage"];
+					$einfo[".".$location.".Custom.ActivatableComponent.Repair.InnerStructure"]*=$componentjd["Custom"]["ActivatableComponent"]["Repair"]["TurnsSinceDamage"];
 				if(DUMP::$info)
-					echo "EINFO[".$location.".Custom.ActivatableComponent.Repair.InnerStructure ] : ".$einfo[$location.".Custom.ActivatableComponent.Repair.InnerStructure"].PHP_EOL;
+					echo "EINFO[.".$location.".Custom.ActivatableComponent.Repair.InnerStructure ] : ".$einfo[$location.".Custom.ActivatableComponent.Repair.InnerStructure"].PHP_EOL;
 			}
 			if($componentjd["Custom"]["ActivatableComponent"]["Repair"]["Armor"]>0){
-				$einfo[$location.".Custom.ActivatableComponent.Repair.Armor"]+=$componentjd["Custom"]["ActivatableComponent"]["Repair"]["Armor"];
+				$einfo[".".$location.".Custom.ActivatableComponent.Repair.Armor"]+=$componentjd["Custom"]["ActivatableComponent"]["Repair"]["Armor"];
 				if($componentjd["Custom"]["ActivatableComponent"]["Repair"]["TurnsSinceDamage"]>0)
-					$einfo[$location.".Custom.ActivatableComponent.Repair.Armor"]*=$componentjd["Custom"]["ActivatableComponent"]["Repair"]["TurnsSinceDamage"];
+					$einfo[".".$location.".Custom.ActivatableComponent.Repair.Armor"]*=$componentjd["Custom"]["ActivatableComponent"]["Repair"]["TurnsSinceDamage"];
 				if(DUMP::$info)
-					echo "EINFO[".$location.".Custom.ActivatableComponent.Repair.Armor ] : ".$einfo[$location.".Custom.ActivatableComponent.Repair.Armor"].PHP_EOL;
+					echo "EINFO[.".$location.".Custom.ActivatableComponent.Repair.Armor ] : ".$einfo[$location.".Custom.ActivatableComponent.Repair.Armor"].PHP_EOL;
 			}
 		}
 
