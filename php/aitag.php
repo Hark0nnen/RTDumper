@@ -32,9 +32,10 @@ Desired AI Behaviour:
 RTDumper understands DFA damage / self damage , leg armour & structure repair ,DFA buffing equipment
 //DFA Self Damage Efficency is how many a DFAs a mech can perform before both its legs break
 //DFA Damage Efficency is DFA damage per mech tonnage
+//DFA Self Instability Efficency is Self UnsteadyThreshold remaining after DFA expressed as % of UnsteadyThreshold
 
 tag based on:
-{R DFA Self Damage Efficency}  {R DFA Damage Efficency} 
+{R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability}
 
 low - avoids DFA at all cost
 normal - may dfa when reasonable

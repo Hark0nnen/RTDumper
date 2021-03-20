@@ -296,7 +296,14 @@ public static function dumpMechs(){
 			    DUMP::$info=FALSE;
 		}
 		$chasisjd=json_for_pk(JSONType::CHASSIS,$mechjd["ChassisID"]);
+		
+		/*if($chasisjd['Custom']['ChassisDefaults'])
+		{
+			echo $mechjd["Description"]["Id"]. " ".json_encode($chasisjd['Custom']['ChassisDefaults'],JSON_PRETTY_PRINT).PHP_EOL;
+		}*/
+
 		if(DUMP::$info){
+			echo $mechjd["Description"]["Id"]." ---->".PHP_EOL;
 			echo "CHASIS:".PHP_EOL.json_encode($chasisjd,JSON_PRETTY_PRINT).PHP_EOL;
 			echo "MECH:".PHP_EOL.json_encode($mechjd,JSON_PRETTY_PRINT).PHP_EOL;
 		}
@@ -356,6 +363,18 @@ public static function dumpMechs(){
 		"DFASelfDamage_activated"=>1
 		);
 		try{
+			if($chasisjd['Custom']['ChassisDefaults'] && count($chasisjd['Custom']['ChassisDefaults'])>0)
+			{
+				$cdequip=array();
+				foreach($chasisjd['Custom']['ChassisDefaults'] as $cd){
+					$cdequip[]= array(
+						"MountedLocation"=>$cd["Location"],
+						"ComponentDefID"=>$cd["DefID"],
+						"ComponentDefType"=>$cd["Type"]
+					);
+				}
+				Dump::gatherEquipment(array('ChassisDefaults'=>$cdequip),"ChassisDefaults",$equipment,$einfo,$effects);
+			}
 			if($chasisjd["FixedEquipment"])
 				Dump::gatherEquipment($chasisjd,"FixedEquipment",$equipment,$einfo,$effects);
 			Dump::gatherEquipment($mechjd,"inventory",$equipment,$einfo,$effects);
@@ -402,9 +421,13 @@ public static function dumpMechs(){
 		if($einfo[".CBTBE_VolatileAmmoBoxExplosionDamage"]>0 && $einfo[".Custom.CASE.MaximumDamage"]>=0)
 			$einfo[".CBTBE_VolatileAmmoBoxExplosionDamage"]=$einfo[".Custom.CASE.MaximumDamage"];
 
+		//MEchs without Gyro - use default
+		if(!$einfo['UnsteadyThreshold_activated'])
+			$einfo['UnsteadyThreshold_activated']=40;
+
 		Dump::getDefensiveInfo($einfo,$chasisjd,$armor,$structure,$leg_armor,$leg_structure,$armor_repair,$structure_repair,$leg_armor_repair,$leg_structure_repair);
 
-		Dump::getPhysicalInfo($einfo,$tonnage,$jump_distance_activated,$leg_armor,$leg_structure,$leg_armor_repair,$leg_structure_repair,$ChargeAttackerDamage,$ChargeTargetDamage,$ChargeAttackerInstability,$ChargeTargetInstability,$DFAAttackerDamage,$DFATargetDamage,$DFAAttackerInstability,$DFATargetInstability,$KickDamage,$KickInstability,$PhysicalWeaponDamage,$PhysicalWeaponInstability,$PunchDamage,$PunchInstability,$dfa_self_damage_efficency,$dfa_damage_efficency);
+		Dump::getPhysicalInfo($einfo,$tonnage,$jump_distance_activated,$leg_armor,$leg_structure,$leg_armor_repair,$leg_structure_repair,$ChargeAttackerDamage,$ChargeTargetDamage,$ChargeAttackerInstability,$ChargeTargetInstability,$DFAAttackerDamage,$DFATargetDamage,$DFAAttackerInstability,$DFATargetInstability,$KickDamage,$KickInstability,$PhysicalWeaponDamage,$PhysicalWeaponInstability,$PunchDamage,$PunchInstability,$dfa_self_damage_efficency,$dfa_damage_efficency,$dfa_self_instability_efficency);
 
 		
 
@@ -425,7 +448,8 @@ public static function dumpMechs(){
 			$PunchDamage,$PunchInstability,
 			$armor,$leg_armor,$structure,$leg_structure,
 			$armor_repair,$leg_armor_repair,$structure_repair,$leg_structure_repair,
-			$dfa_self_damage_efficency,$dfa_damage_efficency,
+			$dfa_self_damage_efficency,$dfa_damage_efficency,$dfa_self_instability_efficency,
+			$einfo["UnsteadyThreshold_activated"],
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 
@@ -716,7 +740,7 @@ public static function initPhysicalInfo(&$einfo,$tonnage){
 
 }
 
-public static function getPhysicalInfo($einfo,$tonnage,$jump_distance_activated,$leg_armor,$leg_structure,$leg_armor_repair,$leg_structure_repair, &$ChargeAttackerDamage,&$ChargeTargetDamage,&$ChargeAttackerInstability,&$ChargeTargetInstability,&$DFAAttackerDamage,&$DFATargetDamage,&$DFAAttackerInstability,&$DFATargetInstability,&$KickDamage,&$KickInstability,&$PhysicalWeaponDamage,&$PhysicalWeaponInstability,&$PunchDamage,&$PunchInstability,&$dfa_self_damage_efficency,&$dfa_damage_efficency){
+public static function getPhysicalInfo($einfo,$tonnage,$jump_distance_activated,$leg_armor,$leg_structure,$leg_armor_repair,$leg_structure_repair, &$ChargeAttackerDamage,&$ChargeTargetDamage,&$ChargeAttackerInstability,&$ChargeTargetInstability,&$DFAAttackerDamage,&$DFATargetDamage,&$DFAAttackerInstability,&$DFATargetInstability,&$KickDamage,&$KickInstability,&$PhysicalWeaponDamage,&$PhysicalWeaponInstability,&$PunchDamage,&$PunchInstability,&$dfa_self_damage_efficency,&$dfa_damage_efficency,&$dfa_self_instability_efficency){
 
 	//Watch https://github.com/BattletechModders/CBTBehaviorsEnhanced/commits/master/CBTBehaviorsEnhanced/CBTBehaviorsEnhanced/Extensions/MechExtensions.cs
 
@@ -958,20 +982,34 @@ public static function getPhysicalInfo($einfo,$tonnage,$jump_distance_activated,
 
 
 	//DFA Self Damage Efficency is how many a DFAs a mech can perform before both its legs break
-	//<check> revisit this for mechs with leg repair, its delibrately incorrect as mechs with repair could infinitely survive DFA ?
+	//<check> For mechs with leg repair, its delibrately incorrect as mechs with repair could infinitely survive DFA ?
+	//this calculation is adjusted for statistical weirdness when tagging
 	$dfa_self_damage_efficency=0;
+	$dfa_self_instability_efficency=0;
 	if($DFAAttackerDamage>0){
-		$dfa_self_damage_efficency=($leg_armor+$leg_structure)/$DFAAttackerDamage;
-		if($leg_armor_repair>0 || $leg_structure_repair>0)
-		  $dfa_self_damage_efficency+=(/*turns*/$dfa_self_damage_efficency*min((/*repaired armour/struct*/$leg_armor_repair+$leg_structure_repair)/2,$DFAAttackerDamage)/*repair duration adjust*/)/$DFAAttackerDamage;
+		$turn_damage=$DFAAttackerDamage-min((/*repaired armour/struct*/$leg_armor_repair+$leg_structure_repair)/2/*repair duration adjust*/,$DFAAttackerDamage);
+		if($turn_damage==0)//legs never going to break
+			$dfa_self_damage_efficency= 25;
+		else
+			$dfa_self_damage_efficency=ceil(($leg_armor+$leg_structure)/$turn_damage);
+
+		if($dfa_self_damage_efficency>25)//something else bound to kill mech
+			$dfa_self_damage_efficency= 25;
+
+		//DFA Self Instability Efficency is Self UnsteadyThreshold remaining after DFA  expressed as % of UnsteadyThreshold
+		$dfa_self_instability_efficency=($einfo['UnsteadyThreshold_activated']-($DFAAttackerInstability*($einfo['ReceivedInstabilityMultiplier_activated']?$einfo['ReceivedInstabilityMultiplier_activated']:1) ))/$einfo['UnsteadyThreshold_activated']*100;
+		if($dfa_self_instability_efficency<0)
+			$dfa_self_instability_efficency=0;
 	}
-	$dfa_self_damage_efficency=ceil($dfa_self_damage_efficency);
+
 	//DFA Damage Efficency is DFA damage per mech(attacker) tonnage
 	$dfa_damage_efficency=$DFATargetDamage/$tonnage;
 
+
+
 	if(DUMP::$info){
 		echo "ChargeTargetDamage=$ChargeTargetDamage, DFATargetDamage=$DFATargetDamage, KickDamage=$KickDamage, PhysicalWeaponDamage=$PhysicalWeaponDamage, PunchDamage=$PunchDamage, PunchInstability=$PunchInstability".PHP_EOL;
-		echo "dfa_self_damage_efficency=$dfa_self_damage_efficency, dfa_damage_efficency=$dfa_damage_efficency".PHP_EOL;
+		echo "dfa_self_damage_efficency=$dfa_self_damage_efficency, dfa_damage_efficency=$dfa_damage_efficency, dfa_self_instability_efficency=$dfa_self_instability_efficency".PHP_EOL;
 	}
 
 	
