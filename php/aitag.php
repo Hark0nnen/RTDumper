@@ -60,7 +60,7 @@ class AITag extends Config{
    }
 
      public static function processStats(){
-	   GLOBAL $csv_header,$stat_min,$stat_max,$stat_avg,$stat_stddev,$data_collect,$csv_min_stat,$csv_max_stat,$csv_header,$ai_tags,$ai_tags_calc,$ai_tags_weights,$ai_tags_ignore_zeros;
+	   GLOBAL $csv_header,$stat_min,$stat_max,$stat_avg,$stat_stddev_lt,$stat_stddev_gt,$data_collect,$csv_min_stat,$csv_max_stat,$csv_header,$ai_tags,$ai_tags_calc,$ai_tags_weights,$ai_tags_ignore_zeros,$ai_tags_skew;
 	   $file = fopen('./Output/mechratings.csv', 'r');
 		while (($line = fgetcsv($file)) !== FALSE) {
 		   if(!startswith($line[0],"#"))
@@ -82,8 +82,10 @@ class AITag extends Config{
 				$stat_min[$x]=min($data);
 				$stat_max[$x]=max($data);
 				$stat_avg[$x]=(array_sum($data) / count($data));
-				$stat_stddev[$x]=sd($data,$stat_avg[$x]);
-				echo str_pad ( $ai_tags[$x],25)." MIN: ".str_pad ( $stat_min[$x],8)." AVG: ".str_pad ( number_format($stat_avg[$x],2),8)." MAX: ".str_pad ( $stat_max[$x],8)."  STD DEV: ".str_pad ( number_format($stat_stddev[$x],2),8)." N=".count($data).PHP_EOL;
+				$avg=$stat_avg[$x];
+				$stat_stddev_lt[$x]=sd(array_filter($data, function($a)  use ($avg){ return ($a <=$avg); }),$stat_avg[$x]);
+				$stat_stddev_gt[$x]=sd(array_filter($data, function($a)  use ($avg){ return ($a >=$avg); }),$stat_avg[$x]);
+				echo str_pad ( $ai_tags[$x],25)." MIN: ".str_pad ( $stat_min[$x],8)."  | ".str_pad ( number_format($avg-$stat_stddev_lt[$x],2),8)."< AVG: ".str_pad ( number_format($stat_avg[$x],2),8)." :AVG > ".str_pad ( number_format($avg+$stat_stddev_gt[$x],2),8)." | MAX: ".str_pad ( $stat_max[$x],8)." N=".count($data).PHP_EOL;
 		}	
 		$file = fopen('./Output/mechratings.csv', 'r');
 		$fp = fopen('./Output/mechaitags.csv', 'wb');
@@ -120,12 +122,17 @@ class AITag extends Config{
 					$avg=$stat_avg[$x];
 					$max=$stat_max[$x];
 					$min=$stat_min[$x];
-					$maxsd=$avg+$stat_stddev[$x];
+					$maxsd=$avg+$stat_stddev_gt[$x];
 					if($maxsd>$max)
 					  $maxsd=$max;
-					$minsd=$avg-$stat_stddev[$x];
+					$minsd=$avg-$stat_stddev_lt[$x];
 					if($minsd<$min)
 					  $minsd=$min;
+
+					//when ignoring zeros $min can be greater than 0
+					if($data<$min)
+						$data=$min;
+					//normalize all stats to 0-1 scale <0.2 & >0.8 are for statistical outliers <= & => avg+/-standard deviation
 					if($data<=$minsd){
 					  $dump[2+count($ai_tags)+$x]='low';
 					  if($minsd==$min)
@@ -142,6 +149,32 @@ class AITag extends Config{
 					  else 
 	                    $dump[2+$x]=0.8+(($data-$maxsd)/($max-$maxsd)*0.2);
 					}
+
+					//skew
+					$data=$dump[2+$x];
+					$data+=$ai_tags_skew[$x];
+
+					//skew can push it below [0-1]
+					if($data<0)
+						$data=0;
+					if($data>1)
+						$data=1;
+					
+					//echo $ai_tags[$x].":". "!!!! ".$dump[0]." >> ".$dump[2+$x]." -> ".$data.PHP_EOL;
+
+					$dump[2+$x]=$data;//write back
+					$stash=$dump[2+count($ai_tags)+$x];
+					//retag adjusting for skew
+					if($data<=0.2){
+					  $dump[2+count($ai_tags)+$x]='low';
+					}else if($data>0.2 && $data<0.8){
+					  $dump[2+count($ai_tags)+$x]='normal';
+					}else if($data>=0.8){
+					  $dump[2+count($ai_tags)+$x]='high';
+					}
+
+					if(AITag::$info && $stash!=$dump[2+count($ai_tags)+$x])
+						echo $ai_tags[$x].":". $dump[0]." >> skew moved ".$ai_tags[$x]." from $stash to ".$dump[2+count($ai_tags)+$x].PHP_EOL;
 
 			}	
 
