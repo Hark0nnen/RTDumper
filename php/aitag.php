@@ -46,6 +46,19 @@ Desired AI Behaviour:
 *normal: DFA if better than weapon attack / high weapon heat / No line of sight / poor weapon too hit
 *high: DFA whenever possible
 
+*3 melee: melee damage behaviour
+RTDumper understands Kick , Punch , Physical damage
+Currently ignoring charge as it will ?ALWAYS? result in instability
+//Melee Damage Efficency is Max(Kick,Punch,Physical)Melee damage per mech tonnage
+
+tag based on:
+{R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency}
+
+low - has little to no melee damage or equipment and avoid it
+normal - can punch if it needs to
+high - has melee equipment and wants to get close
+
+
 
 
 */
