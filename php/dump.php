@@ -427,7 +427,7 @@ public static function dumpMechs(){
 
 		Dump::getDefensiveInfo($einfo,$chasisjd,$armor,$structure,$leg_armor,$leg_structure,$armor_repair,$structure_repair,$leg_armor_repair,$leg_structure_repair);
 
-		Dump::getPhysicalInfo($einfo,$tonnage,$jump_distance_activated,$leg_armor,$leg_structure,$leg_armor_repair,$leg_structure_repair,$ChargeAttackerDamage,$ChargeTargetDamage,$ChargeAttackerInstability,$ChargeTargetInstability,$DFAAttackerDamage,$DFATargetDamage,$DFAAttackerInstability,$DFATargetInstability,$KickDamage,$KickInstability,$PhysicalWeaponDamage,$PhysicalWeaponInstability,$PunchDamage,$PunchInstability,$dfa_self_damage_efficency,$dfa_damage_efficency,$dfa_self_instability_efficency);
+		Dump::getPhysicalInfo($einfo,$chasisjd,$tonnage,$walk_activated,$jump_distance_activated,$leg_armor,$leg_structure,$leg_armor_repair,$leg_structure_repair,$ChargeAttackerDamage,$ChargeTargetDamage,$ChargeAttackerInstability,$ChargeTargetInstability,$DFAAttackerDamage,$DFATargetDamage,$DFAAttackerInstability,$DFATargetInstability,$KickDamage,$KickInstability,$PhysicalWeaponDamage,$PhysicalWeaponInstability,$PunchDamage,$PunchInstability,$dfa_self_damage_efficency,$dfa_damage_efficency,$dfa_self_instability_efficency);
 
 		
 
@@ -740,13 +740,13 @@ public static function initPhysicalInfo(&$einfo,$tonnage){
 
 }
 
-public static function getPhysicalInfo($einfo,$tonnage,$jump_distance_activated,$leg_armor,$leg_structure,$leg_armor_repair,$leg_structure_repair, &$ChargeAttackerDamage,&$ChargeTargetDamage,&$ChargeAttackerInstability,&$ChargeTargetInstability,&$DFAAttackerDamage,&$DFATargetDamage,&$DFAAttackerInstability,&$DFATargetInstability,&$KickDamage,&$KickInstability,&$PhysicalWeaponDamage,&$PhysicalWeaponInstability,&$PunchDamage,&$PunchInstability,&$dfa_self_damage_efficency,&$dfa_damage_efficency,&$dfa_self_instability_efficency){
+public static function getPhysicalInfo($einfo,$chasisjd,$tonnage,$max_move,$jump_distance_activated,$leg_armor,$leg_structure,$leg_armor_repair,$leg_structure_repair, &$ChargeAttackerDamage,&$ChargeTargetDamage,&$ChargeAttackerInstability,&$ChargeTargetInstability,&$DFAAttackerDamage,&$DFATargetDamage,&$DFAAttackerInstability,&$DFATargetInstability,&$KickDamage,&$KickInstability,&$PhysicalWeaponDamage,&$PhysicalWeaponInstability,&$PunchDamage,&$PunchInstability,&$dfa_self_damage_efficency,&$dfa_damage_efficency,&$dfa_self_instability_efficency){
 
 	//Watch https://github.com/BattletechModders/CBTBehaviorsEnhanced/commits/master/CBTBehaviorsEnhanced/CBTBehaviorsEnhanced/Extensions/MechExtensions.cs
 
 	//derived from RTdumper avg stats for tonnage 58.x avg move ~5.1
 	$avg_tonnage=60;
-	$avg_hexesMoved=5;
+	$avg_hexesMoved=min(5,$max_move);//constant assumption of distance to target
 
 	//Calculations from MechExtensions.cs in CBTBehaviorsEnhanced
 	$modjson=json_for_pk(JSONType::MODJSON,"CBTBehaviorsEnhanced");
@@ -904,12 +904,17 @@ public static function getPhysicalInfo($einfo,$tonnage,$jump_distance_activated,
 	$TargetDamagePerAttackerTon=$modjson['Settings']['Melee']['Kick']['CBTBE_Punch_Target_Damage_Per_Attacker_Ton'];
 	$CBTBE_Punch_Target_Damage_Mod=$einfo['CBTBE_Punch_Target_Damage_Mod_activated'];
 	$CBTBE_Punch_Target_Damage_Multi=$einfo['CBTBE_Punch_Target_Damage_Multi_activated'];
-	//ArmActuatorDamageReduction does not apply as we are calculating based on undamaged mech
-	$PunchDamage=ceil ( (ceil($DamagePerAttackerTon*$tonnage)+$CBTBE_Punch_Target_Damage_Mod)*$CBTBE_Punch_Target_Damage_Multi );
+	//ArmActuatorDamageReduction applies to mechs without arms.
+	$reduction=1;
+	if($chasisjd["Custom"]["ArmActuatorSupport"]["LeftLimit"]=="Upper" && $chasisjd ["Custom"]["ArmActuatorSupport"]["RightLimit"]== "Upper" )
+		$reduction=$modjson['Settings']['Melee']['Punch']['ArmActuatorDamageReduction'];
+
+	$PunchDamage=ceil ( (ceil($DamagePerAttackerTon*$tonnage)+$CBTBE_Punch_Target_Damage_Mod)*$CBTBE_Punch_Target_Damage_Multi*$reduction );
+	
 	if($einfo['CBTBE_Punch_Extra_Hits_Count'] && !$modjson['Settings']['Melee']['ExtraHitsAverageAllDamage'])
 		$PunchDamage=$PunchDamage*(1+$einfo['CBTBE_Kick_Extra_Hits_Count']);
 	if(DUMP::$info){
-			echo " (DamagePerAttackerTon x tonnage ( $DamagePerAttackerTon x $tonnage ) + CBTBE_Punch_Target_Damage_Mod ($CBTBE_Punch_Target_Damage_Mod) )* CBTBE_Punch_Target_Damage_Multi ($CBTBE_Punch_Target_Damage_Multi)".PHP_EOL;
+			echo " (DamagePerAttackerTon x tonnage ( $DamagePerAttackerTon x $tonnage ) + CBTBE_Punch_Target_Damage_Mod ($CBTBE_Punch_Target_Damage_Mod) )* CBTBE_Punch_Target_Damage_Multi ($CBTBE_Punch_Target_Damage_Multi) * ArmActuatorDamageReduction ($reduction)".PHP_EOL;
 			if($einfo['CBTBE_Punch_Extra_Hits_Count'] && !$modjson['Settings']['Melee']['ExtraHitsAverageAllDamage'])
 				echo " x 1+CBTBE_Punch_Extra_Hits_Count x".(1+$einfo['CBTBE_Punch_Extra_Hits_Count']);
 			echo " PunchDamage=$PunchDamage".PHP_EOL;
@@ -921,11 +926,23 @@ public static function getPhysicalInfo($einfo,$tonnage,$jump_distance_activated,
 		$TargetInstabilityPerAttackerTon=$modjson['Settings']['Melee']['Punch']['TargetInstabilityPerAttackerTon'];
 	$CBTBE_Punch_Target_Instability_Mod=$einfo['CBTBE_Punch_Target_Instability_Mod_activated'];
 	$CBTBE_Punch_Target_Instability_Multi=$einfo['CBTBE_Punch_Target_Instability_Multi_activated'];
-	$PunchInstability=ceil ( (ceil($TargetInstabilityPerAttackerTon*$tonnage)+$CBTBE_Punch_Target_Instability_Mod)*$CBTBE_Punch_Target_Instability_Multi );
+	//ArmActuatorDamageReduction applies to mechs without arms.
+	$reduction=1;
+	if($chasisjd["Custom"]["ArmActuatorSupport"]["LeftLimit"]=="Upper" && $chasisjd ["Custom"]["ArmActuatorSupport"]["RightLimit"]== "Upper" )
+		$reduction=$modjson['Settings']['Melee']['Punch']['ArmActuatorDamageReduction'];
+	$PunchInstability=ceil ( (ceil($TargetInstabilityPerAttackerTon*$tonnage)+$CBTBE_Punch_Target_Instability_Mod)*$CBTBE_Punch_Target_Instability_Multi*$reduction );
 	//ArmActuatorDamageReduction does not apply as we are calculating based on undamaged mech
 	if(DUMP::$info){
-			echo " (CBTBE_Punch_Target_Instability_Per_Attacker_Ton/TargetInstabilityPerAttackerTon x tonnage ( $TargetInstabilityPerAttackerTon x $tonnage ) + CBTBE_Punch_Target_Instability_Mod ($CBTBE_Punch_Target_Instability_Mod) )* CBTBE_Punch_Target_Instability_Multi ($CBTBE_Punch_Target_Instability_Multi)".PHP_EOL;
+			echo " (CBTBE_Punch_Target_Instability_Per_Attacker_Ton/TargetInstabilityPerAttackerTon x tonnage ( $TargetInstabilityPerAttackerTon x $tonnage ) + CBTBE_Punch_Target_Instability_Mod ($CBTBE_Punch_Target_Instability_Mod) )* CBTBE_Punch_Target_Instability_Multi ($CBTBE_Punch_Target_Instability_Multi) * ArmActuatorDamageReduction ($reduction)".PHP_EOL;
 			echo " PunchInstability=$PunchInstability".PHP_EOL;
+	}
+	if(!($einfo["CBTBE_Punch_Is_Physical_Weapon_activated"] && $einfo["CBTBE_Punch_Is_Physical_Weapon_activated"]==1))
+	{
+			$PhysicalWeaponDamage=0;
+			$PhysicalWeaponInstability=0;
+			if(DUMP::$info){
+				echo "NO Physical weapon !!".PHP_EOL;
+			}
 	}
 	if($jump_distance_activated<1){
 		 $DFAAttackerDamage=0;
@@ -933,7 +950,7 @@ public static function getPhysicalInfo($einfo,$tonnage,$jump_distance_activated,
 		 $DFAAttackerInstability=0;
 		 $DFATargetInstability=0;
 		 	if(DUMP::$info){
-				echo "NO JJ NO DFA !!";
+				echo "NO JJ NO DFA !!".PHP_OEL;
 			}
 	}
 	if(DUMP::$info){

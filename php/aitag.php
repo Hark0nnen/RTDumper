@@ -9,7 +9,7 @@ stats are rated.
 Rating {R} [0-1]. Based on the max/min/average/standard deviation of a stat.
 Boolean false / true based on if a mech has a characteristic , are also converted to rating {R} [0/1]. 
 
-For each AI tag determine a value between [0-1] . Each AI tag, is grouped into low(<.2), med (.2-.8) , high > .8 
+For each AI tag determine a value between [0-1] . Each AI tag, is grouped into low(<.2), normal (.2-.8) , high > .8 
 
 *1. Heat: how it handles heat
 RTDumper understands CASE , AmmoExplosions , Volatile AmmoExplosions , AMS Heat , heat damage injury, heat activated components, heat efficency.
@@ -40,6 +40,11 @@ tag based on:
 low - avoids DFA at all cost
 normal - may dfa when reasonable
 high - has dfa buffing gear and wants to jump in their face
+
+Desired AI Behaviour:
+*low: avoid DFA, However may DFA light targets only. Other targets would cause severe leg damage- due to CBTBE 'Settings' (['Melee']['DFA']['AttackerDamagePerTargetTon'])
+*normal: DFA if better than weapon attack / high weapon heat / No line of sight / poor weapon too hit
+*high: DFA whenever possible
 
 
 
