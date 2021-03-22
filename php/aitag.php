@@ -103,12 +103,30 @@ class AITag extends Config{
 		while (($line = fgetcsv($file)) !== FALSE) {
 		   if(startswith($line[0],"#"))
 				continue;
-			
-			if(AITag::$debug_single_mech){
+
+			if(AITag::$debug_mechs_ai_tag){
+				if( in_array ($line[0] , AITag::$debug_mechs_ai_tag ) || (AITag::$debug_single_mech && $line[0]==AITag::$debug_single_mech) )
+					AITag::$info=TRUE;
+				else
+					AITag::$info=FALSE;
+			}else if(AITag::$debug_single_mech){
 				if($line[0]==AITag::$debug_single_mech)
 					AITag::$info=TRUE;
 				else
 					AITag::$info=FALSE;
+			}
+			
+			if(AITag::$info){
+				$log=array();
+				$log[]=$line[0];
+				for ($x = 0; $x < count($ai_tags); $x++) {
+				 $s=$line[count($csv_header)+$x];
+				 //https://joshtronic.com/2013/09/02/how-to-use-colors-in-command-line-output/
+				 if( in_array ($ai_tags[$x], AITag::$debug_mechs_ai_tag ))
+					$s="\e[0;36;40m".$s."\e[0m";
+				 $log[]=$s;
+				}
+				echo implode(",", $log) . PHP_EOL;
 			}
 
 			$dump=array();
@@ -129,59 +147,80 @@ class AITag extends Config{
 					$minsd=$avg-$stat_stddev_lt[$x];
 					if($minsd<$min)
 					  $minsd=$min;
+					$ignore_zeros=in_array ($ai_tags[$x] , $ai_tags_ignore_zeros );
 
-					//when ignoring zeros $min can be greater than 0
-					if($data<$min)
-						$data=$min;
 					//normalize all stats to 0-1 scale <0.2 & >0.8 are for statistical outliers <= & => avg+/-standard deviation
-					if($data<=$minsd){
-					  $dump[2+count($ai_tags)+$x]='low';
-					  if($minsd==$min)
-						$dump[2+$x]=0;
-					  else 
-	                    $dump[2+$x]=($data-$min)/($minsd-$min)*0.2;
-					}else if($data>$minsd && $data<$maxsd){
-						$dump[2+count($ai_tags)+$x]='normal';
-	                    $dump[2+$x]=0.2+(($data-$minsd)/($maxsd-$minsd)*0.6);
-					}else if($data>=$maxsd){
-					  $dump[2+count($ai_tags)+$x]='high';
-					  if($maxsd==$max)
-						$dump[2+$x]=1;
-					  else 
-	                    $dump[2+$x]=0.8+(($data-$maxsd)/($max-$maxsd)*0.2);
-					}
+					if($ignore_zeros && $data==0){
+					   $dump[2+count($ai_tags)+$x]='';
+					   $dump[2+$x]='';
+					}else
+					{
+						if($data<=$minsd){
+						  $dump[2+count($ai_tags)+$x]='low';
+						  if($minsd==$min)
+							$dump[2+$x]=0;
+						  else 
+							$dump[2+$x]=($data-$min)/($minsd-$min)*0.2;
+						}else if($data>$minsd && $data<=$avg){
+							$dump[2+count($ai_tags)+$x]='normal';
+							$dump[2+$x]=0.2+(($data-$minsd)/($avg-$minsd)*0.3);
+						}else if($data>=$avg && $data<$maxsd){
+							$dump[2+count($ai_tags)+$x]='normal';
+							$dump[2+$x]=0.5+(($data-$avg)/($maxsd-$avg)*0.3);
+						}else if($data>=$maxsd){
+						  $dump[2+count($ai_tags)+$x]='high';
+						  if($maxsd==$max)
+							$dump[2+$x]=1;
+						  else 
+							$dump[2+$x]=0.8+(($data-$maxsd)/($max-$maxsd)*0.2);
+						}
 
-					//skew
-					$data=$dump[2+$x];
-					$data+=$ai_tags_skew[$x];
+						//skew
+						$data=$dump[2+$x];
+						$data+=$ai_tags_skew[$x];
 
-					//skew can push it below [0-1]
-					if($data<0)
-						$data=0;
-					if($data>1)
-						$data=1;
+						//skew can push it below [0-1]
+						if($data<0)
+							$data=0;
+						if($data>1)
+							$data=1;
 					
-					//echo $ai_tags[$x].":". "!!!! ".$dump[0]." >> ".$dump[2+$x]." -> ".$data.PHP_EOL;
+						//echo $ai_tags[$x].":". "!!!! ".$dump[0]." >> ".$dump[2+$x]." -> ".$data.PHP_EOL;
 
-					$dump[2+$x]=$data;//write back
-					$stash=$dump[2+count($ai_tags)+$x];
-					//retag adjusting for skew
-					if($data<=0.2){
-					  $dump[2+count($ai_tags)+$x]='low';
-					}else if($data>0.2 && $data<0.8){
-					  $dump[2+count($ai_tags)+$x]='normal';
-					}else if($data>=0.8){
-					  $dump[2+count($ai_tags)+$x]='high';
+						$dump[2+$x]=$data;//write back
+						$stash=$dump[2+count($ai_tags)+$x];
+						//retag adjusting for skew
+						if($data<=0.2){
+						  $dump[2+count($ai_tags)+$x]='low';
+						}else if($data>0.2 && $data<0.8){
+						  $dump[2+count($ai_tags)+$x]='normal';
+						}else if($data>=0.8){
+						  $dump[2+count($ai_tags)+$x]='high';
+						}
+
+						if(AITag::$info && $stash!=$dump[2+count($ai_tags)+$x])
+							echo $ai_tags[$x].":". $dump[0]." >> skew moved ".$ai_tags[$x]." from $stash to ".$dump[2+count($ai_tags)+$x].PHP_EOL;
+					
 					}
-
-					if(AITag::$info && $stash!=$dump[2+count($ai_tags)+$x])
-						echo $ai_tags[$x].":". $dump[0]." >> skew moved ".$ai_tags[$x]." from $stash to ".$dump[2+count($ai_tags)+$x].PHP_EOL;
 
 			}	
 
-			if(AITag::$info)
-				echo implode(",", $dump) . PHP_EOL;
 			fputcsv($fp, $dump);
+			if(AITag::$info){
+				for ($x = 0; $x < count($ai_tags); $x++) {
+					 //https://joshtronic.com/2013/09/02/how-to-use-colors-in-command-line-output/
+					 if( in_array ($ai_tags[$x], AITag::$debug_mechs_ai_tag )){
+						$dump[2+$x]="\e[1;36;40m".$dump[2+$x]."\e[0m";
+						$c="\e[1;33;40m";
+						if($dump[2+count($ai_tags)+$x]=='normal')
+							$c="\e[1;37;40m";
+						else if($dump[2+count($ai_tags)+$x]=='high')
+							$c="\e[1;31;40m";
+						$dump[2+count($ai_tags)+$x]=$c.$dump[2+count($ai_tags)+$x]."\e[0m";
+					 }
+				}
+				echo implode(",", $dump) . PHP_EOL. PHP_EOL;
+			}
 		}
 
 		fclose($file);

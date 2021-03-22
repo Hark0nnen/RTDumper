@@ -73,7 +73,8 @@ $csv_max_stat=46;
 
 
 $stats_ignore_zeros=array(
-    43,44,45// "DFA Self Damage Efficency","DFA Damage Efficency","DFA Self Instability Efficency" most mechs don't have Jump Jets, so data is highly skewed
+    25,26,27,28,//"DFA Attacker Damage","DFA Target Damage","DFA Attacker Instability","DFA Target Instability", most mechs don't have Jump Jets, so data is highly skewed if including zeros
+    43,44,45// "DFA Self Damage Efficency","DFA Damage Efficency","DFA Self Instability Efficency" most mechs don't have Jump Jets, so data is highly skewed so data is highly skewed if including zeros
 );
 
 $ai_tags=array("ai_heat","ai_dfa");
@@ -89,7 +90,7 @@ $ai_tags_weights=array(
 //ai_heat={R Max Ammo Explosion damage}  {R Max Volatile Ammo Explosion damage}  {R "AMS Single Heat"}  {R "AMS Multi Heat" }  {R Heat Damage Injury}  {R Heat Efficency } {R Auto Activation Heat}
     array(2.5,2.5,1,1,0.5,4,2.5),
 //ai_dfa={R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability}
-    array(2,3,2,3,1),
+    array(15,7,20,5,3),
 );
 
 //false means larger values better -> i.e.  on higher values i want ai_tag high
@@ -102,6 +103,7 @@ $ai_tags_reverserating=array(
 );
 
 //ignore ratings of 0 , for cases where there are a large number of them throwing the stat off.
+//this doesn't set the specific ai_tag for these mechs. and excludes these from the statistical calculatation
 $ai_tags_ignore_zeros=array(
     "ai_dfa"//most mechs don't have Jump Jets, so data is highly skewed
 );

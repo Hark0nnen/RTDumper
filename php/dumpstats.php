@@ -42,6 +42,7 @@ class DumpStats extends Config{
 				$avg=$stat_avg[$x];
 				$stat_stddev_lt[$x]=sd(array_filter($data, function($a)  use ($avg){ return ($a <=$avg); }),$stat_avg[$x]);
 				$stat_stddev_gt[$x]=sd(array_filter($data, function($a)  use ($avg){ return ($a >=$avg); }),$stat_avg[$x]);
+				//echo str_pad ( $csv_header[$x],25)." STD DEV LOW | ".str_pad ( number_format($stat_stddev_lt[$x],2),8)." | STD DEV UPR | ".str_pad ( number_format($stat_stddev_gt[$x],2),8)." | ".PHP_EOL;
 				echo str_pad ( $csv_header[$x],25)." MIN: ".str_pad ( $stat_min[$x],8)."  | ".str_pad ( number_format($avg-$stat_stddev_lt[$x],2),8)."< AVG: ".str_pad ( number_format($stat_avg[$x],2),8)." :AVG > ".str_pad ( number_format($avg+$stat_stddev_gt[$x],2),8)." | MAX: ".str_pad ( $stat_max[$x],8)." N=".count($data).PHP_EOL;
 		}	
 		$file = fopen('./Output/mechs.csv', 'r');
@@ -84,8 +85,10 @@ class DumpStats extends Config{
 						$dump[$x]=0;
 					  else 
 	                    $dump[$x]=($data-$min)/($minsd-$min)*0.2;
-					}else if($data>$minsd && $data<$maxsd){
-	                    $dump[$x]=0.2+(($data-$minsd)/($maxsd-$minsd)*0.6);
+					}else if($data>$minsd && $data<=$avg){
+	                    $dump[$x]=0.2+(($data-$minsd)/($avg-$minsd)*0.3);
+					}else if($data>=$avg && $data<$maxsd){
+	                    $dump[$x]=0.5+(($data-$avg)/($maxsd-$avg)*0.3);
 					}else if($data>=$maxsd){
 					  if($maxsd==$max)
 						$dump[$x]=1;
