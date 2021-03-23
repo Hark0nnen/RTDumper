@@ -65,7 +65,8 @@ abstract class JSONType
 	const COMPONENT=4;
 	const MODJSON=5;
 	const MESETTINGSJSON=6;
-	const MAX_TYPE = 6;
+	const COMBATGAMECONSTANTS=7;
+	const MAX_TYPE = 7;
 }
 $json_type_2_filenames=array();
 $json_filename_2_decoded=array();
@@ -94,6 +95,9 @@ $json_type_hint = array(
 	JSONType::MESETTINGSJSON => array (
 	".OrderedStatusEffects",".OrderedStatusEffects.FilterStatistics",".OrderedStatusEffects.Order",".Engine"
 	),
+	JSONType::COMBATGAMECONSTANTS => array (
+	".Phase",".Skills",".Heat",".ToHit.ToHitMovingTargetDistances",".ToHit.EvasivePipsMovingTarget"
+	),
 );
 //This is the Primary Key for lookup of each JSONType
 $json_type_pk = array( 
@@ -103,6 +107,7 @@ $json_type_pk = array(
 	JSONType::COMPONENT => ".Description.Id",
 	JSONType::MODJSON => ".Name",
 	JSONType::MESETTINGSJSON => "#MESettings",//PKs starting with # are used as is and not looked up in json
+	JSONType::COMBATGAMECONSTANTS => "#CombatGameConstants",
 );
 
 //some things are other things as well :P
@@ -112,7 +117,8 @@ $json_additional_types = array(
 	JSONType::ENGINE => array (JSONType::COMPONENT),
 	JSONType::COMPONENT => array (),
 	JSONType::MODJSON => array (),
-	JSONType::MESETTINGSJSON => array (JSONType::MODJSON)
+	JSONType::MESETTINGSJSON => array (JSONType::MODJSON),
+	JSONType::COMBATGAMECONSTANTS => array (JSONType::MODJSON)
 );
 
 
@@ -187,7 +193,9 @@ class Dump extends Config{
 		echo "COMPONENT:".count($json_type_2_filenames[JSONType::COMPONENT]).PHP_EOL;
 		echo "MODJSON:".count($json_type_2_filenames[JSONType::MODJSON]).PHP_EOL;
 		echo "MESETTINGSJSON:".count($json_type_2_filenames[JSONType::MESETTINGSJSON]).PHP_EOL;
+		echo "COMBATGAMECONSTANTS:".count($json_type_2_filenames[JSONType::COMBATGAMECONSTANTS]).PHP_EOL;
 		//echo json_encode(json_for_pk(JSONType::MODJSON,"#MESettings"));
+		//echo json_encode(json_for_pk(JSONType::MODJSON,"#CombatGameConstants"));
    }
 
 public static function getJSONFiles($dirname,&$array){
@@ -464,6 +472,7 @@ public static function initEquipmentInfo(){
 		"DamageReductionMultiplierMissile"=>1,
 		"DamageReductionMultiplierEnergy"=>1,
 		"DamageReductionMultiplierMelee"=>1,
+		"MaxEvasivePips"=>6
 		);
 }
 
