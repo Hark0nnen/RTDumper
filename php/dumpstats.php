@@ -48,7 +48,7 @@ class DumpStats extends Config{
 				$stat_stddev_lt[$x]=sd(array_filter($data, function($a)  use ($avg){ return ($a <=$avg); }),$stat_avg[$x]);
 				$stat_stddev_gt[$x]=sd(array_filter($data, function($a)  use ($avg){ return ($a >=$avg); }),$stat_avg[$x]);
 				//echo str_pad ( $csv_header[$x],25)." STD DEV LOW | ".str_pad ( number_format($stat_stddev_lt[$x],2),8)." | STD DEV UPR | ".str_pad ( number_format($stat_stddev_gt[$x],2),8)." | ".PHP_EOL;
-				echo str_pad ( $csv_header[$x],25)." MIN: ".str_pad ( $stat_min[$x],8)."  | ".str_pad ( number_format($avg-$stat_stddev_lt[$x],2),8)."< AVG: ".str_pad ( number_format($stat_avg[$x],2),8)." :AVG > ".str_pad ( number_format($avg+$stat_stddev_gt[$x],2),8)." | MAX: ".str_pad ( $stat_max[$x],8)." N=".count($data).PHP_EOL;
+				echo str_pad ( $csv_header[$x],25)." MIN: ".str_pad ( $stat_min[$x],8)."  | ".str_pad ( number_format($avg-$stat_stddev_lt[$x],2),8)." < ".str_pad ( number_format($stat_avg[$x],2),8)." (AVG)> ".str_pad ( number_format($avg+$stat_stddev_gt[$x],2),8)." | MAX: ".str_pad ( $stat_max[$x],8)." N=".count($data).PHP_EOL;
 		}	
 		$file = fopen('./Output/mechs.csv', 'r');
 		$fp = fopen('./Output/mechratings.csv', 'wb');

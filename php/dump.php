@@ -369,7 +369,7 @@ public static function dumpMechs(){
 			echo "PROCESSED EINFO:".PHP_EOL.json_encode($einfo,JSON_PRETTY_PRINT).PHP_EOL;
 		}
 
-		Dump::getMoveInfo($einfo,$engine_rating,$tonnage,$walk_base,$walk_activated,$run_base,$run_activated,$jump_distance_base,$jump_distance_activated);
+		Dump::getMoveInfo($einfo,$engine_rating,$tonnage,$walk_base,$walk_activated,$run_base,$run_activated,$jump_distance_base,$jump_distance_activated,$max_evasion_pips);
 		Dump::getHeatInfo($einfo,$engine_rating,$tonnage,$dissipation_capacity_base,$dissipation_capacity_activated,$heat_generated,$jump_heat_base,$jump_heat_activated,$heat_efficency);
 
 		//CASE Explosion reduction
@@ -409,6 +409,18 @@ public static function dumpMechs(){
 			$einfo["UnsteadyThreshold_activated"],
 			max($KickDamage,$PunchDamage,$PhysicalWeaponDamage)/$tonnage,//MeleeDamageEfficency
 			$einfo["DamageReductionMultiplierAll_activated"],$einfo["DamageReductionMultiplierBallistic_activated"],$einfo["DamageReductionMultiplierMissile_activated"],$einfo["DamageReductionMultiplierEnergy_activated"],$einfo["DamageReductionMultiplierMelee_activated"],
+			$max_evasion_pips,
+			$einfo["LV_ADVANCED_SENSORS_activated"],$einfo["LV_PROBE_CARRIER_activated"],$einfo["LV_ECM_SHIELD_activated"],$einfo["LV_ECM_JAMMED_activated"],$einfo["LV_SHARES_VISION_activated"],$einfo["LV_NIGHT_VISION_activated"],$einfo["LV_PROBE_PING_activated"],
+			$einfo["EnemiesWithinRange_LV_ECM_JAMMED_activated"],$einfo["EnemiesWithinRange_LV_PROBE_PING_activated"],$einfo["EnemiesWithinRange_LV_ECM_SHIELD_activated"],
+			$einfo["AlliesWithinRange_LV_ECM_JAMMED_activated"],$einfo["AlliesWithinRange_LV_ECM_SHIELD_activated"],
+			$einfo["EnemiesWithinRange_SensorSignatureModifier_activated"],$einfo["EnemiesWithinRange_SpottingVisibilityMultiplier_activated"],$einfo["EnemiesWithinRange_MoraleBonusGain_activated"],$einfo["EnemiesWithinRange_BaseInitiative_activated"],$einfo["EnemiesWithinRange_PanicStatModifier_activated"],
+			$einfo["AlliesWithinRange_SensorDistanceAbsolute_activated"],$einfo["AlliesWithinRange_SpotterDistanceAbsolute_activated"],
+			$einfo["SensorDistanceAbsolute_activated"],$einfo["SensorSignatureModifier_activated"],$einfo["SensorDistanceMultiplier_activated"],
+			$einfo["SpottingVisibilityMultiplier_activated"],
+   			//LV_STEALTH_signature_modifier","LV_STEALTH_details_modifier","LV_STEALTH_mediumAttackMod","LV_STEALTH_longAttackmod","LV_STEALTH_extremeAttackMod",
+			 Dump::StealthRating($einfo["LV_STEALTH_activated"],0),Dump::StealthRating($einfo["LV_STEALTH_activated"],1),Dump::StealthRating($einfo["LV_STEALTH_activated"],2),Dump::StealthRating($einfo["LV_STEALTH_activated"],3),Dump::StealthRating($einfo["LV_STEALTH_activated"],4),
+			//"LV_MIMETIC_maxCharges","LV_MIMETIC_visibilityModPerCharge","LV_MIMETIC_attackModPerCharge","LV_MIMETIC_hexesUntilDecay",
+			Dump::MimeticRating($einfo["LV_MIMETIC_activated"],0),Dump::MimeticRating($einfo["LV_MIMETIC_activated"],1),Dump::MimeticRating($einfo["LV_MIMETIC_activated"],2),Dump::MimeticRating($einfo["LV_MIMETIC_activated"],3),
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 
@@ -616,15 +628,18 @@ public static function initMoveInfo(&$einfo,$engine_rating,$tonnage){
 
 }
 
-public static function getMoveInfo($einfo,$engine_rating,$tonnage,&$walk_base,&$walk_activated,&$run_base,&$run_activated,&$jump_distance_base,&$jump_distance_activated){
+public static function getMoveInfo($einfo,$engine_rating,$tonnage,&$walk_base,&$walk_activated,&$run_base,&$run_activated,&$jump_distance_base,&$jump_distance_activated,&$max_evasion_pips){
 		//walk/run distance
 		//https://github.com/BattletechModders/CBTBehaviorsEnhanced
 		$CBTmodjson=json_for_pk(JSONType::MODJSON,"CBTBehaviorsEnhanced");
 		$MEmodjson=json_for_pk(JSONType::MODJSON,"#MESettings");
+		$combatgameconstants=json_for_pk(JSONType::MODJSON,"#CombatGameConstants");
 
 		//$ChargeAttackerDamage
 		$MovementPointDistanceMultiplier = $CBTmodjson["Move"]["MPMetersPerHex"];
 		$RunMulti = $CBTmodjson["Move"]["RunMulti"];
+		$ToHitMovingTargetDistances = $combatgameconstants["ToHit"]["ToHitMovingTargetDistances"];
+		$EvasivePipsMovingTarget = $combatgameconstants["ToHit"]["EvasivePipsMovingTarget"];
 
 		$walk_base=round($einfo["WalkSpeed_base"]/$MovementPointDistanceMultiplier);
 		$walk_activated=round($einfo["WalkSpeed_activated"]/$MovementPointDistanceMultiplier);
@@ -632,6 +647,22 @@ public static function getMoveInfo($einfo,$engine_rating,$tonnage,&$walk_base,&$
 		$run_activated=round(($einfo["WalkSpeed_activated"]/$MovementPointDistanceMultiplier)*($RunMulti+$einfo["CBTBE_RunMultiMod_activated"]));
 		$jump_distance_base=(int) ($einfo[".JumpCapacity"]*$einfo["JumpDistanceMultiplier_base"]);
 		$jump_distance_activated=(int) ($einfo[".JumpCapacity"]*$einfo["JumpDistanceMultiplier_activated"]);
+
+		$evasion_from_jump=0;
+		$jump_m=$jump_distance_activated*$MovementPointDistanceMultiplier;
+		$evasion_from_run=0;
+		$run_m=$einfo["WalkSpeed_activated"]*($RunMulti+$einfo["CBTBE_RunMultiMod_activated"]);
+
+		for($x=0;$x<count($ToHitMovingTargetDistances);$x++){
+			if($jump_m>=$ToHitMovingTargetDistances[$x])
+				$evasion_from_jump=$EvasivePipsMovingTarget[$x];
+			if($run_m>=$ToHitMovingTargetDistances[$x])
+				$evasion_from_run=$EvasivePipsMovingTarget[$x];
+		}
+
+		$max_evasion_pips=max($evasion_from_jump,$evasion_from_run)+$einfo["EvasivePipsGainedAdditional_activated"];
+		$max_evasion_pips=min($max_evasion_pips,$einfo["MaxEvasivePips_activated"]);
+
 }
 
 public static function initDefensiveInfo(&$einfo,$chasisjd,$mechjd){
@@ -1107,6 +1138,16 @@ public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$dissipation_
 		$heat_efficency=($dissipation_capacity_activated-$heat_generated)/$dissipation_capacity_activated*100;
 }
 
+public static function StealthRating($s,$x){
+	$s=explode ("_", $s); 
+	return $s[$x];
+}
+
+public static function MimeticRating($s,$x){
+	$s=explode ("_", $s); 
+	return $s[$x];
+}
+
 public static function weaponMatch($key,$ekey){
     //".WeaponHeatGenerated|Energy|Laser|LargeLaser|*|." key <-weapon
     //"Weapon.|*|Laser|*|*|.HeatGenerated_activated" ekey <-equipment with targetCollection Weapon
@@ -1312,7 +1353,7 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo,&$effects){
 public static function gatherEquipmentEffectInfo($componentid,$location,$effectjd,&$einfo,&$effects,$force_activated=false){
 	
 	GLOBAL $stat2operation;
-	if($effectjd["targetingData"] && $effectjd["targetingData"]["effectTargetType"]=="Creator"){
+	if($effectjd["targetingData"] && ($effectjd["targetingData"]["effectTargetType"]=="Creator" || $effectjd["targetingData"]["effectTargetType"]=="AlliesWithinRange" || $effectjd["targetingData"]["effectTargetType"]=="EnemiesWithinRange")){
 		
 		$effect=null;
 		$effectval=null;
@@ -1326,6 +1367,9 @@ public static function gatherEquipmentEffectInfo($componentid,$location,$effectj
 
 		if($effectjd[ "statisticData"] && $effectjd[ "statisticData"]["operation"]){
 			$effect=$effectjd[ "statisticData"]["statName"];
+			if($effectjd["targetingData"] && $effectjd["targetingData"]["effectTargetType"]!="Creator" ){
+				$effect=$effectjd["targetingData"]["effectTargetType"]."_".$effect;
+			}
 			$operation=$effectjd[ "statisticData"]["operation"];
 			switch ($operation) {
 				case "Int_Add":
@@ -1347,6 +1391,8 @@ public static function gatherEquipmentEffectInfo($componentid,$location,$effectj
 							  }else {
 								$effectval =0;
                               }
+                    }else if ($effectjd[ "statisticData"]["modType"]=="System.String") {
+	                          	$effectval=$effectjd[ "statisticData"]["modValue"];
                     } 
 				    break;
 				default:

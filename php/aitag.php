@@ -104,7 +104,13 @@ class AITag extends Config{
 				$avg=$stat_avg[$x];
 				$stat_stddev_lt[$x]=sd(array_filter($data, function($a)  use ($avg){ return ($a <=$avg); }),$stat_avg[$x]);
 				$stat_stddev_gt[$x]=sd(array_filter($data, function($a)  use ($avg){ return ($a >=$avg); }),$stat_avg[$x]);
-				echo str_pad ( $ai_tags[$x],25)." MIN: ".str_pad ( $stat_min[$x],8)."  | ".str_pad ( number_format($avg-$stat_stddev_lt[$x],2),8)."< AVG: ".str_pad ( number_format($stat_avg[$x],2),8)." :AVG > ".str_pad ( number_format($avg+$stat_stddev_gt[$x],2),8)." | MAX: ".str_pad ( $stat_max[$x],8)." N=".count($data).PHP_EOL;
+
+				$display_ai_tag=str_pad ( $ai_tags[$x],15);
+				if(AITag::$debug_mechs_ai_tag){
+					 if( in_array ($ai_tags[$x], AITag::$debug_mechs_ai_tag ))
+						$display_ai_tag="\e[1;33;40m".$display_ai_tag."\e[0m";
+				}
+				echo $display_ai_tag." MIN: ".str_pad ( $stat_min[$x],8)."  | ".str_pad ( number_format($avg-$stat_stddev_lt[$x],2),8)." < ".str_pad ( number_format($stat_avg[$x],2),8)." (AVG)> ".str_pad ( number_format($avg+$stat_stddev_gt[$x],2),8)." | MAX: ".str_pad ( $stat_max[$x],8)." N=".count($data).PHP_EOL;
 		}	
 		$file = fopen('./Output/mechratings.csv', 'r');
 		$fp = fopen('./Output/mechaitags.csv', 'wb');

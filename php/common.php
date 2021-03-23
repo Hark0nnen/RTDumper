@@ -61,22 +61,35 @@ $csv_header=array("#MECH Id","Tons","Engine Rating",//x,1,2
     "UnsteadyThreshold",//46
     "Melee Damage Efficency",//47
     "DamageReductionMultiplierAll","DamageReductionMultiplierBallistic","DamageReductionMultiplierMissile","DamageReductionMultiplierEnergy","DamageReductionMultiplierMelee",//48,49,50,51,52
-	"Equipment",
+    "Max Evasive Pips",//53
+     "LV_ADVANCED_SENSORS","LV_PROBE_CARRIER","LV_ECM_SHIELD","LV_ECM_JAMMED","LV_SHARES_VISION","LV_NIGHT_VISION","LV_PROBE_PING",//54,55,56,57,58,59,60
+     "EnemiesWithinRange_LV_ECM_JAMMED","EnemiesWithinRange_LV_PROBE_PING","EnemiesWithinRange_LV_ECM_SHIELD",//61,62,63
+     "AlliesWithinRange_LV_ECM_JAMMED","AlliesWithinRange_LV_ECM_SHIELD",//64,65
+     "EnemiesWithinRange_SensorSignatureModifier","EnemiesWithinRange_SpottingVisibilityMultiplier","EnemiesWithinRange_MoraleBonusGain","EnemiesWithinRange_BaseInitiative","EnemiesWithinRange_PanicStatModifier",//66,67,68,69,70
+     "AlliesWithinRange_SensorDistanceAbsolute","AlliesWithinRange_SpotterDistanceAbsolute",//71,72
+     "SensorDistanceAbsolute","SensorSignatureModifier","SensorDistanceMultiplier",//73,74,75
+     "SpottingVisibilityMultiplier",//76
+     "LV_STEALTH_signature_modifier","LV_STEALTH_details_modifier","LV_STEALTH_mediumAttackMod","LV_STEALTH_longAttackmod","LV_STEALTH_extremeAttackMod",//77,78,79,80,81
+     "LV_MIMETIC_maxCharges","LV_MIMETIC_visibilityModPerCharge","LV_MIMETIC_attackModPerCharge","LV_MIMETIC_hexesUntilDecay",//82,83,84,85
+     //"LV_NARC_rating","LV_TAG_rating",//todo these must be on ammo CAC?
+     "Equipment",
 	"path");
 
 //these are processed to find mean/std dev
 $csv_min_stat=1;
-$csv_max_stat=52;
+$csv_max_stat=85;
 
 //Heat Efficency is just spare heat dissipation after alpha strike expressed as % of dissipation capacity
 //DFA Self Damage Efficency is how many a DFAs a mech can perform before both its legs break
 //DFA Damage Efficency is DFA damage per mech tonnage
 //DFA Self Instability Efficency is Self UnsteadyThreshold remaining after DFA expressed as % of UnsteadyThreshold
+//Max Evasive Pips actually checks for appropriate max move/jump distances and derives evasion . before checking the stat of same name. (check if Max evasion is possible)
 
 
 $stats_ignore_zeros=array(
     25,26,27,28,//"DFA Attacker Damage","DFA Target Damage","DFA Attacker Instability","DFA Target Instability", most mechs don't have Jump Jets, so data is highly skewed if including zeros
-    43,44,45// "DFA Self Damage Efficency","DFA Damage Efficency","DFA Self Instability Efficency" most mechs don't have Jump Jets, so data is highly skewed so data is highly skewed if including zeros
+    43,44,45,// "DFA Self Damage Efficency","DFA Damage Efficency","DFA Self Instability Efficency" most mechs don't have Jump Jets, so data is highly skewed so data is highly skewed if including zeros
+    31,32//"Physical Weapon Damage","Physical Weapon Instability" no physical weapon no physical damage
 );
 
 $ai_tags=array("ai_heat","ai_dfa","ai_melee");
