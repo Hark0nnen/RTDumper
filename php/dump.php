@@ -309,59 +309,8 @@ public static function dumpMechs(){
 		}
 		$equipment=array();
 		$effects=array();//tree of effects that can be ordered (ME OrderedStatusEffects) or default order, before computing into $einfo
-		$einfo=array( // flattened list of all equipment effects and characteristics . Those starting with . are manually extracted, without are effects and auto extracted
-		".Custom.EngineCore.Rating"=>"",
-		".Custom.CASE.MaximumDamage"=>-1,
-		".Custom.EngineHeatBlock.HeatSinkCount"=>0,
-		".Custom.Cooling.HeatSinkDefId" => "Gear_HeatSink_Generic_Standard",
-		".Custom.ActivatableComponent.AutoActivateOnHeat"=>0,
-		".DissipationCapacity"=>0,
-		"CBTBE_RunMultiMod_base"=>0,
-		"CBTBE_RunMultiMod_activated"=>0,
-		".CBTBE_AmmoBoxExplosionDamage"=>0,
-		".CBTBE_VolatileAmmoBoxExplosionDamage"=>0,
-		"CBTBE_Charge_Attacker_Damage_Multi_base"=>1,
-		"CBTBE_Charge_Attacker_Damage_Multi_activated"=>1,
-		"CBTBE_DFA_Attacker_Damage_Multi_base"=>1,
-		"CBTBE_DFA_Attacker_Damage_Multi_activated"=>1,
-		"CBTBE_Charge_Target_Damage_Multi_base"=>1,
-		"CBTBE_Charge_Target_Damage_Multi_activated"=>1,
-		"CBTBE_Charge_Attacker_Instability_Multi_base"=>1,
-		"CBTBE_Charge_Attacker_Instability_Multi_activated"=>1,
-		"CBTBE_Charge_Target_Instability_Multi_base"=>1,
-		"CBTBE_Charge_Target_Instability_Multi_activated"=>1,
-		"CBTBE_DFA_Target_Damage_Multi_base"=>1,
-		"CBTBE_DFA_Target_Damage_Multi_activated"=>1,
-		"CBTBE_DFA_Attacker_Instability_Multi_base"=>1,
-		"CBTBE_DFA_Attacker_Instability_Multi_activated"=>1,
-		"CBTBE_DFA_Target_Instability_Multi_base"=>1,
-		"CBTBE_DFA_Target_Instability_Multi_activated"=>1,
-		"CBTBE_Kick_Target_Damage_Multi_base"=>1,
-		"CBTBE_Kick_Target_Damage_Multi_activated"=>1,
-		"CBTBE_Kick_Target_Instability_Multi_base"=>1,
-		"CBTBE_Kick_Target_Instability_Multi_activated"=>1,
-		"CBTBE_Physical_Weapon_Target_Damage_Multi_base"=>1,
-		"CBTBE_Physical_Weapon_Target_Damage_Multi_activated"=>1,
-		"CBTBE_Physical_Weapon_Target_Instability_Multi_base"=>1,
-		"CBTBE_Physical_Weapon_Target_Instability_Multi_activated"=>1,
-		"CBTBE_Punch_Target_Damage_Multi_base"=>1,
-		"CBTBE_Punch_Target_Damage_Multi_activated"=>1,
-		"CBTBE_Physical_Weapon_Target_Instability_Multi_base"=>1,
-		"CBTBE_Physical_Weapon_Target_Instability_Multi_activated"=>1,
-		"CBTBE_Punch_Target_Instability_Multi_base"=>1,
-		"CBTBE_Punch_Target_Instability_Multi_activated"=>1,
-		".AMSSINGLE_HeatGenerated"=>0,
-		".AMSMULTI_HeatGenerated"=>0,
-		"WalkSpeed_base"=>0,
-		"WalkSpeed_activated"=>0,
-		".JumpCapacity"=>0,
-		"JumpDistanceMultiplier_base"=>1,
-		"JumpDistanceMultiplier_activated"=>1,
-		"JumpHeat_base"=>0,
-		"JumpHeat_activated"=>0,
-		"DFASelfDamage_base"=>1,
-		"DFASelfDamage_activated"=>1
-		);
+		$einfo=DUMP::initEquipmentInfo();
+
 		try{
 			if($chasisjd['Custom']['ChassisDefaults'] && count($chasisjd['Custom']['ChassisDefaults'])>0)
 			{
@@ -473,6 +422,49 @@ public static function dumpMechs(){
 	echo "Exported Mechs to ".'./Output/mechs.csv'.PHP_EOL;
 }
 
+public static function initEquipmentInfo(){
+	return array( // flattened list of all equipment effects and characteristics . Those starting with . are manually extracted, without are effects and auto extracted
+		".Custom.EngineCore.Rating"=>"",
+		".Custom.CASE.MaximumDamage"=>-1,
+		".Custom.EngineHeatBlock.HeatSinkCount"=>0,
+		".Custom.Cooling.HeatSinkDefId" => "Gear_HeatSink_Generic_Standard",
+		".Custom.ActivatableComponent.AutoActivateOnHeat"=>0,
+		".DissipationCapacity"=>0,
+		"CBTBE_RunMultiMod"=>0,//additively modifies default RunMulti
+		".CBTBE_AmmoBoxExplosionDamage"=>0,
+		".CBTBE_VolatileAmmoBoxExplosionDamage"=>0,
+		"CBTBE_Charge_Attacker_Damage_Multi"=>1,
+		"CBTBE_DFA_Attacker_Damage_Multi"=>1,
+		"CBTBE_Charge_Target_Damage_Multi"=>1,
+		"CBTBE_Charge_Attacker_Instability_Multi"=>1,
+		"CBTBE_Charge_Target_Instability_Multi"=>1,
+		"CBTBE_DFA_Target_Damage_Multi"=>1,
+		"CBTBE_DFA_Attacker_Instability_Multi"=>1,
+		"CBTBE_DFA_Target_Instability_Multi"=>1,
+		"CBTBE_Kick_Target_Damage_Multi"=>1,
+		"CBTBE_Kick_Target_Instability_Multi"=>1,
+		"CBTBE_Physical_Weapon_Target_Damage_Multi"=>1,
+		"CBTBE_Physical_Weapon_Target_Instability_Multi"=>1,
+		"CBTBE_Punch_Target_Damage_Multi"=>1,
+		"CBTBE_Physical_Weapon_Target_Instability_Multi"=>1,
+		"CBTBE_Punch_Target_Instability_Multi"=>1,
+		".AMSSINGLE_HeatGenerated"=>0,
+		".AMSMULTI_HeatGenerated"=>0,
+		"WalkSpeed_base"=>0,
+		"WalkSpeed_activated"=>0,
+		".JumpCapacity"=>0,
+		"JumpDistanceMultiplier"=>1,
+		"JumpHeat_base"=>0,
+		"JumpHeat_activated"=>0,
+		"DFASelfDamage_base"=>1,
+		"DFASelfDamage_activated"=>1,
+		"DamageReductionMultiplierAll"=>1,
+		"DamageReductionMultiplierBallistic"=>1,
+		"DamageReductionMultiplierMissile"=>1,
+		"DamageReductionMultiplierEnergy"=>1,
+		"DamageReductionMultiplierMelee"=>1,
+		);
+}
 
 public static function processStatusEffects(&$einfo,&$effects){
 		$MEmodjson=json_for_pk(JSONType::MODJSON,"#MESettings");
