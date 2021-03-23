@@ -399,7 +399,8 @@ public static function dumpMechs(){
 			$armor_repair,$leg_armor_repair,$structure_repair,$leg_structure_repair,
 			$dfa_self_damage_efficency,$dfa_damage_efficency,$dfa_self_instability_efficency,
 			$einfo["UnsteadyThreshold_activated"],
-			max($KickDamage,$PunchDamage,$PhysicalWeaponDamage)/$tonnage,
+			max($KickDamage,$PunchDamage,$PhysicalWeaponDamage)/$tonnage,//MeleeDamageEfficency
+			$einfo["DamageReductionMultiplierAll_activated"],$einfo["DamageReductionMultiplierBallistic_activated"],$einfo["DamageReductionMultiplierMissile_activated"],$einfo["DamageReductionMultiplierEnergy_activated"],$einfo["DamageReductionMultiplierMelee_activated"],
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 

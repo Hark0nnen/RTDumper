@@ -18,6 +18,11 @@ class DumpStats extends Config{
 
      public static function processStats(){
 	   GLOBAL $csv_header,$stat_min,$stat_max,$stat_avg,$stat_stddev_lt,$stat_stddev_gt,$data_collect,$csv_min_stat,$csv_max_stat,$csv_header,$ai_tags,$ai_tags_calc,$ai_tags_weights,$ai_tags_reverserating,$stats_ignore_zeros;
+	   if($csv_header[$csv_max_stat+1]!="Equipment")
+	   {
+		echo "ERROR:Stat Count is broken ";
+		exit;
+	   }
 	   $file = fopen('./Output/mechs.csv', 'r');
 		while (($line = fgetcsv($file)) !== FALSE) {
 		   if(!startswith($line[0],"#"))
