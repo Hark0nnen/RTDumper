@@ -71,13 +71,14 @@ $csv_header=array("#MECH Id","Tons","Engine Rating",//x,1,2
      "SpottingVisibilityMultiplier",//76
      "LV_STEALTH_signature_modifier","LV_STEALTH_details_modifier","LV_STEALTH_mediumAttackMod","LV_STEALTH_longAttackmod","LV_STEALTH_extremeAttackMod",//77,78,79,80,81
      "LV_MIMETIC_maxCharges","LV_MIMETIC_visibilityModPerCharge","LV_MIMETIC_attackModPerCharge","LV_MIMETIC_hexesUntilDecay",//82,83,84,85
-     //"LV_NARC_rating","LV_TAG_rating",//todo these must be on ammo CAC?
+     ".Enemy.OnHit_LV_NARC_signatureMod",".Enemy.OnHit_LV_NARC_detailsMod",".Enemy.OnHit_LV_NARC_attackMod",//86,87,88
+     ".Enemy.OnHit_LV_TAG_signatureMod",".Enemy.OnHit_LV_TAG_detailsMod",".Enemy.OnHit_LV_TAG_attackMod",//89,90,91
      "Equipment",
 	"path");
 
 //these are processed to find mean/std dev
 $csv_min_stat=1;
-$csv_max_stat=85;
+$csv_max_stat=91;
 
 //Heat Efficency is just spare heat dissipation after alpha strike expressed as % of dissipation capacity
 //DFA Self Damage Efficency is how many a DFAs a mech can perform before both its legs break

@@ -428,9 +428,13 @@ public static function dumpMechs(){
 			$einfo["SensorDistanceAbsolute_activated"],$einfo["SensorSignatureModifier_activated"],$einfo["SensorDistanceMultiplier_activated"],
 			$einfo["SpottingVisibilityMultiplier_activated"],
    			//LV_STEALTH_signature_modifier","LV_STEALTH_details_modifier","LV_STEALTH_mediumAttackMod","LV_STEALTH_longAttackmod","LV_STEALTH_extremeAttackMod",
-			 Dump::StealthRating($einfo["LV_STEALTH_activated"],0),Dump::StealthRating($einfo["LV_STEALTH_activated"],1),Dump::StealthRating($einfo["LV_STEALTH_activated"],2),Dump::StealthRating($einfo["LV_STEALTH_activated"],3),Dump::StealthRating($einfo["LV_STEALTH_activated"],4),
+			 Dump::lowVisSplit($einfo["LV_STEALTH_activated"],0),Dump::lowVisSplit($einfo["LV_STEALTH_activated"],1),Dump::lowVisSplit($einfo["LV_STEALTH_activated"],2),Dump::lowVisSplit($einfo["LV_STEALTH_activated"],3),Dump::lowVisSplit($einfo["LV_STEALTH_activated"],4),
 			//"LV_MIMETIC_maxCharges","LV_MIMETIC_visibilityModPerCharge","LV_MIMETIC_attackModPerCharge","LV_MIMETIC_hexesUntilDecay",
-			Dump::MimeticRating($einfo["LV_MIMETIC_activated"],0),Dump::MimeticRating($einfo["LV_MIMETIC_activated"],1),Dump::MimeticRating($einfo["LV_MIMETIC_activated"],2),Dump::MimeticRating($einfo["LV_MIMETIC_activated"],3),
+			Dump::lowVisSplit($einfo["LV_MIMETIC_activated"],0),Dump::lowVisSplit($einfo["LV_MIMETIC_activated"],1),Dump::lowVisSplit($einfo["LV_MIMETIC_activated"],2),Dump::lowVisSplit($einfo["LV_MIMETIC_activated"],3),
+			//".Enemy.OnHit_LV_NARC_signatureMod",".Enemy.OnHit_LV_NARC_detailsMod",".Enemy.OnHit_LV_NARC_attackMod",
+			Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_NARC_activated"],0),Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_NARC_activated"],1),Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_NARC_activated"],2)
+			//".Enemy.OnHit_LV_TAG_signatureMod",".Enemy.OnHit_LV_TAG_detailsMod",".Enemy.OnHit_LV_TAG_attackMod",
+			Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_TAG_activated"],0),Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_TAG_activated"],1),Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_TAG_activated"],2)
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 
@@ -1182,12 +1186,7 @@ public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$dissipation_
 		$heat_efficency=($dissipation_capacity_activated-$heat_generated)/$dissipation_capacity_activated*100;
 }
 
-public static function StealthRating($s,$x){
-	$s=explode ("_", $s); 
-	return $s[$x];
-}
-
-public static function MimeticRating($s,$x){
+public static function lowVisSplit($s,$x){
 	$s=explode ("_", $s); 
 	return $s[$x];
 }
