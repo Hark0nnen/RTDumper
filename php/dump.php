@@ -66,7 +66,8 @@ abstract class JSONType
 	const MODJSON=5;
 	const MESETTINGSJSON=6;
 	const COMBATGAMECONSTANTS=7;
-	const MAX_TYPE = 7;
+	const AMMO=8;
+	const MAX_TYPE = 8;
 }
 $json_type_2_filenames=array();
 $json_filename_2_decoded=array();
@@ -98,6 +99,9 @@ $json_type_hint = array(
 	JSONType::COMBATGAMECONSTANTS => array (
 	".Phase",".Skills",".Heat",".ToHit.ToHitMovingTargetDistances",".ToHit.EvasivePipsMovingTarget"
 	),
+	JSONType::AMMO => array (
+	".Description.Id",".Category",".AIBattleValue",".HeatGenerated",".HeatGeneratedModifier",".ArmorDamageModifier",".ISDamageModifier",".CriticalDamageModifier"
+	),
 );
 //This is the Primary Key for lookup of each JSONType
 $json_type_pk = array( 
@@ -108,6 +112,7 @@ $json_type_pk = array(
 	JSONType::MODJSON => ".Name",
 	JSONType::MESETTINGSJSON => "#MESettings",//PKs starting with # are used as is and not looked up in json
 	JSONType::COMBATGAMECONSTANTS => "#CombatGameConstants",
+	JSONType::AMMO => ".Description.Id",
 );
 
 //some things are other things as well :P
@@ -118,7 +123,8 @@ $json_additional_types = array(
 	JSONType::COMPONENT => array (),
 	JSONType::MODJSON => array (),
 	JSONType::MESETTINGSJSON => array (JSONType::MODJSON),
-	JSONType::COMBATGAMECONSTANTS => array (JSONType::MODJSON)
+	JSONType::COMBATGAMECONSTANTS => array (JSONType::MODJSON),
+	JSONType::AMMO => array(),
 );
 
 
@@ -194,6 +200,7 @@ class Dump extends Config{
 		echo "MODJSON:".count($json_type_2_filenames[JSONType::MODJSON]).PHP_EOL;
 		echo "MESETTINGSJSON:".count($json_type_2_filenames[JSONType::MESETTINGSJSON]).PHP_EOL;
 		echo "COMBATGAMECONSTANTS:".count($json_type_2_filenames[JSONType::COMBATGAMECONSTANTS]).PHP_EOL;
+		echo "AMMO:".count($json_type_2_filenames[JSONType::AMMO]).PHP_EOL;
 		//echo json_encode(json_for_pk(JSONType::MODJSON,"#MESettings"));
 		//echo json_encode(json_for_pk(JSONType::MODJSON,"#CombatGameConstants"));
    }
