@@ -100,7 +100,7 @@ $json_type_hint = array(
 	".Phase",".Skills",".Heat",".ToHit.ToHitMovingTargetDistances",".ToHit.EvasivePipsMovingTarget"
 	),
 	JSONType::AMMO => array (
-	".Description.Id",".Category",".AIBattleValue",".HeatGenerated",".HeatGeneratedModifier",".ArmorDamageModifier",".ISDamageModifier",".CriticalDamageModifier"
+	".Description.Id",".Category",".HeatGenerated",".HeatGeneratedModifier",".ArmorDamageModifier",".ISDamageModifier"
 	),
 );
 //This is the Primary Key for lookup of each JSONType
@@ -324,6 +324,7 @@ public static function dumpMechs(){
 		}
 		$equipment=array();
 		$effects=array();//tree of effects that can be ordered (ME OrderedStatusEffects) or default order, before computing into $einfo
+		$ammoeffects=array();//tree of ammo effects before computing into $einfo for Weapons and ToHit effects
 		$einfo=DUMP::initEquipmentInfo();
 
 		try{
@@ -337,11 +338,11 @@ public static function dumpMechs(){
 						"ComponentDefType"=>$cd["Type"]
 					);
 				}
-				Dump::gatherEquipment(array('ChassisDefaults'=>$cdequip),"ChassisDefaults",$equipment,$einfo,$effects);
+				Dump::gatherEquipment(array('ChassisDefaults'=>$cdequip),"ChassisDefaults",$equipment,$einfo,$effects,$ammoeffects);
 			}
 			if($chasisjd["FixedEquipment"])
-				Dump::gatherEquipment($chasisjd,"FixedEquipment",$equipment,$einfo,$effects);
-			Dump::gatherEquipment($mechjd,"inventory",$equipment,$einfo,$effects);
+				Dump::gatherEquipment($chasisjd,"FixedEquipment",$equipment,$einfo,$effects,$ammoeffects);
+			Dump::gatherEquipment($mechjd,"inventory",$equipment,$einfo,$effects,$ammoeffects);
 
 		}catch (Exception $e) {
 			if(DUMP::$debug)
@@ -366,10 +367,12 @@ public static function dumpMechs(){
 
 		if(DUMP::$info){
 			echo "BASE EFFECTS:".PHP_EOL.json_encode($effects,JSON_PRETTY_PRINT).PHP_EOL;
+			echo "AMMO EFFECTS:".PHP_EOL.json_encode($ammoeffects,JSON_PRETTY_PRINT).PHP_EOL;
 			echo "BASE EINFO:".PHP_EOL.json_encode($einfo,JSON_PRETTY_PRINT).PHP_EOL;
 		}
 
 		DUMP::processStatusEffects($einfo,$effects);
+		DUMP::processAmmoEffects($einfo,$ammoeffects);
 
 		if(DUMP::$info){
 			echo "PROCESSED EFFECTS:".PHP_EOL.json_encode($effects,JSON_PRETTY_PRINT).PHP_EOL;
@@ -495,6 +498,38 @@ public static function initEquipmentInfo(){
 		);
 }
 
+public static function processAmmoEffects(&$einfo,&$ammoeffects){
+  //Since only 1 ammo type can be used at a time,were going to fold the ToHit effect over each other such that we take only one of each effect.
+  //for numbers its max for strings it is the last value that came in.
+  $ammoeinfo=array();
+  foreach($ammoeffects as $ae){
+     Dump::processStatusEffects($ammoeinfo,$ae);
+	 foreach($ammoeinfo as $key=>$v){
+	 /*simplify key
+	 ".Enemy.Ammo.|*|*|*|SNARC|.OnHit_LV_NARC"  ".Enemy.Ammo.|*|*|*|NARC|.OnHit_LV_NARC"  all simplify to  => ".Enemy.OnHit_LV_NARC" 
+	 ".Enemy.Ammo.|*|*|*|NARC|.Weapon.|*|*|*|*|.OnHit_HeatGenerated"  simplifies to => ".Enemy.Weapon.OnHit_HeatGenerated"  */
+		$k=explode (".", $key); 
+		$nkey="";
+		foreach($k as $tok)
+		{
+			if(!startswith($tok,"Ammo")  && !startswith($tok,"|") && $tok!=""){
+				$nkey=$nkey.".".$tok;
+			}
+		}
+		//echo "$key >>>> $nkey".PHP_EOL;
+		if(!$einfo[$nkey]){
+			$einfo[$nkey]=$v;//doesn't exist
+		}else if(is_numeric ( $einfo[$nkey])){
+			if($v>$einfo[$nkey]){
+				$einfo[$nkey]=$v;//overwrite if greater
+			}
+		}else{
+			$einfo[$nkey]=$v;//is not numeric overwrite
+		}
+	 }
+  }
+}
+
 public static function processStatusEffects(&$einfo,&$effects){
 		$MEmodjson=json_for_pk(JSONType::MODJSON,"#MESettings");
 
@@ -557,6 +592,7 @@ public static function processStatusEffects(&$einfo,&$effects){
 								break;
 							case "Float_Multiply":
 							case "Int_Multiply":
+							case "Int_Multiply_Float":
 								if($x==0 && !$einfo[$k])
 								    $base_val=1;
 								if(!$activated)
@@ -594,6 +630,7 @@ public static function processStatusEffects(&$einfo,&$effects){
 								break;
 							case "Float_Multiply":
 							case "Int_Multiply":
+							case "Int_Multiply_Float":
 								if($x==0 && !$einfo[$k])
 								    $activated_val=1;
 								$activated_val= $activated_val * $modValue;
@@ -991,7 +1028,7 @@ public static function getPhysicalInfo($einfo,$chasisjd,$tonnage,$max_move,$jump
 		 $DFAAttackerInstability=0;
 		 $DFATargetInstability=0;
 		 	if(DUMP::$info){
-				echo "NO JJ NO DFA !!".PHP_OEL;
+				echo "NO JJ NO DFA !!".PHP_EOL;
 			}
 	}
 	if(DUMP::$info){
@@ -1171,7 +1208,7 @@ public static function weaponMatch($key,$ekey){
 	return TRUE;
 }
 
-public static function gatherEquipment($jd,$json_loc,&$e,&$einfo,&$effects){
+public static function gatherEquipment($jd,$json_loc,&$e,&$einfo,&$effects,&$ammoeffects){
 	if(!$jd[$json_loc])
 	{
 		if(DUMP::$debug)
@@ -1352,15 +1389,43 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo,&$effects){
 				Dump::gatherEquipmentEffectInfo($item["ComponentDefID"],$location,$effectjd,$einfo,$effects,$force_activated);
 			}
 		}
+
+		if($componentjd["AmmoID"]){
+			$ammoid=$componentjd["AmmoID"];
+			$ammojd=json_for_pk(JSONType::AMMO,$ammoid);
+			if(!$ammojd){
+				echo "ERROR: AMMO json not loaded $ammoid".PHP_EOL;
+				exit;
+			}
+			if(DUMP::$info)
+				echo PHP_EOL."|AMMO|".$ammoid." ===========================> ".PHP_EOL.json_encode($ammojd,JSON_PRETTY_PRINT).PHP_EOL.PHP_EOL;
+			if($ammojd["statusEffects"] ){
+				$ammoeffectsarray=array();
+				foreach($ammojd["statusEffects"]  as $effectjd){
+					$force_activated=true;//weapons have to be fired
+					Dump::gatherEquipmentEffectInfo($ammoid,$location,$effectjd,$einfo,$ammoeffectsarray/* defensively prevent modification of $effects*/,$force_activated,$ammoeffectsarray,$ammojd["Category"]);
+				}
+				$ammoeffects[]=$ammoeffectsarray; //Group effects for same AMMO Bin
+			}
+			if(DUMP::$info)
+			echo" <===========================|AMMO|".PHP_EOL;
+		}
 		if(DUMP::$info)
 			echo" <===========================||".PHP_EOL;
 	}
 }
 
-public static function gatherEquipmentEffectInfo($componentid,$location,$effectjd,&$einfo,&$effects,$force_activated=false){
+public static function gatherEquipmentEffectInfo($componentid,$location,$effectjd,&$einfo,&$effects,$force_activated=false,&$ammoeffectarray=null,$ammocategory=null){
 	
 	GLOBAL $stat2operation;
-	if($effectjd["targetingData"] && ($effectjd["targetingData"]["effectTargetType"]=="Creator" || $effectjd["targetingData"]["effectTargetType"]=="AlliesWithinRange" || $effectjd["targetingData"]["effectTargetType"]=="EnemiesWithinRange")){
+	if($effectjd["targetingData"] && 
+		( $effectjd["targetingData"]["effectTargetType"]=="Creator" ||
+		$effectjd["targetingData"]["effectTargetType"]=="AlliesWithinRange" ||
+		$effectjd["targetingData"]["effectTargetType"]=="EnemiesWithinRange" ||
+		($effectjd["targetingData"]["effectTriggerType"]=="OnHit")
+		)
+	)
+	{
 		
 		$effect=null;
 		$effectval=null;
@@ -1374,8 +1439,12 @@ public static function gatherEquipmentEffectInfo($componentid,$location,$effectj
 
 		if($effectjd[ "statisticData"] && $effectjd[ "statisticData"]["operation"]){
 			$effect=$effectjd[ "statisticData"]["statName"];
-			if($effectjd["targetingData"] && $effectjd["targetingData"]["effectTargetType"]!="Creator" ){
-				$effect=$effectjd["targetingData"]["effectTargetType"]."_".$effect;
+			if($effectjd["targetingData"]["effectTargetType"]=="AlliesWithinRange" ||
+				$effectjd["targetingData"]["effectTargetType"]=="EnemiesWithinRange" )
+			{
+					$effect=$effectjd["targetingData"]["effectTargetType"]."_".$effect;
+			}elseif($effectjd["targetingData"]["effectTriggerType"]=="OnHit" ){
+				$effect=$effectjd["targetingData"]["effectTriggerType"]."_".$effect;
 			}
 			$operation=$effectjd[ "statisticData"]["operation"];
 			switch ($operation) {
@@ -1389,6 +1458,7 @@ public static function gatherEquipmentEffectInfo($componentid,$location,$effectj
 					break;
 				case "Float_Multiply":
 				case "Int_Multiply":
+				case "Int_Multiply_Float":
 					$effectval = (float)$effectjd[ "statisticData"]["modValue"];
 					break;
 				case "Set":
@@ -1433,6 +1503,19 @@ public static function gatherEquipmentEffectInfo($componentid,$location,$effectj
 						echo "[DEBUG]  targetCollection ".$effectjd[ "statisticData"]["targetCollection"]." >>".$effect.$activated=true;."( $componentid )".PHP_EOL;*/
 					break;
 			}
+			if($ammocategory){
+				  $class=
+				  "|*".
+				  "|*".
+				  "|*".
+				  "|".$ammocategory.
+				  "|.";
+				  $effect="Ammo.".$class.$effect;
+				  $activated=true;//weapons have to be fired so always treat effect as activated.
+			}
+			if($effectjd["targetingData"] && $effectjd["targetingData"]["effectTriggerType"]=="OnHit" ){
+				$effect=".Enemy.".$effect;
+			}
 		}
 		if($effect!==null && $effectval!==null){
 			if(DUMP::$debug){
@@ -1442,19 +1525,39 @@ public static function gatherEquipmentEffectInfo($componentid,$location,$effectj
 				if(!in_array ( $effectjd[ "statisticData"]["operation"] , $stat2operation[$effect] )){
 					$stat2operation[$effect][]=$operation;
 				}
+				if(!$stat2operation[$effect." from"]){
+					$stat2operation[$effect." from"]=array();
+				}
+				if(!in_array ( $componentid , $stat2operation[$effect." from"] )){
+					$stat2operation[$effect." from"][]=$componentid;
+				}
 			}
 			$effect=str_replace("{location}",$location,$effect);
-			if(!$effects[$effect])
-				$effects[$effect]=array();
-			$stackeffect=array(
-			 'operation'=>$operation,
-			 'modValue' =>$effectval,
-			 'activated'=>$activated,
-			 'from'=>$componentid
-			);
-			$effects[$effect][]=$stackeffect;
-			if(DUMP::$info)
-				echo "EFFECTS[ $effect] : ".json_encode($stackeffect).PHP_EOL;
+			if($ammocategory){
+				if(!$ammoeffectarray[$effect])
+					$ammoeffectarray[$effect]=array();
+				$stackeffect=array(
+				 'operation'=>$operation,
+				 'modValue' =>$effectval,
+				 'activated'=>$activated,
+				 'from'=>$componentid
+				);
+				$ammoeffectarray[$effect][]=$stackeffect;
+				if(DUMP::$info)
+					echo "AMMOEFFECTS[ $effect] : ".json_encode($stackeffect).PHP_EOL;
+			}else{
+				if(!$effects[$effect])
+					$effects[$effect]=array();
+				$stackeffect=array(
+				 'operation'=>$operation,
+				 'modValue' =>$effectval,
+				 'activated'=>$activated,
+				 'from'=>$componentid
+				);
+				$effects[$effect][]=$stackeffect;
+				if(DUMP::$info)
+					echo "EFFECTS[ $effect] : ".json_encode($stackeffect).PHP_EOL;
+			}
 		}
 
 	}
