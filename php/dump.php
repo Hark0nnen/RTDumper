@@ -432,9 +432,9 @@ public static function dumpMechs(){
 			//"LV_MIMETIC_maxCharges","LV_MIMETIC_visibilityModPerCharge","LV_MIMETIC_attackModPerCharge","LV_MIMETIC_hexesUntilDecay",
 			Dump::lowVisSplit($einfo["LV_MIMETIC_activated"],0),Dump::lowVisSplit($einfo["LV_MIMETIC_activated"],1),Dump::lowVisSplit($einfo["LV_MIMETIC_activated"],2),Dump::lowVisSplit($einfo["LV_MIMETIC_activated"],3),
 			//".Enemy.OnHit_LV_NARC_signatureMod",".Enemy.OnHit_LV_NARC_detailsMod",".Enemy.OnHit_LV_NARC_attackMod",
-			Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_NARC_activated"],0),Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_NARC_activated"],1),Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_NARC_activated"],2)
+			Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_NARC_activated"],0),Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_NARC_activated"],1),Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_NARC_activated"],2),
 			//".Enemy.OnHit_LV_TAG_signatureMod",".Enemy.OnHit_LV_TAG_detailsMod",".Enemy.OnHit_LV_TAG_attackMod",
-			Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_TAG_activated"],0),Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_TAG_activated"],1),Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_TAG_activated"],2)
+			Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_TAG_activated"],0),Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_TAG_activated"],1),Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_TAG_activated"],2),
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 
@@ -1332,6 +1332,70 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo,&$effects,&$amm
 				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
 		}
 		//Heat
+
+		//Damage
+		if($componentjd["Damage"] && $componentjd["ShotsWhenFired"] && $componentjd["ProjectilesPerShot"])
+		{
+			$class=
+				  "|".( (!$componentjd["Category"] || $componentjd["Category"]=="NotSet") ? "*" :$componentjd["Category"]).
+				  "|".( (!$componentjd["Type"] || $componentjd["Type"]=="NotSet") ? "*" :$componentjd["Type"]).
+				  "|".( (!$componentjd["WeaponSubType"] || $componentjd["WeaponSubType"]=="NotSet") ? "*" :$componentjd["WeaponSubType"]).
+				  "|".( (!$componentjd["AmmoCategory"] || $componentjd["AmmoCategory"]=="NotSet") ? "*" :$componentjd["AmmoCategory"]).
+				  "|.";
+
+		    $k=".".$componentjd["ComponentType"]."Damage".$class;
+			$einfo[$k]=($einfo[$k] ? $einfo[$k] :0) +((float)$componentjd["Damage"]*$componentjd["ShotsWhenFired"]*$componentjd["ProjectilesPerShot"]);
+			if(DUMP::$info)
+				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
+
+			$k=".".$componentjd["ComponentType"]."OptimumRange".$class;
+			$einfo[$k]=$componentjd["RangeSplit"][1];
+			if(DUMP::$info)
+				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
+
+			$k=".".$componentjd["ComponentType"]."AOECapable".$class;
+			$einfo[$k]=$componentjd["AOECapable"];
+			if(DUMP::$info)
+				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
+
+			$k=".".$componentjd["ComponentType"]."IndirectFireCapable".$class;
+			$einfo[$k]=$componentjd["IndirectFireCapable"];
+			if(DUMP::$info)
+				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
+
+
+			$k=".".$componentjd["ComponentType"]."Instability".$class;
+			$einfo[$k]=($einfo[$k] ? $einfo[$k] :0) +((float)$componentjd["Instability"]*$componentjd["ShotsWhenFired"]);
+			if(DUMP::$info)
+				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
+			/* I'm just taking the AP chance , other stuff depends on target state
+			=TAC Example=
+			Mech with 100 armor from 200 and full structure. 
+			Min crit chance 0.1. 
+			Weapon has APArmorShardsMod = 0.5 
+			APMaxArmorThickness = 150
+			APCritChance = 0.5
+
+			Shard Modifier = 1 + (1 - 100/200) = 1.5 
+			Thickness Modifier = 1 - 100/150 = 0.33333(3)
+			Overall chance  = 0.1 (Base minimum) * 1.5 (Shards Modifier) * 0.33333 (Thickness Modifier) * 0.5 (AP chance) = 0.025
+			As armor becomes lower, both modifiers for shard and thickness will rise.
+			*/
+			$k=".".$componentjd["ComponentType"]."APCriticalChanceMultiplier".$class;
+			$einfo[$k]=$componentjd["APCriticalChanceMultiplier"];
+			if(DUMP::$info)
+				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
+
+			$k=".".$componentjd["ComponentType"]."APArmorShardsMod".$class;
+			$einfo[$k]=$componentjd["APArmorShardsMod"];
+			if(DUMP::$info)
+				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
+
+			$k=".".$componentjd["ComponentType"]."APMaxArmorThickness".$class;
+			$einfo[$k]=$componentjd["APMaxArmorThickness"];
+			if(DUMP::$info)
+				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
+		}
 
 		if($componentjd["Custom"] && $componentjd["Custom"]["ActivatableComponent"] && $componentjd["Custom"]["ActivatableComponent"]["AutoActivateOnHeat"]){
 			if($componentjd["Custom"]["ActivatableComponent"]["AutoActivateOnHeat"]>$einfo[".Custom.ActivatableComponent.AutoActivateOnHeat"])
