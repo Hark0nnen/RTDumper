@@ -396,7 +396,10 @@ public static function dumpMechs(){
 
 		Dump::getPhysicalInfo($einfo,$chasisjd,$tonnage,$walk_activated,$jump_distance_activated,$leg_armor,$leg_structure,$leg_armor_repair,$leg_structure_repair,$ChargeAttackerDamage,$ChargeTargetDamage,$ChargeAttackerInstability,$ChargeTargetInstability,$DFAAttackerDamage,$DFATargetDamage,$DFAAttackerInstability,$DFATargetInstability,$KickDamage,$KickInstability,$PhysicalWeaponDamage,$PhysicalWeaponInstability,$PunchDamage,$PunchInstability,$dfa_self_damage_efficency,$dfa_damage_efficency,$dfa_self_instability_efficency);
 
-		
+		Dump::getWeaponsInfo($einfo,$tonnage,$Weapons_Total_Damage,$Weapons_Best_Single_Hit_Damage,$Weapons_Overall_Optimum_Range,$Weapons_Optimum_Range_Std_Dev,$Weapons_Damage_Efficency,$Weapons_Optimum_Range_Damage,$Damage_percent_at_Optimum_Range,
+			$Weapons_Damage_Weighted_APCriticalChanceMultiplier,$CACAPProtection,
+			$Weapons_Total_Instability,$Weapons_Best_Single_Hit_Instability,
+			$AOECapable,$IndirectFireCapable);
 
 		if(DUMP::$debug)
 		 		$einfo_dump=array_merge($einfo_dump, $einfo);
@@ -435,6 +438,10 @@ public static function dumpMechs(){
 			Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_NARC_activated"],0),Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_NARC_activated"],1),Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_NARC_activated"],2),
 			//".Enemy.OnHit_LV_TAG_signatureMod",".Enemy.OnHit_LV_TAG_detailsMod",".Enemy.OnHit_LV_TAG_attackMod",
 			Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_TAG_activated"],0),Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_TAG_activated"],1),Dump::lowVisSplit($einfo[".Enemy.OnHit_LV_TAG_activated"],2),
+			$Weapons_Total_Damage,$Weapons_Best_Single_Hit_Damage,$Weapons_Overall_Optimum_Range,$Weapons_Optimum_Range_Std_Dev,$Weapons_Damage_Efficency,$Weapons_Optimum_Range_Damage,$Damage_percent_at_Optimum_Range,
+			$Weapons_Damage_Weighted_APCriticalChanceMultiplier,$CACAPProtection,
+			$Weapons_Total_Instability,$Weapons_Best_Single_Hit_Instability,
+			$AOECapable,$IndirectFireCapable,
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 
@@ -752,6 +759,108 @@ public static function initDefensiveInfo(&$einfo,$chasisjd,$mechjd){
 			if($l['CurrentInternalStructure']>0){
 				$einfo[$l['Location'].".Structure"]+=$l['CurrentInternalStructure'];
 			}
+	}
+}
+
+
+
+public static function getWeaponsInfo($einfo,$tonnage,
+	&$Weapons_Total_Damage,&$Weapons_Best_Single_Hit_Damage,&$Weapons_Overall_Optimum_Range,&$Weapons_Optimum_Range_Std_Dev,&$Weapons_Damage_Efficency,&$Weapons_Optimum_Range_Damage,&$Damage_percent_at_Optimum_Range,
+	&$Weapons_Damage_Weighted_APCriticalChanceMultiplier,&$CACAPProtection,
+	&$Weapons_Total_Instability,&$Weapons_Best_Single_Hit_Instability,
+	&$AOECapable,&$IndirectFireCapable){
+			$Weapons_Total_Damage=0;
+			$Weapons_Best_Single_Hit_Damage=0;
+			$Weapons_Overall_Optimum_Range=0;
+			$Weapons_Optimum_Range_Std_Dev=0;
+			$Weapons_Damage_Efficency=0;
+			$Weapons_Optimum_Range_Damage=0;
+			$Damage_percent_at_Optimum_Range=0;
+			$Weapons_Damage_Weighted_APCriticalChanceMultiplier=0;
+			$CACAPProtection=0;
+			$Weapons_Total_Instability=0;
+			$Weapons_Best_Single_Hit_Instability=0;
+			$AOECapable=0;
+			$IndirectFireCapable=0;
+
+			$winfo=array();
+	foreach($einfo as $ekey => $wvalue) {
+		if (preg_match("/^\.Weapon([^\.|]*)\|([^\|]*)\|([^\|]*)\|([^\|]*)\|([^\|]*)\|.$/", $ekey,$matches)){
+			$wkey=$matches[1];
+			$wtype="|".$matches[2]."|".$matches[3]."|".$matches[4]."|".$matches[5]."|";
+			//".WeaponDamage|Ballistic|Gauss|Gauss|HYPERGAUSS|."
+			if(!$winfo[$wtype])
+				$winfo[$wtype]=array();
+			$winfo[$wtype] [$wkey]=$wvalue;
+		}
+	}	
+	if(DUMP::$info){
+		echo "WEAPON INFO: ".PHP_EOL.json_encode($winfo,JSON_PRETTY_PRINT).PHP_EOL;
+				
+	}
+	$ranges=array();
+	$range_2_damage=array();
+	$weaponcount=0;	
+	foreach($winfo as $weapon){
+		if($weapon["WeaponCount"]==0)
+			continue;
+		$weaponcount+=$weapon["WeaponCount"];
+		$Weapons_Total_Damage+=$weapon["Damage"];
+		if($Weapons_Best_Single_Hit_Damage< ($weapon["Damage"]/$weapon["ProjectilesWhenFired"]) ){
+			$Weapons_Best_Single_Hit_Damage=($weapon["Damage"]/$weapon["ProjectilesWhenFired"]); 
+		}
+
+		$range_2_damage[$weapon["OptimumRange"]]+=$weapon["Damage"];
+
+		for($c=0;$c<$weapon["WeaponCount"];$c++){
+			$ranges[]=$weapon["OptimumRange"];
+		}
+		
+		$Weapons_Damage_Weighted_APCriticalChanceMultiplier+=$weapon["Damage"]*$weapon["APCriticalChanceMultiplier"];
+		$Weapons_Total_Instability+=$weapon["Instability"];
+		if($Weapons_Best_Single_Hit_Instability< ($weapon["Instability"]/$weapon["ShotsWhenFired"]) ){
+			$Weapons_Best_Single_Hit_Instability=($weapon["Instability"]/$weapon["ShotsWhenFired"]);
+		}
+		if($weapon["AOECapable"])
+			$AOECapable=1;
+		if($weapon["IndirectFireCapable"])
+			$IndirectFireCapable=1;
+	}
+
+	foreach($range_2_damage as $range=> $damage){
+	 if($Weapons_Optimum_Range_Damage<$damage){
+	 	 $Weapons_Optimum_Range_Damage=$damage;
+		 $Weapons_Overall_Optimum_Range=$range;
+	 }
+	}
+	
+	if(count($ranges)>1)
+		$Weapons_Optimum_Range_Std_Dev=sd($ranges,$Weapons_Overall_Optimum_Range);
+
+	$Weapons_Damage_Efficency=$Weapons_Total_Damage/$tonnage;//Weapons Damage Efficency is damage per mech ton
+	if($einfo["CACAPProtection_activated"]){
+		$CACAPProtection=$einfo["CACAPProtection_activated"];
+	}else {
+	   $CACAPProtection=0;
+	}
+
+	if($Weapons_Total_Damage>0)
+		$Damage_percent_at_Optimum_Range=$Weapons_Optimum_Range_Damage/$Weapons_Total_Damage*100;
+
+	if(DUMP::$info){
+		echo "\t Weapons_Total_Damage $Weapons_Total_Damage".
+			"\t Weapons_Best_Single_Hit_Damage $Weapons_Best_Single_Hit_Damage".
+			"\t Weapons_Overall_Optimum_Range $Weapons_Overall_Optimum_Range".
+			"\t Weapons_Optimum_Range_Std_Dev $Weapons_Optimum_Range_Std_Dev".
+			"\t Weapons_Damage_Efficency $Weapons_Damage_Efficency".
+			"\t Weapons_Optimum_Range_Damage $Weapons_Optimum_Range_Damage".
+			"\t Damage_percent_at_Optimum_Range $Damage_percent_at_Optimum_Range".
+			"\t Weapons_Damage_Weighted_APCriticalChanceMultiplier $Weapons_Damage_Weighted_APCriticalChanceMultiplier".
+			"\t CACAPProtection $CACAPProtection".
+			"\t Weapons_Total_Instability $Weapons_Total_Instability".
+			"\t Weapons_Best_Single_Hit_Instability $Weapons_Best_Single_Hit_Instability".
+			"\t AOECapable $AOECapable".
+			"\t IndirectFireCapable $IndirectFireCapable".PHP_EOL;
 	}
 }
 
@@ -1345,6 +1454,21 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo,&$effects,&$amm
 
 		    $k=".".$componentjd["ComponentType"]."Damage".$class;
 			$einfo[$k]=($einfo[$k] ? $einfo[$k] :0) +((float)$componentjd["Damage"]*$componentjd["ShotsWhenFired"]*$componentjd["ProjectilesPerShot"]);
+			if(DUMP::$info)
+				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
+
+			$k=".".$componentjd["ComponentType"]."WeaponCount".$class;
+			$einfo[$k]=($einfo[$k] ? $einfo[$k] :0) +1;//count number of this weapon on mech
+			if(DUMP::$info)
+				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
+
+			$k=".".$componentjd["ComponentType"]."ShotsWhenFired".$class;
+			$einfo[$k]=($einfo[$k] ? $einfo[$k] :0) +$componentjd["ShotsWhenFired"];//count number of this weapon on mech
+			if(DUMP::$info)
+				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
+
+			$k=".".$componentjd["ComponentType"]."ProjectilesWhenFired".$class;
+			$einfo[$k]=($einfo[$k] ? $einfo[$k] :0) +($componentjd["ShotsWhenFired"]*$componentjd["ProjectilesPerShot"]);//count number of this weapon on mech
 			if(DUMP::$info)
 				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
 

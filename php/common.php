@@ -73,6 +73,10 @@ $csv_header=array("#MECH Id","Tons","Engine Rating",//x,1,2
      "LV_MIMETIC_maxCharges","LV_MIMETIC_visibilityModPerCharge","LV_MIMETIC_attackModPerCharge","LV_MIMETIC_hexesUntilDecay",//82,83,84,85
      ".Enemy.OnHit_LV_NARC_signatureMod",".Enemy.OnHit_LV_NARC_detailsMod",".Enemy.OnHit_LV_NARC_attackMod",//86,87,88
      ".Enemy.OnHit_LV_TAG_signatureMod",".Enemy.OnHit_LV_TAG_detailsMod",".Enemy.OnHit_LV_TAG_attackMod",//89,90,91
+     "Weapons Total Damage","Weapons Best Single Hit Damage","Weapons Overall Optimum Range","Weapons Optimum Range Std Dev","Weapons Damage Efficency","Weapons Optimum Range Damage","Damage percent at Optimum Range",//92,93,94,95,96,97,98
+     "Weapons Damage Weighted APCriticalChanceMultiplier","CACAPProtection",//99,100
+     "Weapons Total Instability","Weapons Best Single Hit Instability",//101,102
+     "AOECapable","IndirectFireCapable",//103,104
      "Equipment",
 	"path");
 
@@ -85,7 +89,7 @@ $csv_max_stat=91;
 //DFA Damage Efficency is DFA damage per mech tonnage
 //DFA Self Instability Efficency is Self UnsteadyThreshold remaining after DFA expressed as % of UnsteadyThreshold
 //Max Evasive Pips actually checks for appropriate max move/jump distances and derives evasion . before checking the stat of same name. (check if Max evasion is possible)
-
+//Weapons Damage Efficency is damage per mech ton
 
 $stats_ignore_zeros=array(
     25,26,27,28,//"DFA Attacker Damage","DFA Target Damage","DFA Attacker Instability","DFA Target Instability", most mechs don't have Jump Jets, so data is highly skewed if including zeros
