@@ -783,7 +783,32 @@ public static function getWeaponsInfo($einfo,$tonnage,
 			$AOECapable=0;
 			$IndirectFireCapable=0;
 
-			$winfo=array();
+			//get AOECapable && IndirectFireCapable from AMMO if its set there
+			foreach($einfo as $key => $value) {
+				if (preg_match("/^\.Weapon([^\.|]*)\|([^\|]*)\|([^\|]*)\|([^\|]*)\|([^\|]*)\|.$/", $key,$matches)){
+					$wkey=$matches[1];
+				if($wkey=="AOECapable" || $wkey="IndirectFireCapable")
+					//$wtype="|".$matches[2]."|".$matches[3]."|".$matches[4]."|".$matches[5]."|";
+				
+					if(DUMP::$info)
+						echo $wkey." from $key = $value ".PHP_EOL;
+				
+					foreach($einfo as $ekey => $evalue) {
+						if (startswith($ekey,"Weapon.|") && endswith($ekey,"|.".$wkey."_activated") && $evalue==1){
+							 if(Dump::weaponMatch($key,$ekey)){
+								if(DUMP::$info)
+									echo "Y $ekey = $h x $evalue".PHP_EOL;
+								$einfo[$key]=1;
+							 }else{
+								if(DUMP::$info)
+									echo "X $ekey".PHP_EOL;
+							 }
+						}
+					}
+				}
+			}
+
+	$winfo=array();
 	foreach($einfo as $ekey => $wvalue) {
 		if (preg_match("/^\.Weapon([^\.|]*)\|([^\|]*)\|([^\|]*)\|([^\|]*)\|([^\|]*)\|.$/", $ekey,$matches)){
 			$wkey=$matches[1];
@@ -1476,16 +1501,42 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo,&$effects,&$amm
 			$einfo[$k]=$componentjd["RangeSplit"][1];
 			if(DUMP::$info)
 				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
-
+			
 			$k=".".$componentjd["ComponentType"]."AOECapable".$class;
-			$einfo[$k]=$componentjd["AOECapable"];
+			if($componentjd["AOECapable"]){
+				$einfo[$k]=1;				
+			}else{
+				$einfo[$k]=0;
+			}
 			if(DUMP::$info)
-				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
+					echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
 
 			$k=".".$componentjd["ComponentType"]."IndirectFireCapable".$class;
-			$einfo[$k]=$componentjd["IndirectFireCapable"];
+			if($componentjd["IndirectFireCapable"]){
+				$einfo[$k]=1;				
+			}else{
+				$einfo[$k]=0;
+			}
 			if(DUMP::$info)
-				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
+					echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
+
+			if($componentjd["Modes"]){
+				foreach($componentjd["Modes"] as $mode){
+					$k=".".$componentjd["ComponentType"]."AOECapable".$class;
+					if($mode["AOECapable"] && $mode["AOECapable"]===true){
+						$einfo[$k]=1;				
+						if(DUMP::$info)
+							echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
+					}
+
+					$k=".".$componentjd["ComponentType"]."IndirectFireCapable".$class;
+					if($mode["IndirectFireCapable"] && $mode["IndirectFireCapable"]===true){
+						$einfo[$k]=1;				
+						if(DUMP::$info)
+							echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
+					}
+				}
+			}
 
 
 			$k=".".$componentjd["ComponentType"]."Instability".$class;
@@ -1586,6 +1637,19 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo,&$effects,&$amm
 			}
 			if(DUMP::$info)
 				echo PHP_EOL."|AMMO|".$ammoid." ===========================> ".PHP_EOL.json_encode($ammojd,JSON_PRETTY_PRINT).PHP_EOL.PHP_EOL;
+
+			if($ammojd["AOECapable"]){
+				$einfo["Weapon.|*|*|*|".$ammojd["Category"]."|.AOECapable"]=1;
+				if(DUMP::$info)
+					echo "EINFO[."."Weapon.|*|*|*|".$ammojd["Category"]."|.AOECapable] = 1".PHP_EOL;
+			}
+			
+			if($ammojd["IndirectFireCapable"]){
+				$einfo["Weapon.|*|*|*|".$ammojd["Category"]."|.IndirectFireCapable"]=1;
+				if(DUMP::$info)
+					echo "EINFO[."."Weapon.|*|*|*|".$ammojd["Category"]."|.IndirectFireCapable]= 1".PHP_EOL;
+			}
+
 			if($ammojd["statusEffects"] ){
 				$ammoeffectsarray=array();
 				foreach($ammojd["statusEffects"]  as $effectjd){
