@@ -108,6 +108,7 @@ $ai_tags_calc=array(
     array(29,31,33,47),
 /* ai_flank
 {R Max Run activated} 
+    ( {R Weapons Overall Optimum Range} )
 	( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} ) 
 	( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
 	( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
@@ -119,6 +120,7 @@ $ai_tags_calc=array(
     */
     array(
 6,
+    94,
     29,31,33,47,
     43,44,45,26,28,
     86,87,88,
@@ -130,7 +132,7 @@ $ai_tags_calc=array(
 	),
 /* ai_lance
 {RA Max Walk activated} {RA Max Run activated} {R Max Walk activated} {R Max Run activated} 
-    ( {RA Weapons Overall Optimum Range} {R "Weapons Optimum Range Std Dev"} {R Damage percent at Optimum Range} )
+    ( {RA Weapons Overall Optimum Range}  {R Weapons Overall Optimum Range} {R "Weapons Optimum Range Std Dev"} {R Damage percent at Optimum Range} )
 	( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
 	( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
 	( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
@@ -141,7 +143,7 @@ $ai_tags_calc=array(
     */
     array(
 4,6,4,6,
-    94,95,98,
+    94,94,95,98,
     64,65,71,72,
     61,62,63,
     66,67,68,69,70,
@@ -166,6 +168,7 @@ $ai_tags_weights=array(
     array(1,1,1,7),
 /* ai_flank
 {R Max Run activated} 
+    ( {R Weapons Overall Optimum Range})
 	( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} ) 
 	( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
 	( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
@@ -177,6 +180,7 @@ $ai_tags_weights=array(
     */
     array(
 4,
+    2,
     .1,.1,.1,.7,
     .3,.14,.4,.1,.06,
     .6,.4,1,
@@ -188,7 +192,7 @@ $ai_tags_weights=array(
 	),
 /* ai_lance
 {RA Max Walk activated} {RA Max Run activated} {R Max Walk activated} {R Max Run activated} 
-    ( {RA Weapons Overall Optimum Range} {R "Weapons Optimum Range Std Dev"} {R Damage percent at Optimum Range} )
+    ( {RA Weapons Overall Optimum Range} {R Weapons Overall Optimum Range} {R "Weapons Optimum Range Std Dev"} {R Damage percent at Optimum Range} )
 	( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
 	( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
 	( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
@@ -199,7 +203,7 @@ $ai_tags_weights=array(
     */
     array(
 -1,-1,2,2,
-    -2,1,1,
+    -2,1,1,1,
     3,3,2,2,
     .4,.2,.4,
     .25,.25,.2,.2,.1,
@@ -221,6 +225,7 @@ $ai_tags_reverserating=array(
      array(false,false,false,false),//ai_melee
 /* ai_flank
 {R Max Run activated} 
+    ({R Weapons Overall Optimum Range})
 	( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} ) 
 	( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
 	( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
@@ -232,6 +237,7 @@ $ai_tags_reverserating=array(
     */
     array(
 false,
+    true,
     false,false,false,false,
     false,false,false,false,false,
     false,false,false,
@@ -243,7 +249,7 @@ false,
 	),
 /* ai_lance
 {RA Max Walk activated} {RA Max Run activated} {R Max Walk activated} {R Max Run activated} 
-    ( {RA Weapons Overall Optimum Range} {R "Weapons Optimum Range Std Dev"} {R Damage percent at Optimum Range} )
+    ( {RA Weapons Overall Optimum Range} {R Weapons Overall Optimum Range} {R "Weapons Optimum Range Std Dev"} {R Damage percent at Optimum Range} )
 	( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
 	( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
 	( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
@@ -254,7 +260,7 @@ false,
     */
     array(
 false,false,true,true,//first two are walk run with average bias {RA}
-    false,true,false,
+    false,true,true,false,
     true,false,false,false,
     true,true,false,
     true,true,false,false,false,
