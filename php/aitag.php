@@ -59,6 +59,31 @@ normal - can punch if it needs to
 high - has melee equipment and wants to get close
 
 
+*4 flank:  flanking behaviour
+Try to understand if the mech is flank capable - basically speed 
+Bonus if the mech is good at stuff to do when flanked. Active ECM ,Enemy Debuffs, Melee , DFA , TAG , NARC , Single Hit Damage , Single Hit Instability
+
+tag based on:
+{R Max Run activated} 
+	( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} ) 
+	( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
+	( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
+	( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
+	( {R Weapons Best Single Hit Damage} {R Weapons Best Single Hit Instability} )
+	( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
+	( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
+
+low - little to no desire to attempt flanking
+normal - will try to backstab but not overly
+high - will want to run into their backs often
+
+Equipment
+High speed
+Active ECM types
+"Jump Attack Quirk"
+
+
+
 
 
 */

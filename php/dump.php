@@ -465,6 +465,7 @@ public static function dumpMechs(){
 }
 
 public static function initEquipmentInfo(){
+	$combatgameconstants=json_for_pk(JSONType::MODJSON,"#CombatGameConstants");
 	return array( // flattened list of all equipment effects and characteristics . Those starting with . are manually extracted, without are effects and auto extracted
 		".Custom.EngineCore.Rating"=>"",
 		".Custom.CASE.MaximumDamage"=>-1,
@@ -505,7 +506,17 @@ public static function initEquipmentInfo(){
 		"DamageReductionMultiplierMissile"=>1,
 		"DamageReductionMultiplierEnergy"=>1,
 		"DamageReductionMultiplierMelee"=>1,
-		"MaxEvasivePips"=>6
+		"MaxEvasivePips"=>6,
+		"SensorDistanceAbsolute"=>$combatgameconstants["Visibility"]["BaseSensorDistance"],
+		"SpottingVisibilityMultiplier"=>1,
+		"SensorSignatureModifier"=>1,
+		"EnemiesWithinRange_SensorSignatureModifier"=>1,
+		"EnemiesWithinRange_SpottingVisibilityMultiplier"=>1,
+		"AlliesWithinRange_SensorDistanceAbsolute"=>1,
+		"AlliesWithinRange_SpotterDistanceAbsolute"=>1,
+		"SensorSignatureModifier"=>1,
+		"SensorDistanceMultiplier"=>1,
+		"SpottingVisibilityMultiplier"=>1
 		);
 }
 
