@@ -127,11 +127,33 @@ $ai_tags_calc=array(
     61,62,63,
     66,67,68,69,70,
     103,104
+	),
+/* ai_lance
+{RA Max Walk activated} {RA Max Run activated} {R Max Walk activated} {R Max Run activated} 
+    ( {RA Weapons Overall Optimum Range} {R "Weapons Optimum Range Std Dev"} {R Damage percent at Optimum Range} )
+	( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
+	( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
+	( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
+	( {R AOECapable} {R IndirectFireCapable} )
+    ( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
+	( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
+    ( {R AMS Multi Heat} )
+    */
+    array(
+4,6,4,6,
+    94,95,98,
+    64,65,71,72,
+    61,62,63,
+    66,67,68,69,70,
+    103,104,
+    86,87,88,
+    89,90,91,
+    18,
 	)
 );
 
 //NEGATIVE WEIGHT ARE TREATED AS POSITIVE AND ARE A FLAG TO THE CALCULATIONs represented by {RA} in the aitag comments
-//The are scenarios in which extreme values need to be seperated from the avg
+//There are scenarios in which extreme values need to be seperated from the avg
 //for eg avg speed rating is .5 , we want this to be treated as 1 and mechs with extreme low/high speed to be treated as 0
 //(reversal of 0-1 after conversion this is still possible)
 //we flag this by using a negative weight
@@ -157,13 +179,35 @@ $ai_tags_weights=array(
 4,
     .1,.1,.1,.7,
     .3,.14,.4,.1,.06,
-    .3,.2,.5,
-    .3,.2,.5,
+    .6,.4,1,
+    .6,.4,1,
     .8,.2,
     .4,.2,.4,
     .25,.25,.2,.2,.1,
-    1.5,1.5,//dont want AOE / Indirect fire mechs to flank
-	)
+    0.5,1.5,//dont want AOE / Indirect fire mechs to flank
+	),
+/* ai_lance
+{RA Max Walk activated} {RA Max Run activated} {R Max Walk activated} {R Max Run activated} 
+    ( {RA Weapons Overall Optimum Range} {R "Weapons Optimum Range Std Dev"} {R Damage percent at Optimum Range} )
+	( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
+	( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
+	( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
+	( {R AOECapable} {R IndirectFireCapable} )
+    ( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
+	( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
+    ( {R AMS Multi Heat} )
+    */
+    array(
+-1,-1,2,2,
+    -2,1,1,
+    3,3,2,2,
+    .4,.2,.4,
+    .25,.25,.2,.2,.1,
+    0.25,.75,
+    .6,.4,1,
+    .6,.4,1,
+     3,
+    )
 );
 
 //false means larger values(or more positive) better -> i.e.  on higher values i want ai_tag high
@@ -196,7 +240,29 @@ false,
     false,false,true,
     false,false,true,true,true,
     true,true,//dont want AOE / Indirect fire mechs to flank
-	)
+	),
+/* ai_lance
+{RA Max Walk activated} {RA Max Run activated} {R Max Walk activated} {R Max Run activated} 
+    ( {RA Weapons Overall Optimum Range} {R "Weapons Optimum Range Std Dev"} {R Damage percent at Optimum Range} )
+	( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
+	( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
+	( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
+	( {R AOECapable} {R IndirectFireCapable} )
+    ( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
+	( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
+    ( {R AMS Multi Heat} )
+    */
+    array(
+false,false,true,true,//first two are walk run with average bias {RA}
+    false,true,false,
+    true,false,false,false,
+    true,true,false,
+    true,true,false,false,false,
+    true,true,//dont need AOE / Indirect fire mechs to maintain lance cohesion
+    true,true,true,
+    true,true,true,//NARC & TAG are better acquiring targets than maintianing cohesion
+    false,
+    )
 );
 
 //ignore ratings of 0 , for cases where there are a large number of them throwing the stat off.
@@ -213,6 +279,7 @@ $ai_tags_skew=array(
   0,//ai_dfa
   0,//ai_melee
   0,//ai_flank
+  -0.006,//ai_lance
 );
 
 

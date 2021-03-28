@@ -1,15 +1,16 @@
 <?php
 include ".\php\common.php";
-/* Notes
-Dump dumps the mech characteristics
-DumpStats compares mechs against each other.
-AItags translates the stats into actionable ai info i.e. tags
-
+/* 
 1000-ft view of how it works.
 Measure over a 100 mech characteristics.
 Rate these on characteristics on 0-1 scale.
 Calculate a value for each ai tag based on some set of previous characteristics.
 Covert the values to 0-1 scale. Give outliers low/high tags, and the rest normal.
+
+Notes
+Dump dumps the mech characteristics
+DumpStats compares mechs against each other.
+AItags translates the stats into actionable ai info i.e. tags
 
 stats are rated.
 Rating {R} [0-1]. Based on the max/min/average/standard deviation of a stat.
@@ -95,17 +96,21 @@ Try to understand if the mech is better of hanging back or charging forward
 	i.e. (Can debuff enemies,weapon optimal ranges are either extreme, aoe OR indirect fire capable, walk/run speeds are either extreme)
 Stick together if walk/run is nearer avg and optimum range is nearer avg or has variety of optimum ranges , can buff allies
 
-{RA Max Walk activated} {RA Max Run activated} 
-	( {RA Weapons Overall Optimum Range} {R "Weapons Optimum Range Std Dev"} )
+{RA Max Walk activated} {RA Max Run activated} {R Max Walk activated} {R Max Run activated} 
+	( {RA Weapons Overall Optimum Range} {R "Weapons Optimum Range Std Dev"} {R Damage percent at Optimum Range} )
 	( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
 	( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
 	( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
 	( {R AOECapable} {R IndirectFireCapable} )
+	( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
+	( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
+	( {R AMS Multi Heat} )
 
 low - does not care to be near friends
 normal - tries to keep lance coherent
 high - has buffing gear like ews or c3 and wants to hug buddies
 
+//normal /high should switch AMS to overload
 
 
 
@@ -132,7 +137,7 @@ class AITag extends Config{
 			   }
 			   $s.=	PHP_EOL.PHP_EOL;
 				if(AITag::$debug || (AITag::$debug_mechs_ai_tag &&
-				( in_array ($line[0] , AITag::$debug_mechs_ai_tag ) || (AITag::$debug_single_mech && $line[0]==AITag::$debug_single_mech) )) ){
+				( in_array ($ai_tags[$x], AITag::$debug_mechs_ai_tag ) )) ){
 					echo $s;
 				}  
 	   }

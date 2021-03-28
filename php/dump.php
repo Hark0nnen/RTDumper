@@ -516,7 +516,8 @@ public static function initEquipmentInfo(){
 		"AlliesWithinRange_SpotterDistanceAbsolute"=>1,
 		"SensorSignatureModifier"=>1,
 		"SensorDistanceMultiplier"=>1,
-		"SpottingVisibilityMultiplier"=>1
+		"SpottingVisibilityMultiplier"=>1,
+		"EnemiesWithinRange_PanicStatModifier"=>1
 		);
 }
 
