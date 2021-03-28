@@ -105,9 +105,21 @@ class DumpStats extends Config{
 			for ($x = 0; $x < count($ai_tags); $x++) {
 				$t=0;
 				for ($y = 0; $y < count($ai_tags_calc[$x]); $y++) {
-					$rating=$dump[$ai_tags_calc[$x][$y]]*$ai_tags_weights[$x][$y];
+					$w=$ai_tags_weights[$x][$y];
+					$value=$dump[$ai_tags_calc[$x][$y]];
+					//The are scenarios in which extreme values need to be seperated from the avg
+					//for eg avg speed rating is .5 , we want this to be treated as 1 and mechs with extreme low/high speed to be treated as 0
+					//(reversal over this is still possible)
+					//we flag this by using a negative weight
+					if($w<0){
+						//echo "{RA} $w $value =>";
+						$w=$w*-1;
+						$value=1-abs(1-($value*2));
+						//echo " $w $value".PHP_EOL;
+					}
+					$rating=$value*$w;
 					if($ai_tags_reverserating[$x][$y]){
-						$rating=(1*$ai_tags_weights[$x][$y])-$rating;
+						$rating=(1*$w)-$rating;
 					}
 					$t+=$rating;
 				}

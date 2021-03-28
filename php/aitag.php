@@ -5,6 +5,12 @@ Dump dumps the mech characteristics
 DumpStats compares mechs against each other.
 AItags translates the stats into actionable ai info i.e. tags
 
+1000-ft view of how it works.
+Measure over a 100 mech characteristics.
+Rate these on characteristics on 0-1 scale.
+Calculate a value for each ai tag based on some set of previous characteristics.
+Covert the values to 0-1 scale. Give outliers low/high tags, and the rest normal.
+
 stats are rated.
 Rating {R} [0-1]. Based on the max/min/average/standard deviation of a stat.
 Boolean false / true based on if a mech has a characteristic , are also converted to rating {R} [0/1]. 
@@ -62,6 +68,7 @@ high - has melee equipment and wants to get close
 *4 flank:  flanking behaviour
 Try to understand if the mech is flank capable - basically speed 
 Bonus if the mech is good at stuff to do when flanked. Active ECM ,Enemy Debuffs, Melee , DFA , TAG , NARC , Single Hit Damage , Single Hit Instability
+avoids flank if aoe/indirect fire capable
 
 tag based on:
 {R Max Run activated} 
@@ -83,6 +90,21 @@ High speed
 Active ECM types
 "Jump Attack Quirk"
 
+*5 lance: 
+Try to understand if the mech is better of hanging back or charging forward
+	i.e. (Can debuff enemies,weapon optimal ranges are either extreme, aoe OR indirect fire capable, walk/run speeds are either extreme)
+Stick together if walk/run is nearer avg and optimum range is nearer avg or has variety of optimum ranges , can buff allies
+
+{RA Max Walk activated} {RA Max Run activated} 
+	( {RA Weapons Overall Optimum Range} {R "Weapons Optimum Range Std Dev"} )
+	( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
+	( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
+	( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
+	( {R AOECapable} {R IndirectFireCapable} )
+
+low - does not care to be near friends
+normal - tries to keep lance coherent
+high - has buffing gear like ews or c3 and wants to hug buddies
 
 
 

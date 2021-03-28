@@ -97,7 +97,7 @@ $stats_ignore_zeros=array(
     31,32//"Physical Weapon Damage","Physical Weapon Instability" no physical weapon no physical damage
 );
 
-$ai_tags=array("ai_heat","ai_dfa","ai_melee","ai_flank");
+$ai_tags=array("ai_heat","ai_dfa","ai_melee","ai_flank","ai_lance");
 
 $ai_tags_calc=array(
 //ai_heat={R Max Ammo Explosion damage}  {R Max Volatile Ammo Explosion damage}  {R "AMS Single Heat"}  {R "AMS Multi Heat" }  {R Heat Damage Injury}  {R Heat Efficency } {R Auto Activation Heat}
@@ -130,6 +130,11 @@ $ai_tags_calc=array(
 	)
 );
 
+//NEGATIVE WEIGHT ARE TREATED AS POSITIVE AND ARE A FLAG TO THE CALCULATIONs represented by {RA} in the aitag comments
+//The are scenarios in which extreme values need to be seperated from the avg
+//for eg avg speed rating is .5 , we want this to be treated as 1 and mechs with extreme low/high speed to be treated as 0
+//(reversal of 0-1 after conversion this is still possible)
+//we flag this by using a negative weight
 $ai_tags_weights=array(
 //ai_heat={R Max Ammo Explosion damage}  {R Max Volatile Ammo Explosion damage}  {R "AMS Single Heat"}  {R "AMS Multi Heat" }  {R Heat Damage Injury}  {R Heat Efficency } {R Auto Activation Heat}
     array(2.5,2.5,1,1,0.5,4,2.5),
