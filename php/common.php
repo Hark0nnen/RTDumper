@@ -115,6 +115,7 @@ $ai_tags_calc=array(
 	( {R Weapons Best Single Hit Damage} {R Weapons Best Single Hit Instability} )
 	( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
 	( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
+    ( {R AOECapable} {R IndirectFireCapable} )
     */
     array(
 6,
@@ -124,7 +125,8 @@ $ai_tags_calc=array(
     89,90,91,
     93,102,
     61,62,63,
-    66,67,68,69,70
+    66,67,68,69,70,
+    103,104
 	)
 );
 
@@ -144,6 +146,7 @@ $ai_tags_weights=array(
 	( {R Weapons Best Single Hit Damage} {R Weapons Best Single Hit Instability} )
 	( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
 	( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
+	( {R AOECapable} {R IndirectFireCapable} )
     */
     array(
 4,
@@ -154,6 +157,7 @@ $ai_tags_weights=array(
     .8,.2,
     .4,.2,.4,
     .25,.25,.2,.2,.1,
+    1.5,1.5,//dont want AOE / Indirect fire mechs to flank
 	)
 );
 
@@ -175,6 +179,7 @@ $ai_tags_reverserating=array(
 	( {R Weapons Best Single Hit Damage} {R Weapons Best Single Hit Instability} )
 	( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
 	( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
+	( {R AOECapable} {R IndirectFireCapable} )
     */
     array(
 false,
@@ -185,6 +190,7 @@ false,
     false,false,
     false,false,true,
     false,false,true,true,true,
+    true,true,//dont want AOE / Indirect fire mechs to flank
 	)
 );
 

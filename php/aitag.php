@@ -72,6 +72,7 @@ tag based on:
 	( {R Weapons Best Single Hit Damage} {R Weapons Best Single Hit Instability} )
 	( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
 	( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
+	( {R AOECapable} {R IndirectFireCapable} )
 
 low - little to no desire to attempt flanking
 normal - will try to backstab but not overly
@@ -97,9 +98,21 @@ class AITag extends Config{
    }
 
    public static function init(){
-	   GLOBAL $data_collect,$csv_min_stat,$csv_max_stat,$ai_tags;
+	   GLOBAL $data_collect,$csv_min_stat,$csv_max_stat,$ai_tags,$ai_tags_calc,$ai_tags_weights,$ai_tags_reverserating,$csv_header;
 	   for ($x = 0; $x < count($ai_tags); $x++) {
 			$data_collect[$x]=array();
+	   }
+	   for ($x = 0; $x < count($ai_tags); $x++) {
+	   			$s=$ai_tags[$x]." : ".PHP_EOL ;
+
+			   for ($i = 0; $i <  count($ai_tags_weights[$x]); $i++) {
+					$s.="{ R".(($ai_tags_weights[$x][$i]<0) ? "A":"")." ".$csv_header[$ai_tags_calc[$x][$i]]." ".(($ai_tags_reverserating[$x][$i]) ? "\/":" ^")." }\t";
+			   }
+			   $s.=	PHP_EOL.PHP_EOL;
+				if(AITag::$debug || (AITag::$debug_mechs_ai_tag &&
+				( in_array ($line[0] , AITag::$debug_mechs_ai_tag ) || (AITag::$debug_single_mech && $line[0]==AITag::$debug_single_mech) )) ){
+					echo $s;
+				}  
 	   }
    }
 
