@@ -6,6 +6,7 @@ Measure over a 100 mech characteristics.
 Rate these on characteristics on 0-1 scale.
 Calculate a value for each ai tag based on some set of previous characteristics.
 Covert the values to 0-1 scale. Give outliers low/high tags, and the rest normal.
+Tagging attempts to ask the questions CAN the mech do X? SHOULD the the mech do X? WHY would the mech do X?
 
 Notes
 Dump dumps the mech characteristics
@@ -136,6 +137,23 @@ Long Range Weapons
 Below average armor
 Indirect firing weapons
 
+*movement:
+how much it wants to run. Primarily based on speed. Don't decay mimetic. High Speed Ally buffers may need to slow down to stay cohesive. NARC/TAG units may run to mark targets ASAP.
+Slower units may run to keep up.
+
+Tag based on.
+{RA Max Walk activated} {RA Max Run activated} {R Max Walk activated} {R Max Run activated} 
+	( {R Max Evasive Pips} )
+    ( {R LV_MIMETIC_maxCharges} {R LV_MIMETIC_visibilityModPerCharge} {R LV_MIMETIC_attackModPerCharge} {R LV_MIMETIC_hexesUntilDecay } )
+	( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} ) 
+	( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
+	( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
+	( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
+	( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
+
+low - slower units, not much desire to sprint a lot and stay more stable
+normal - moderate desire to move and shoot
+high - wants to run as much as possible
 
 */
 
@@ -153,7 +171,7 @@ class AITag extends Config{
 			$data_collect[$x]=array();
 	   }
 	   for ($x = 0; $x < count($ai_tags); $x++) {
-	   			$s=$ai_tags[$x]." : ".PHP_EOL ;
+	   			$s="TAGGER: ".$ai_tags[$x]." : ".PHP_EOL ;
 
 			   for ($i = 0; $i <  count($ai_tags_weights[$x]); $i++) {
 					$s.="{ R".(($ai_tags_weights[$x][$i]<0) ? "A":"")." ".$csv_header[$ai_tags_calc[$x][$i]]." ".(($ai_tags_reverserating[$x][$i]) ? "\/":" ^")." }\t";

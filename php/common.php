@@ -98,7 +98,7 @@ $stats_ignore_zeros=array(
     31,32//"Physical Weapon Damage","Physical Weapon Instability" no physical weapon no physical damage
 );
 
-$ai_tags=array("ai_heat","ai_dfa","ai_melee","ai_flank","ai_lance","ai_lethalself");
+$ai_tags=array("ai_heat","ai_dfa","ai_melee","ai_flank","ai_lance","ai_lethalself","ai_move");
 
 $ai_tags_calc=array(
 //ai_heat={R Max Ammo Explosion damage}  {R Max Volatile Ammo Explosion damage}  {R "AMS Single Heat"}  {R "AMS Multi Heat" }  {R Heat Damage Injury}  {R Heat Efficency } {R Auto Activation Heat}
@@ -179,6 +179,28 @@ $ai_tags_calc=array(
     77,78,79,80,81,
     82,83,84,85
     ),
+/*ai_move
+{RA Max Walk activated} {RA Max Run activated} {R Max Walk activated} {R Max Run activated} {RA Tons} {R Tons}
+	( {R Max Evasive Pips} )
+    ( {R LV_MIMETIC_maxCharges} {R LV_MIMETIC_visibilityModPerCharge} {R LV_MIMETIC_attackModPerCharge} {R LV_MIMETIC_hexesUntilDecay } )
+	( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} ) 
+	( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
+	( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
+	( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
+	( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
+    ( {RA Weapons Overall Optimum Range} )
+    */
+    array(
+4,6,4,6,1,1,
+    53,
+    82,83,84,85,
+    29,31,33,47,
+    43,44,45,26,28,
+    86,87,88,
+    89,90,91,
+    64,65,71,72,
+    94,
+	),
 );
 
 //NEGATIVE WEIGHT ARE TREATED AS POSITIVE AND ARE A FLAG TO THE CALCULATIONs represented by {RA} in the aitag comments
@@ -264,7 +286,29 @@ $ai_tags_weights=array(
     0.5,0.5,
     0.3,0.1,0.2,0.2,0.2,
     0.25,0.25,0.25,0.25,
-    )
+    ),
+/*ai_move
+{RA Max Walk activated} {RA Max Run activated} {R Max Walk activated} {R Max Run activated} {RA Tons} {R Tons}
+	( {R Max Evasive Pips} )
+    ( {R LV_MIMETIC_maxCharges} {R LV_MIMETIC_visibilityModPerCharge} {R LV_MIMETIC_attackModPerCharge} {R LV_MIMETIC_hexesUntilDecay } )
+	( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} ) 
+	( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
+	( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
+	( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
+	( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
+    ( {RA Weapons Overall Optimum Range} )
+    */
+    array(
+-0.25,-1.75,.5,1.25,-1.5,1.5,
+    2,
+    0.75,0.75,0.75,0.75,
+    .1,.1,.1,.7,
+    .3,.14,.4,.1,.06,
+    1.8,1.2,3,
+    1.8,1.2,3,
+    1.8,1.8,1.2,1.2,
+    2,
+	)
 );
 
 //false means larger values(or more positive) better -> i.e.  on higher values i want ai_tag high
@@ -348,6 +392,28 @@ true,true,true,false,
     true,true,true,true,true,
     true,true,true,true
     ),
+/*ai_move
+{RA Max Walk activated} {RA Max Run activated} {R Max Walk activated} {R Max Run activated} {RA Tons} {R Tons}
+	( {R Max Evasive Pips} )
+    ( {R LV_MIMETIC_maxCharges} {R LV_MIMETIC_visibilityModPerCharge} {R LV_MIMETIC_attackModPerCharge} {R LV_MIMETIC_hexesUntilDecay } )
+	( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} ) 
+	( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
+	( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
+	( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
+	( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
+    ( {RA Weapons Overall Optimum Range} )
+    */
+    array(
+true,true,false,false,true,false,//first two are walk run with average bias {RA} second last is tons with average bias.
+     false,
+     true,true,true,true,
+     false,false,false,false,
+     false,false,false,false,false,
+     false,false,false,
+     false,false,false,//NARC & TAG are better acquiring targets ASAP
+     true,false,false,false,
+     true,
+    ),
 );
 
 //ignore ratings of 0 , for cases where there are a large number of them throwing the stat off.
@@ -365,6 +431,8 @@ $ai_tags_skew=array(
   0,//ai_melee
   0,//ai_flank
   -0.006,//ai_lance
+  0,//ai_lethalself
+  .004,//ai_move
 );
 
 
