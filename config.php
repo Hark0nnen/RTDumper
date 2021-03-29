@@ -17,5 +17,6 @@ class Config{
 	//public static $debug_mechs_ai_tag=array('ai_lance','mechdef_anvil_ANV-3M','mechdef_adder_ADR-A','mechdef_ajax_AJX-A2','mechdef_atlas_AS7-CM','mechdef_atlas_AS7-A');
 	//public static $debug_mechs_ai_tag=array('ai_flank','ai_lance','mechdef_adder_ADR-C','mechdef_anvil_ANV-3M','mechdef_anvil_ANV-5M','mechdef_anvil_ANV-6M','mechdef_anvil_ANV-8M','mechdef_atlas_AS7-CM','mechdef_avatar_AV1-OC','mechdef_avatar_AV1-OD');
 	//public static $debug_mechs_ai_tag=array('ai_flank','ai_lance','mechdef_mackie_MSK-9H','mechdef_mackie_MSK-9Hb','mechdef_mackie_MSK-9Hc');
-	public static $debug_mechs_ai_tag=array('ai_lethalself','mechdef_albatross_ALB-3U','mechdef_adder_ADR-A','mechdef_adder_ADR-B','mechdef_helepolis_HEP-2H');
+	public static $debug_mechs_ai_tag=array('ai_lethalself','mechdef_albatross_ALB-3U','mechdef_adder_ADR-A','mechdef_adder_ADR-B','mechdef_helepolis_HEP-2H','mechdef_leviathan_LVT-C',
+'mechdef_leviathan_LVT-Prime','mechdef_Mekagojira_KJ-U','mechdef_moozilla_CM-XXX');
 }

@@ -115,7 +115,7 @@ use walk/run bonus equip
 *6 lethal self:
 
 avoiding damage behaviour
-{R Armor} {R Armor per ton} {R AMS Single Heat} {R Heat Damage Injury}
+{R Armor} {R Armor per ton} {R Tons} {R Heat Damage Injury}
 	( {R AMS Single Heat} {R AMS Multi Heat} )
 	( {R Max Evasive Pips} {R CACAPProtection} )
     ( {R DamageReductionMultiplierAll} {R DamageReductionMultiplierBallistic} {R DamageReductionMultiplierMissile} {R DamageReductionMultiplierEnergy} {R DamageReductionMultiplierMelee} )

@@ -154,7 +154,7 @@ $ai_tags_calc=array(
     18,
 	),
 /*ai_lethalself
-{R Armor} {R Armor per ton} {R Heat Damage Injury}
+{R Armor} {R Armor per ton} {R Tons} {R Heat Damage Injury}
 	( {R AMS Single Heat} {R AMS Multi Heat} )
 	( {R Max Evasive Pips} {R CACAPProtection} )
     ( {R DamageReductionMultiplierAll} {R DamageReductionMultiplierBallistic} {R DamageReductionMultiplierMissile} {R DamageReductionMultiplierEnergy} {R DamageReductionMultiplierMelee} )
@@ -167,7 +167,7 @@ $ai_tags_calc=array(
     ( {R LV_MIMETIC_maxCharges} {R LV_MIMETIC_visibilityModPerCharge} {R LV_MIMETIC_attackModPerCharge} {R LV_MIMETIC_hexesUntilDecay } )
     */
     array(
-35,105,19,
+35,105,1,19,
     17,18,
     53,100,
     48,49,50,51,52,
@@ -240,7 +240,7 @@ $ai_tags_weights=array(
      3,
     ),
 /*ai_lethalself
-{R Armor} {R Armor per ton} {R Heat Damage Injury}
+{R Armor} {R Armor per ton} {R Tons} {R Heat Damage Injury}
 	( {R AMS Single Heat} {R AMS Multi Heat} )
 	( {R Max Evasive Pips} {R CACAPProtection} )
     ( {R DamageReductionMultiplierAll} {R DamageReductionMultiplierBallistic} {R DamageReductionMultiplierMissile} {R DamageReductionMultiplierEnergy} {R DamageReductionMultiplierMelee} )
@@ -253,7 +253,7 @@ $ai_tags_weights=array(
     ( {R LV_MIMETIC_maxCharges} {R LV_MIMETIC_visibilityModPerCharge} {R LV_MIMETIC_attackModPerCharge} {R LV_MIMETIC_hexesUntilDecay } )
     */
     array(
-2,1.75,0.25,
+1.75,1.6,0.4,0.25,
     .2,.4,
     .2,.2,
     .2,.2,.2,.2,.2,
@@ -323,7 +323,7 @@ false,false,true,true,//first two are walk run with average bias {RA}
     false,
     ),
 /*ai_lethalself
-{R Armor} {R Armor per ton} {R Heat Damage Injury}
+{R Armor} {R Armor per ton} {R Tons} {R Heat Damage Injury}
 	( {R AMS Single Heat} {R AMS Multi Heat} )
 	( {R Max Evasive Pips} {R CACAPProtection} )
     ( {R DamageReductionMultiplierAll} {R DamageReductionMultiplierBallistic} {R DamageReductionMultiplierMissile} {R DamageReductionMultiplierEnergy} {R DamageReductionMultiplierMelee} )
@@ -336,7 +336,7 @@ false,false,true,true,//first two are walk run with average bias {RA}
     ( {R LV_MIMETIC_maxCharges} {R LV_MIMETIC_visibilityModPerCharge} {R LV_MIMETIC_attackModPerCharge} {R LV_MIMETIC_hexesUntilDecay } )
     */
     array(
-true,true,false,
+true,true,true,false,
     true,true,
     true,true,
     false,false,false,false,false,
