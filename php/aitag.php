@@ -86,10 +86,8 @@ low - little to no desire to attempt flanking
 normal - will try to backstab but not overly
 high - will want to run into their backs often
 
-Equipment
-High speed
-Active ECM types
-"Jump Attack Quirk"
+Desired AI Behaviour
+Use Walk/Run bonus equipment
 
 *5 lance: 
 Try to understand if the mech is better of hanging back or charging forward
@@ -97,7 +95,7 @@ Try to understand if the mech is better of hanging back or charging forward
 Stick together if walk/run is nearer avg and optimum range is nearer avg or has variety of optimum ranges , can buff allies
 
 {RA Max Walk activated} {RA Max Run activated} {R Max Walk activated} {R Max Run activated} 
-	( {RA Weapons Overall Optimum Range} {R "Weapons Optimum Range Std Dev"} {R Damage percent at Optimum Range} )
+	( {RA Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
 	( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
 	( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
 	( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
@@ -110,8 +108,33 @@ low - does not care to be near friends
 normal - tries to keep lance coherent
 high - has buffing gear like ews or c3 and wants to hug buddies
 
-//normal /high should switch AMS to overload
+Desired AI behaviours:
+normal /high should switch AMS to overload
+use walk/run bonus equip
 
+*6 lethal self:
+
+avoiding damage behaviour
+{R Armor} {R Armor per ton} {R AMS Single Heat} {R Heat Damage Injury}
+	( {R AMS Single Heat} {R AMS Multi Heat} )
+	( {R Max Evasive Pips} {R CACAPProtection} )
+    ( {R DamageReductionMultiplierAll} {R DamageReductionMultiplierBallistic} {R DamageReductionMultiplierMissile} {R DamageReductionMultiplierEnergy} {R DamageReductionMultiplierMelee} )
+	( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
+	( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} )
+	( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+	( {R AOECapable} {R IndirectFireCapable} )
+	( {R LV_ECM_SHIELD} {R LV_ECM_JAMMED} )
+	( {R LV_STEALTH_signature_modifier} {R LV_STEALTH_details_modifier} {R LV_STEALTH_mediumAttackMod} {R LV_STEALTH_longAttackmod} {R LV_STEALTH_extremeAttackMod} )
+    ( {R LV_MIMETIC_maxCharges} {R LV_MIMETIC_visibilityModPerCharge} {R LV_MIMETIC_attackModPerCharge} {R LV_MIMETIC_hexesUntilDecay } )
+
+low - does care little for damage it may receive, for units with hardened other pure tanks
+normal - will try to avoid incoming fire and enemy damage
+high - will try to stay back and fire only safe shots
+
+Equipment:
+Long Range Weapons
+Below average armor
+Indirect firing weapons
 
 
 */

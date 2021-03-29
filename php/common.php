@@ -77,12 +77,13 @@ $csv_header=array("#MECH Id","Tons","Engine Rating",//x,1,2
      "Weapons Damage Weighted APCriticalChanceMultiplier","CACAPProtection",//99,100
      "Weapons Total Instability","Weapons Best Single Hit Instability",//101,102
      "AOECapable","IndirectFireCapable",//103,104
+     "Armor per ton",//105
      "Equipment",
 	"path");
 
 //these are processed to find mean/std dev
 $csv_min_stat=1;
-$csv_max_stat=104;
+$csv_max_stat=105;
 
 //Heat Efficency is just spare heat dissipation after alpha strike expressed as % of dissipation capacity
 //DFA Self Damage Efficency is how many a DFAs a mech can perform before both its legs break
@@ -97,7 +98,7 @@ $stats_ignore_zeros=array(
     31,32//"Physical Weapon Damage","Physical Weapon Instability" no physical weapon no physical damage
 );
 
-$ai_tags=array("ai_heat","ai_dfa","ai_melee","ai_flank","ai_lance");
+$ai_tags=array("ai_heat","ai_dfa","ai_melee","ai_flank","ai_lance","ai_lethalself");
 
 $ai_tags_calc=array(
 //ai_heat={R Max Ammo Explosion damage}  {R Max Volatile Ammo Explosion damage}  {R "AMS Single Heat"}  {R "AMS Multi Heat" }  {R Heat Damage Injury}  {R Heat Efficency } {R Auto Activation Heat}
@@ -151,7 +152,33 @@ $ai_tags_calc=array(
     86,87,88,
     89,90,91,
     18,
-	)
+	),
+/*ai_lethalself
+{R Armor} {R Armor per ton} {R Heat Damage Injury}
+	( {R AMS Single Heat} {R AMS Multi Heat} )
+	( {R Max Evasive Pips} {R CACAPProtection} )
+    ( {R DamageReductionMultiplierAll} {R DamageReductionMultiplierBallistic} {R DamageReductionMultiplierMissile} {R DamageReductionMultiplierEnergy} {R DamageReductionMultiplierMelee} )
+	( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
+	( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} )
+	( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+	( {R AOECapable} {R IndirectFireCapable} )
+    ( {R LV_ECM_SHIELD} {R LV_ECM_JAMMED} )
+	( {R LV_STEALTH_signature_modifier} {R LV_STEALTH_details_modifier} {R LV_STEALTH_mediumAttackMod} {R LV_STEALTH_longAttackmod} {R LV_STEALTH_extremeAttackMod} )
+    ( {R LV_MIMETIC_maxCharges} {R LV_MIMETIC_visibilityModPerCharge} {R LV_MIMETIC_attackModPerCharge} {R LV_MIMETIC_hexesUntilDecay } )
+    */
+    array(
+35,105,19,
+    17,18,
+    53,100,
+    48,49,50,51,52,
+    43,44,45,26,28,
+    29,31,33,47,
+    94,95,98,
+    103,104,
+    56,57,
+    77,78,79,80,81,
+    82,83,84,85
+    ),
 );
 
 //NEGATIVE WEIGHT ARE TREATED AS POSITIVE AND ARE A FLAG TO THE CALCULATIONs represented by {RA} in the aitag comments
@@ -211,6 +238,32 @@ $ai_tags_weights=array(
     .6,.4,1,
     .6,.4,1,
      3,
+    ),
+/*ai_lethalself
+{R Armor} {R Armor per ton} {R Heat Damage Injury}
+	( {R AMS Single Heat} {R AMS Multi Heat} )
+	( {R Max Evasive Pips} {R CACAPProtection} )
+    ( {R DamageReductionMultiplierAll} {R DamageReductionMultiplierBallistic} {R DamageReductionMultiplierMissile} {R DamageReductionMultiplierEnergy} {R DamageReductionMultiplierMelee} )
+	( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
+	( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} )
+	( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+	( {R AOECapable} {R IndirectFireCapable} )
+	( {R LV_ECM_SHIELD} {R LV_ECM_JAMMED} )
+	( {R LV_STEALTH_signature_modifier} {R LV_STEALTH_details_modifier} {R LV_STEALTH_mediumAttackMod} {R LV_STEALTH_longAttackmod} {R LV_STEALTH_extremeAttackMod} )
+    ( {R LV_MIMETIC_maxCharges} {R LV_MIMETIC_visibilityModPerCharge} {R LV_MIMETIC_attackModPerCharge} {R LV_MIMETIC_hexesUntilDecay } )
+    */
+    array(
+2,1.75,0.25,
+    .2,.4,
+    .2,.2,
+    .2,.2,.2,.2,.2,
+    .3,.14,.4,.1,.06,
+    .1,.1,.1,.7,
+    1,.5,.5,
+    0.25,.75,
+    0.5,0.5,
+    0.3,0.1,0.2,0.2,0.2,
+    0.25,0.25,0.25,0.25,
     )
 );
 
@@ -268,7 +321,33 @@ false,false,true,true,//first two are walk run with average bias {RA}
     true,true,true,
     true,true,true,//NARC & TAG are better acquiring targets than maintianing cohesion
     false,
-    )
+    ),
+/*ai_lethalself
+{R Armor} {R Armor per ton} {R Heat Damage Injury}
+	( {R AMS Single Heat} {R AMS Multi Heat} )
+	( {R Max Evasive Pips} {R CACAPProtection} )
+    ( {R DamageReductionMultiplierAll} {R DamageReductionMultiplierBallistic} {R DamageReductionMultiplierMissile} {R DamageReductionMultiplierEnergy} {R DamageReductionMultiplierMelee} )
+	( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
+	( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} )
+	( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+	( {R AOECapable} {R IndirectFireCapable} )
+	( {R LV_ECM_SHIELD} {R LV_ECM_JAMMED} )
+	( {R LV_STEALTH_signature_modifier} {R LV_STEALTH_details_modifier} {R LV_STEALTH_mediumAttackMod} {R LV_STEALTH_longAttackmod} {R LV_STEALTH_extremeAttackMod} )
+    ( {R LV_MIMETIC_maxCharges} {R LV_MIMETIC_visibilityModPerCharge} {R LV_MIMETIC_attackModPerCharge} {R LV_MIMETIC_hexesUntilDecay } )
+    */
+    array(
+true,true,false,
+    true,true,
+    true,true,
+    false,false,false,false,false,
+    true,true,true,true,true,
+    true,true,true,true,
+    false,true,false,
+    false,false,
+    true,false,
+    true,true,true,true,true,
+    true,true,true,true
+    ),
 );
 
 //ignore ratings of 0 , for cases where there are a large number of them throwing the stat off.

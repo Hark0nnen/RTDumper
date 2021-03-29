@@ -442,6 +442,7 @@ public static function dumpMechs(){
 			$Weapons_Damage_Weighted_APCriticalChanceMultiplier,$CACAPProtection,
 			$Weapons_Total_Instability,$Weapons_Best_Single_Hit_Instability,
 			$AOECapable,$IndirectFireCapable,
+			$armor/$tonnage,
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 
