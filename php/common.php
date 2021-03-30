@@ -188,7 +188,7 @@ $ai_tags_calc=array(
 	( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
 	( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
 	( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
-    ( {RA Weapons Overall Optimum Range} )
+    ( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
     */
     array(
 4,6,4,6,1,1,
@@ -199,7 +199,7 @@ $ai_tags_calc=array(
     86,87,88,
     89,90,91,
     64,65,71,72,
-    94,
+    94,95,98,
 	),
 );
 
@@ -296,18 +296,18 @@ $ai_tags_weights=array(
 	( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
 	( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
 	( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
-    ( {RA Weapons Overall Optimum Range} )
+	( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
     */
     array(
--0.25,-1.75,.5,1.25,-1.5,1.5,
-    2,
-    0.75,0.75,0.75,0.75,
-    .1,.1,.1,.7,
-    .3,.14,.4,.1,.06,
-    1.8,1.2,3,
-    1.8,1.2,3,
-    1.8,1.8,1.2,1.2,
-    2,
+-0.25,-1.75,.5,1.5,-1.5,3.5,//9
+    6,//6
+    1.7,1.5,1.5,1.5,//6
+    .3,.3,.3,2.1,//3
+    .9,.42,1.2,.3,.18,//3
+    2.2,1.6,4,//8
+    2.2,1.6,4,//8
+    1.8,1.8,1.2,1.2,//6
+    7,1.5,1.5,//9
 	)
 );
 
@@ -401,7 +401,7 @@ true,true,true,false,
 	( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
 	( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
 	( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
-    ( {RA Weapons Overall Optimum Range} )
+	( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
     */
     array(
 true,true,false,false,true,false,//first two are walk run with average bias {RA} second last is tons with average bias.
@@ -412,7 +412,7 @@ true,true,false,false,true,false,//first two are walk run with average bias {RA}
      false,false,false,
      false,false,false,//NARC & TAG are better acquiring targets ASAP
      true,false,false,false,
-     true,
+     true,true,false,
     ),
 );
 
@@ -432,7 +432,7 @@ $ai_tags_skew=array(
   0,//ai_flank
   -0.006,//ai_lance
   0,//ai_lethalself
-  .004,//ai_move
+  0,//ai_move
 );
 
 
