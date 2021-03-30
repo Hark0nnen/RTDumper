@@ -165,6 +165,7 @@ $ai_tags_calc=array(
     ( {R LV_ECM_SHIELD} {R LV_ECM_JAMMED} )
 	( {R LV_STEALTH_signature_modifier} {R LV_STEALTH_details_modifier} {R LV_STEALTH_mediumAttackMod} {R LV_STEALTH_longAttackmod} {R LV_STEALTH_extremeAttackMod} )
     ( {R LV_MIMETIC_maxCharges} {R LV_MIMETIC_visibilityModPerCharge} {R LV_MIMETIC_attackModPerCharge} {R LV_MIMETIC_hexesUntilDecay } )
+    ( {R Repair Armor} )
     */
     array(
 35,105,1,19,
@@ -177,7 +178,8 @@ $ai_tags_calc=array(
     103,104,
     56,57,
     77,78,79,80,81,
-    82,83,84,85
+    82,83,84,85,
+    39,
     ),
 /*ai_move
 {RA Max Walk activated} {RA Max Run activated} {R Max Walk activated} {R Max Run activated} {RA Tons} {R Tons}
@@ -273,6 +275,7 @@ $ai_tags_weights=array(
 	( {R LV_ECM_SHIELD} {R LV_ECM_JAMMED} )
 	( {R LV_STEALTH_signature_modifier} {R LV_STEALTH_details_modifier} {R LV_STEALTH_mediumAttackMod} {R LV_STEALTH_longAttackmod} {R LV_STEALTH_extremeAttackMod} )
     ( {R LV_MIMETIC_maxCharges} {R LV_MIMETIC_visibilityModPerCharge} {R LV_MIMETIC_attackModPerCharge} {R LV_MIMETIC_hexesUntilDecay } )
+    ( {R Repair Armor} )
     */
     array(
 1.75,1.6,0.4,0.25,
@@ -286,6 +289,7 @@ $ai_tags_weights=array(
     0.5,0.5,
     0.3,0.1,0.2,0.2,0.2,
     0.25,0.25,0.25,0.25,
+    2,
     ),
 /*ai_move
 {RA Max Walk activated} {RA Max Run activated} {R Max Walk activated} {R Max Run activated} {RA Tons} {R Tons}
@@ -378,6 +382,7 @@ false,false,true,true,//first two are walk run with average bias {RA}
 	( {R LV_ECM_SHIELD} {R LV_ECM_JAMMED} )
 	( {R LV_STEALTH_signature_modifier} {R LV_STEALTH_details_modifier} {R LV_STEALTH_mediumAttackMod} {R LV_STEALTH_longAttackmod} {R LV_STEALTH_extremeAttackMod} )
     ( {R LV_MIMETIC_maxCharges} {R LV_MIMETIC_visibilityModPerCharge} {R LV_MIMETIC_attackModPerCharge} {R LV_MIMETIC_hexesUntilDecay } )
+    ( {R Repair Armor} )
     */
     array(
 true,true,true,false,
@@ -390,7 +395,8 @@ true,true,true,false,
     false,false,
     true,false,
     true,true,true,true,true,
-    true,true,true,true
+    true,true,true,true,
+    true,
     ),
 /*ai_move
 {RA Max Walk activated} {RA Max Run activated} {R Max Walk activated} {R Max Run activated} {RA Tons} {R Tons}

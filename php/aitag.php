@@ -15,6 +15,7 @@ AItags translates the stats into actionable ai info i.e. tags
 
 stats are rated.
 Rating {R} [0-1]. Based on the max/min/average/standard deviation of a stat.
+{RA} is a rating scheme where average numbers are scored 1 and outliers in BOTH directions are scored toward zero - for scenarios in which extreme values need to be seperated from the avg
 Boolean false / true based on if a mech has a characteristic , are also converted to rating {R} [0/1]. 
 
 For each AI tag determine a value between [0-1] . Each AI tag, is grouped into low(<.2), normal (.2-.8) , high > .8 
@@ -127,7 +128,7 @@ avoiding damage behaviour
 	( {R LV_ECM_SHIELD} {R LV_ECM_JAMMED} )
 	( {R LV_STEALTH_signature_modifier} {R LV_STEALTH_details_modifier} {R LV_STEALTH_mediumAttackMod} {R LV_STEALTH_longAttackmod} {R LV_STEALTH_extremeAttackMod} )
     ( {R LV_MIMETIC_maxCharges} {R LV_MIMETIC_visibilityModPerCharge} {R LV_MIMETIC_attackModPerCharge} {R LV_MIMETIC_hexesUntilDecay } )
-
+	( {R Repair Armor} )
 low - does care little for damage it may receive, for units with hardened other pure tanks
 normal - will try to avoid incoming fire and enemy damage
 high - will try to stay back and fire only safe shots
