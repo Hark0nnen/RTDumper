@@ -7,7 +7,7 @@ class Config{
    public static $info=FALSE;
    public static $warn=FALSE;
   
-   public static $debug_single_mech=null;
+   public static $debug_single_mech='mechdef_moozilla_CM-XXX3';
 
    //useful to see the calculation for multiple mechs at a time when debugging the tag
    //public static $debug_mechs_ai_tag=array();
@@ -22,5 +22,5 @@ class Config{
 	/*public static $debug_mechs_ai_tag=array('ai_move','mechdef_atlas_AS7-CM','mechdef_atlas_AS7-C','mechdef_adder_ADR-A','mechdef_adder_ADR-C','mechdef_helepolis_HEP-2H','mechdef_leviathan_LVT-C',
 'mechdef_leviathan_LVT-Prime','mechdef_Mekagojira_KJ-U','mechdef_moozilla_CM-XXX','mechdef_ajax_AJX-A2','mechdef_moozilla_CM-XXX2','mechdef_moozilla_CM-XXX3','mechdef_elemental_toad','mechdef_elemental_toad_Flamer','mechdef_gemji_CRB-GI');*/
 	public static $debug_mechs_ai_tag=array('ai_priority','mechdef_adder_ADR-A','mechdef_adder_ADR-C','mechdef_helepolis_HEP-2H','mechdef_leviathan_LVT-C',
-'mechdef_leviathan_LVT-Prime','mechdef_moozilla_CM-XXX','mechdef_ajax_AJX-A2','mechdef_moozilla_CM-XXX2','mechdef_moozilla_CM-XXX3','mechdef_elemental_toad','mechdef_elemental_toad_Flamer','mechdef_gemji_CRB-GI');
+'mechdef_leviathan_LVT-Prime','mechdef_moozilla_CM-XXX','mechdef_ajax_AJX-A2','mechdef_moozilla_CM-XXX2','mechdef_moozilla_CM-XXX3','mechdef_elemental_toad','mechdef_elemental_toad_Flamer','mechdef_gemji_CRB-GI','mechdef_catapult_CPLT-C2','mechdef_catapult_CPLT-H2');
 }

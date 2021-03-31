@@ -342,14 +342,14 @@ $ai_tags_weights=array(
 ( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
 ( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )*/
   array(
-  1.25,.75,
-  -0.5,0.5,.5,.5,
-  1.4,1.6,
-  1,
-  .05,.05,.05,.35,
-   .15,.07,.2,.05,.03,
-   .55,.4,1,
-   .55,.4,1,
+  5.5,2.5,//7
+  -1,0.5,.75,.75,//3
+  2.5,3.5,//6
+  2,//2
+  .2,.2,.2,1.4,//2
+  .6,.28,.8,.2,.12,//2
+   .55,.4,1,//2
+   .55,.4,1,//2
   ),
 );
 
@@ -469,11 +469,11 @@ true,true,false,false,true,false,//first two are walk run with average bias {RA}
 ( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )*/
   array(
     false,false,
-    true,false,true,false,
+    false,false,true,false,
     true,true,
     true,
-    false,false,false,false,
-    false,false,false,false,false,
+    true,true,true,true,
+    true,true,true,true,true,
     true,true,true,
     true,true,true,//NARC & TAG are better engaging different targets
   ),
