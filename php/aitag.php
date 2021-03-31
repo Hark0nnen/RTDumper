@@ -138,7 +138,7 @@ Long Range Weapons
 Below average armor
 Indirect firing weapons
 
-*movement:
+*7 movement:
 how much it wants to run. Primarily based on speed. Don't decay mimetic. High Speed Ally buffers may need to slow down to stay cohesive. NARC/TAG units may run to mark targets ASAP.
 Slower units may run to keep up.
 
@@ -155,6 +155,21 @@ Tag based on.
 low - slower units, not much desire to sprint a lot and stay more stable
 normal - moderate desire to move and shoot
 high - wants to run as much as possible
+
+*8 priority: desire to stay on target
+Tag based on.
+( {R Weapons Best Single Hit Damage} {R Weapons Best Single Hit Instability} )
+( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+( {R AOECapable} {R IndirectFireCapable} )
+( {R Weapons Damage Weighted APCriticalChanceMultiplier} )
+( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
+( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
+
+low - willing to distribute fire and deal damage to various targets
+normal - will try to stay on target but react to threats
+high - will try to kill their priority target at all costs
+
+
 
 */
 

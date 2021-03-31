@@ -98,7 +98,7 @@ $stats_ignore_zeros=array(
     31,32//"Physical Weapon Damage","Physical Weapon Instability" no physical weapon no physical damage
 );
 
-$ai_tags=array("ai_heat","ai_dfa","ai_melee","ai_flank","ai_lance","ai_lethalself","ai_move");
+$ai_tags=array("ai_heat","ai_dfa","ai_melee","ai_flank","ai_lance","ai_lethalself","ai_move","ai_priority");
 
 $ai_tags_calc=array(
 //ai_heat={R Max Ammo Explosion damage}  {R Max Volatile Ammo Explosion damage}  {R "AMS Single Heat"}  {R "AMS Multi Heat" }  {R Heat Damage Injury}  {R Heat Efficency } {R Auto Activation Heat}
@@ -203,6 +203,25 @@ $ai_tags_calc=array(
     64,65,71,72,
     94,95,98,
 	),
+/* ai_priority
+( {R Weapons Best Single Hit Damage} {R Weapons Best Single Hit Instability} )
+( {RA Weapons Overall Optimum Range} {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+( {R AOECapable} {R IndirectFireCapable} )
+( {R Weapons Damage Weighted APCriticalChanceMultiplier} )
+( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} ) 
+( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
+( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
+( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )*/
+  array(
+  93,102,
+  94,94,95,98,
+  103,104,
+  99,
+  29,31,33,47,
+  43,44,45,26,28,
+  86,87,88,
+  89,90,91,
+  ),
 );
 
 //NEGATIVE WEIGHT ARE TREATED AS POSITIVE AND ARE A FLAG TO THE CALCULATIONs represented by {RA} in the aitag comments
@@ -312,7 +331,26 @@ $ai_tags_weights=array(
     2.2,1.6,4,//8
     1.8,1.8,1.2,1.2,//6
     7,1.5,1.5,//9
-	)
+	),
+/* ai_priority
+( {R Weapons Best Single Hit Damage} {R Weapons Best Single Hit Instability} )
+( {RA Weapons Overall Optimum Range} {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+( {R AOECapable} {R IndirectFireCapable} )
+( {R Weapons Damage Weighted APCriticalChanceMultiplier} )
+( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} ) 
+( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
+( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
+( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )*/
+  array(
+  1.25,.75,
+  -0.5,0.5,.5,.5,
+  1.4,1.6,
+  1,
+  .05,.05,.05,.35,
+   .15,.07,.2,.05,.03,
+   .55,.4,1,
+   .55,.4,1,
+  ),
 );
 
 //false means larger values(or more positive) better -> i.e.  on higher values i want ai_tag high
@@ -420,6 +458,25 @@ true,true,false,false,true,false,//first two are walk run with average bias {RA}
      true,false,false,false,
      true,true,false,
     ),
+/* ai_priority
+( {R Weapons Best Single Hit Damage} {R Weapons Best Single Hit Instability} )
+( {RA Weapons Overall Optimum Range} {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+( {R AOECapable} {R IndirectFireCapable} )
+( {R Weapons Damage Weighted APCriticalChanceMultiplier} )
+( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} ) 
+( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
+( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
+( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )*/
+  array(
+    false,false,
+    true,false,true,false,
+    true,true,
+    true,
+    false,false,false,false,
+    false,false,false,false,false,
+    true,true,true,
+    true,true,true,//NARC & TAG are better engaging different targets
+  ),
 );
 
 //ignore ratings of 0 , for cases where there are a large number of them throwing the stat off.
@@ -439,6 +496,7 @@ $ai_tags_skew=array(
   -0.006,//ai_lance
   0,//ai_lethalself
   0.003,//ai_move
+  0,//ai_priority
 );
 
 
