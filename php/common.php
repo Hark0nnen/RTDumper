@@ -98,7 +98,7 @@ $stats_ignore_zeros=array(
     31,32//"Physical Weapon Damage","Physical Weapon Instability" no physical weapon no physical damage
 );
 
-$ai_tags=array("ai_heat","ai_dfa","ai_melee","ai_flank","ai_lance","ai_lethalself","ai_move","ai_priority");
+$ai_tags=array("ai_heat","ai_dfa","ai_melee","ai_flank","ai_lance","ai_lethalself","ai_move","ai_priority","ai_reserve");
 
 $ai_tags_calc=array(
 //ai_heat={R Max Ammo Explosion damage}  {R Max Volatile Ammo Explosion damage}  {R "AMS Single Heat"}  {R "AMS Multi Heat" }  {R Heat Damage Injury}  {R Heat Efficency } {R Auto Activation Heat}
@@ -222,6 +222,34 @@ $ai_tags_calc=array(
   86,87,88,
   89,90,91,
   ),
+/*ai_reserve
+( {R Max Run activated} )
+( {R AOECapable} {R IndirectFireCapable} )
+( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
+( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
+( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
+( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
+( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
+( {R Weapons Best Single Hit Damage} {R Weapons Best Single Hit Instability} )
+( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+( { R Weapons Total Damage} )
+( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} ) 
+( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
+*/
+   array(
+    6,
+    103,104,
+    86,87,88,
+    89,90,91,
+    64,65,71,72,
+    61,62,63,
+    66,67,68,69,70,
+    93,102,
+    94,95,98,
+    92,
+    29,31,33,47,
+    43,44,45,26,28,
+    ),   
 );
 
 //NEGATIVE WEIGHT ARE TREATED AS POSITIVE AND ARE A FLAG TO THE CALCULATIONs represented by {RA} in the aitag comments
@@ -256,8 +284,8 @@ $ai_tags_weights=array(
     .6,.4,1,
     .6,.4,1,
     .8,.2,
-    .4,.2,.4,
-    .25,.25,.2,.2,.1,
+    .44,.13,.43,
+    .21,.21,.23,.23,.12,
     0.5,1.5,//dont want AOE / Indirect fire mechs to flank
 	),
 /* ai_lance
@@ -275,8 +303,8 @@ $ai_tags_weights=array(
 -1,-1,2,2,
     -2,1,1,1,
     3,3,2,2,
-    .4,.2,.4,
-    .25,.25,.2,.2,.1,
+    .44,.13,.43,
+    .21,.21,.23,.23,.12,
     0.25,.75,
     .6,.4,1,
     .6,.4,1,
@@ -351,6 +379,34 @@ $ai_tags_weights=array(
    .55,.4,1,//2
    .55,.4,1,//2
   ),
+/*ai_reserve
+( {R Max Run activated} )
+( {R AOECapable} {R IndirectFireCapable} )
+( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
+( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
+( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
+( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
+( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
+( {R Weapons Best Single Hit Damage} {R Weapons Best Single Hit Instability} )
+( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+( { R Weapons Total Damage} )
+( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} ) 
+( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
+*/
+   array(
+    2,
+    .25,.25,//.5
+    .3*13,.2*13,.5*13,
+    .3*13,.2*13,.5*13,
+    .3*4,.3*13,.2*4,.2*4,
+    .44*8,.13*19,.43*19,
+    .21*23,.21*23,.23*6,.23*6,.12*0,
+    .5*2,.5*2,//1
+    .75*2,.125*2,.125*2,//1 increase
+    .25,
+     .01,.01,.01,.07,//.1 <check> dfa/melee revisit if needed
+    .03,.014,.04,.01,.006,//.1 <check>  dfa/melee revisit if needed
+    ),   
 );
 
 //false means larger values(or more positive) better -> i.e.  on higher values i want ai_tag high
@@ -477,6 +533,34 @@ true,true,false,false,true,false,//first two are walk run with average bias {RA}
     true,true,true,
     true,true,true,//NARC & TAG are better engaging different targets
   ),
+  /*ai_reserve
+( {R Max Run activated} )
+( {R AOECapable} {R IndirectFireCapable} )
+( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
+( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
+( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
+( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
+( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
+( {R Weapons Best Single Hit Damage} {R Weapons Best Single Hit Instability} )
+( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+( { R Weapons Total Damage} )
+( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} ) 
+( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
+*/
+   array(
+   true,
+   true,true,
+   true,true,true,
+   true,true,true,//NARC & TAG are scouts
+   false,true,true,true,
+   true,true,false,
+   true,true,false,false,false,
+   false,false,
+   true,true,false,
+   false,
+   true,true,true,true,
+   true,true,true,true,true,
+    ),   
 );
 
 //ignore ratings of 0 , for cases where there are a large number of them throwing the stat off.
@@ -497,6 +581,7 @@ $ai_tags_skew=array(
   0,//ai_lethalself
   0.003,//ai_move
   0,//ai_priority
+  -0.02,//ai_reserve
 );
 
 

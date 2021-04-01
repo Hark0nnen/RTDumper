@@ -157,17 +157,44 @@ normal - moderate desire to move and shoot
 high - wants to run as much as possible
 
 *8 priority: desire to stay on target
+Note:currently have melee / dfa mechs spreading the chaos, rather than focusing on priority target , revisit if needed.
 Tag based on.
 ( {R Weapons Best Single Hit Damage} {R Weapons Best Single Hit Instability} )
-( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+( {RA Weapons Overall Optimum Range} {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
 ( {R AOECapable} {R IndirectFireCapable} )
 ( {R Weapons Damage Weighted APCriticalChanceMultiplier} )
+( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} ) 
+( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
 ( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
 ( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
 
 low - willing to distribute fire and deal damage to various targets
 normal - will try to stay on target but react to threats
 high - will try to kill their priority target at all costs
+
+*9 reserve: willingness to reserve
+Tag based on.
+( {R Max Run activated} )
+( {R AOECapable} {R IndirectFireCapable} )
+( {R .Enemy.OnHit_LV_NARC_signatureMod} {R .Enemy.OnHit_LV_NARC_detailsMod} {R.Enemy.OnHit_LV_NARC_attackMod} )
+( {R .Enemy.OnHit_LV_TAG_signatureMod} {R .Enemy.OnHit_LV_TAG_detailsMod} {R .Enemy.OnHit_LV_TAG_attackMod} )
+( {R  AlliesWithinRange_LV_ECM_JAMMED} {R AlliesWithinRange_LV_ECM_SHIELD} {R AlliesWithinRange_SensorDistanceAbsolute} {R AlliesWithinRange_SpotterDistanceAbsolute} )
+( {R EnemiesWithinRange_LV_ECM_JAMMED} {R EnemiesWithinRange_LV_PROBE_PING } {R EnemiesWithinRange_LV_ECM_SHIELD} )
+( {R EnemiesWithinRange_SensorSignatureModifier} {R EnemiesWithinRange_SpottingVisibilityMultiplier} {R EnemiesWithinRange_MoraleBonusGain} {R EnemiesWithinRange_BaseInitiative} {R EnemiesWithinRange_PanicStatModifier} )
+( {R Weapons Best Single Hit Damage} {R Weapons Best Single Hit Instability} )
+( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+( { R Weapons Total Damage} )
+( {R KickDamage}{R PhysicalWeaponDamage}{R PunchDamage} {R Melee Damage Efficency} ) 
+( {R DFA Self Damage Efficency}  {R DFA Damage Efficency} {R DFA Self Instability Efficency} {R DFA Target Damage} {R DFA Target Instability} )
+
+low - will not reserve and prefer to always do something (eg scouts)
+normal - will only reserve if nothing else presents itself
+high - attempt to reserve and get the last move in
+
+Equipment:
+PRobes and active ECM as well as basic c3 wants to always sniff around
+Heavy hitters willing to wait
+Missile boats indifferent
 
 
 
@@ -190,7 +217,7 @@ class AITag extends Config{
 	   			$s="TAGGER: ".$ai_tags[$x]." : ".PHP_EOL ;
 
 			   for ($i = 0; $i <  count($ai_tags_weights[$x]); $i++) {
-					$s.="{ R".(($ai_tags_weights[$x][$i]<0) ? "A":"")." ".$csv_header[$ai_tags_calc[$x][$i]]." ".(($ai_tags_reverserating[$x][$i]) ? "\/":" ^")." }\t";
+					$s.="{ R".(($ai_tags_weights[$x][$i]<0) ? "A":"")." ".$csv_header[$ai_tags_calc[$x][$i]]." ".(($ai_tags_reverserating[$x][$i]) ? "\/":" ^")." (x".abs($ai_tags_weights[$x][$i]).")}\t";
 			   }
 			   $s.=	PHP_EOL.PHP_EOL;
 				if(AITag::$debug || (AITag::$debug_mechs_ai_tag &&
