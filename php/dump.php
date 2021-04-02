@@ -399,7 +399,7 @@ public static function dumpMechs(){
 		Dump::getWeaponsInfo($einfo,$tonnage,$Weapons_Total_Damage,$Weapons_Best_Single_Hit_Damage,$Weapons_Overall_Optimum_Range,$Weapons_Optimum_Range_Std_Dev,$Weapons_Damage_Efficency,$Weapons_Optimum_Range_Damage,$Damage_percent_at_Optimum_Range,
 			$Weapons_Damage_Weighted_APCriticalChanceMultiplier,$CACAPProtection,
 			$Weapons_Total_Instability,$Weapons_Best_Single_Hit_Instability,
-			$AOECapable,$IndirectFireCapable);
+			$AOECapable,$IndirectFireCapable,$Nth_Turn_Total_Damage,$Nth_Turn_Damage_available_perc);
 
 		if(DUMP::$debug)
 		 		$einfo_dump=array_merge($einfo_dump, $einfo);
@@ -443,6 +443,7 @@ public static function dumpMechs(){
 			$Weapons_Total_Instability,$Weapons_Best_Single_Hit_Instability,
 			$AOECapable,$IndirectFireCapable,
 			$armor/$tonnage,
+			$Nth_Turn_Total_Damage,$Nth_Turn_Damage_available_perc,
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 
@@ -781,7 +782,7 @@ public static function getWeaponsInfo($einfo,$tonnage,
 	&$Weapons_Total_Damage,&$Weapons_Best_Single_Hit_Damage,&$Weapons_Overall_Optimum_Range,&$Weapons_Optimum_Range_Std_Dev,&$Weapons_Damage_Efficency,&$Weapons_Optimum_Range_Damage,&$Damage_percent_at_Optimum_Range,
 	&$Weapons_Damage_Weighted_APCriticalChanceMultiplier,&$CACAPProtection,
 	&$Weapons_Total_Instability,&$Weapons_Best_Single_Hit_Instability,
-	&$AOECapable,&$IndirectFireCapable){
+	&$AOECapable,&$IndirectFireCapable,&$Nth_Turn_Total_Damage,&$Nth_Turn_Damage_available_perc){
 			$Weapons_Total_Damage=0;
 			$Weapons_Best_Single_Hit_Damage=0;
 			$Weapons_Overall_Optimum_Range=0;
@@ -795,6 +796,11 @@ public static function getWeaponsInfo($einfo,$tonnage,
 			$Weapons_Best_Single_Hit_Instability=0;
 			$AOECapable=0;
 			$IndirectFireCapable=0;
+			$Nth_Turn_Total_Damage=0;
+			$Nth_Turn_Damage_available_perc=0;
+
+			//N for nth turn calcs
+			$Nturn=20;
 
 			//get AOECapable && IndirectFireCapable from AMMO if its set there
 			foreach($einfo as $key => $value) {
@@ -832,10 +838,30 @@ public static function getWeaponsInfo($einfo,$tonnage,
 			$winfo[$wtype] [$wkey]=$wvalue;
 		}
 	}	
+
+
+	for($t=1;$t<=$Nturn;$t++){
+		foreach($winfo as $k=>&$weapont){
+			$ammokey=Dump::AmmoStat($k,"AmmoCount");
+			$weapont["AMMO"]=$ammokey;
+			//echo "[=>].$k ~ \t".$ammokey."\t".$einfo[$ammokey]."\t".$weapon["MaxTurnsFired"].PHP_EOL;
+			if($weapont["StartingAmmoCapacity"]>0){
+				$weapont["MaxTurnsFired"]=$weapont["StartingAmmoCapacity"]/$weapont["ShotsWhenFired"];
+			}else if($ammokey==null){
+				$weapont["MaxTurnsFired"]=$t;		
+			}else if($einfo[$ammokey]>=$weapont["ShotsWhenFired"]){
+				$weapont["MaxTurnsFired"]=$t;
+				$einfo[$ammokey]=$einfo[$ammokey]-$weapont["ShotsWhenFired"];
+			}
+		}
+	}//dont use $weapont again , php doesnt have a block scope. https://bugs.php.net/bug.php?id=29992
+
 	if(DUMP::$info){
 		echo "WEAPON INFO: ".PHP_EOL.json_encode($winfo,JSON_PRETTY_PRINT).PHP_EOL;
 				
 	}
+
+
 	$ranges=array();
 	$range_2_damage=array();
 	$weaponcount=0;	
@@ -844,6 +870,11 @@ public static function getWeaponsInfo($einfo,$tonnage,
 			continue;
 		$weaponcount+=$weapon["WeaponCount"];
 		$Weapons_Total_Damage+=$weapon["Damage"];
+		
+		if($weapon["MaxTurnsFired"]>=$Nturn){
+			$Nth_Turn_Total_Damage+=$weapon["Damage"];
+		}
+
 		if($Weapons_Best_Single_Hit_Damage< ($weapon["Damage"]/$weapon["ProjectilesWhenFired"]) ){
 			$Weapons_Best_Single_Hit_Damage=($weapon["Damage"]/$weapon["ProjectilesWhenFired"]); 
 		}
@@ -882,8 +913,10 @@ public static function getWeaponsInfo($einfo,$tonnage,
 	   $CACAPProtection=0;
 	}
 
-	if($Weapons_Total_Damage>0)
+	if($Weapons_Total_Damage>0){
 		$Damage_percent_at_Optimum_Range=$Weapons_Optimum_Range_Damage/$Weapons_Total_Damage*100;
+		$Nth_Turn_Damage_available_perc=$Nth_Turn_Total_Damage/$Weapons_Total_Damage*100;
+	}
 
 	if(DUMP::$info){
 		echo "\t Weapons_Total_Damage $Weapons_Total_Damage".
@@ -898,7 +931,9 @@ public static function getWeaponsInfo($einfo,$tonnage,
 			"\t Weapons_Total_Instability $Weapons_Total_Instability".
 			"\t Weapons_Best_Single_Hit_Instability $Weapons_Best_Single_Hit_Instability".
 			"\t AOECapable $AOECapable".
-			"\t IndirectFireCapable $IndirectFireCapable".PHP_EOL;
+			"\t IndirectFireCapable $IndirectFireCapable".
+			"\t Nth_Turn_Total_Damage $Nth_Turn_Total_Damage".
+			"\t Nth_Turn_Damage_available_perc $Nth_Turn_Damage_available_perc".PHP_EOL;
 	}
 }
 
@@ -1338,6 +1373,15 @@ public static function lowVisSplit($s,$x){
 	return $s[$x];
 }
 
+public static function AmmoStat($key,$stat){
+//key |Ballistic|Autocannon|AC5|AC5|
+	$k=explode ("|", $key); 
+	if($k[4]=="*")
+		return null;
+	return ".Ammo.|*|*|*|".$k[4]."|.".$stat;
+
+}
+
 public static function weaponMatch($key,$ekey){
     //".WeaponHeatGenerated|Energy|Laser|LargeLaser|*|." key <-weapon
     //"Weapon.|*|Laser|*|*|.HeatGenerated_activated" ekey <-equipment with targetCollection Weapon
@@ -1514,6 +1558,11 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo,&$effects,&$amm
 			$einfo[$k]=$componentjd["RangeSplit"][1];
 			if(DUMP::$info)
 				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
+
+			$k=".".$componentjd["ComponentType"]."StartingAmmoCapacity".$class;
+			$einfo[$k]=($einfo[$k] ? $einfo[$k] :0) +($componentjd["StartingAmmoCapacity"]);//check if this is built in ammo counter
+			if(DUMP::$info)
+				echo "EINFO[$k ] : ".$einfo[$k].PHP_EOL;
 			
 			$k=".".$componentjd["ComponentType"]."AOECapable".$class;
 			if($componentjd["AOECapable"]){
@@ -1650,6 +1699,8 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo,&$effects,&$amm
 			}
 			if(DUMP::$info)
 				echo PHP_EOL."|AMMO|".$ammoid." ===========================> ".PHP_EOL.json_encode($ammojd,JSON_PRETTY_PRINT).PHP_EOL.PHP_EOL;
+
+			$einfo[".Ammo.|*|*|*|".$ammojd["Category"]."|.AmmoCount"]=$einfo[".Ammo.|*|*|*|".$ammojd["Category"]."|.AmmoCount"]+$componentjd["Capacity"];
 
 			if($ammojd["AOECapable"]){
 				$einfo["Weapon.|*|*|*|".$ammojd["Category"]."|.AOECapable"]=1;

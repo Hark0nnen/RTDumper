@@ -78,12 +78,13 @@ $csv_header=array("#MECH Id","Tons","Engine Rating",//x,1,2
      "Weapons Total Instability","Weapons Best Single Hit Instability",//101,102
      "AOECapable","IndirectFireCapable",//103,104
      "Armor per ton",//105
+     "Nth Turn Total Damage","Nth Turn Damage available %",//106,107
      "Equipment",
 	"path");
 
 //these are processed to find mean/std dev
 $csv_min_stat=1;
-$csv_max_stat=105;
+$csv_max_stat=107;
 
 //Heat Efficency is just spare heat dissipation after alpha strike expressed as % of dissipation capacity
 //DFA Self Damage Efficency is how many a DFAs a mech can perform before both its legs break
