@@ -7,10 +7,10 @@ class Config{
    public static $info=FALSE;
    public static $warn=FALSE;
   
-   public static $debug_single_mech='mechdef_leviathan_LVT-C';
+   public static $debug_single_mech='mechdef_catapult_CPLT-H2';
 
    //useful to see the calculation for multiple mechs at a time when debugging the tag
-   public static $debug_mechs_ai_tag=array();
+   //public static $debug_mechs_ai_tag=array();
    //public static $debug_mechs_ai_tag=array('ai_dfa','mechdef_ajax_AJX-A2','mechdef_highlander_HGN-732b','mechdef_elemental_toad','mechdef_black_queen_LVT-BKQN','mechdef_falcon_FLC-4N','mechdef_anvil_ANV-3M');
    //public static $debug_mechs_ai_tag=array('ai_melee','mechdef_atlas_AS7-C','mechdef_black_queen_LVT-BKQN',"mechdef_obsidian_skull_AS-IIC-OS","mechdef_moozilla_CM-XXX3");
    //public static $debug_mechs_ai_tag=array('ai_flank',"mechdef_ajax_AJX-A2","mechdef_ajax_AJX-X1","mechdef_albatross_ALB-3U","mechdef_anvil_ANV-6M","mechdef_anvil_ANV-8M","mechdef_arctic_cheetah_ACH-C","mechdef_arctic_cheetah_ACH-D","mechdef_arctic_cheetah_ACH-Prime","mechdef_adder_ADR-C");
@@ -25,5 +25,6 @@ class Config{
 'mechdef_leviathan_LVT-Prime','mechdef_moozilla_CM-XXX','mechdef_ajax_AJX-A2','mechdef_moozilla_CM-XXX2','mechdef_moozilla_CM-XXX3','mechdef_elemental_toad','mechdef_elemental_toad_Flamer','mechdef_gemji_CRB-GI','mechdef_catapult_CPLT-C2','mechdef_catapult_CPLT-H2');*/
 	/*public static $debug_mechs_ai_tag=array('ai_reserve','mechdef_ajax_AJX-A2','mechdef_adder_ADR-A','mechdef_adder_ADR-C','mechdef_helepolis_HEP-2H','mechdef_leviathan_LVT-C',
 'mechdef_leviathan_LVT-Prime','mechdef_moozilla_CM-XXX2','mechdef_elemental_toad','mechdef_elemental_toad_Flamer','mechdef_gemji_CRB-GI','mechdef_catapult_CPLT-C2','mechdef_catapult_CPLT-H2','mechdef_flashman_FLS-9C','mechdef_firestarter_FS9-OD','mechdef_firestarter_FS9-OX','mechdef_raven_RVN-3X');*/
-	//public static $debug_mechs_ai_tag=array('ai_shooting',
+	public static $debug_mechs_ai_tag=array('ai_shooting','mechdef_roughneck_RGH-1C','mechdef_leviathan_LVT-C','mechdef_moozilla_CM-XXX2','mechdef_elemental_toad','mechdef_elemental_toad_Flamer','mechdef_gemji_CRB-GI','mechdef_catapult_CPLT-C2','mechdef_catapult_CPLT-H2',
+	'mechdef_leviathan_LVT-Prime','mechdef_adder_ADR-A','mechdef_adder_ADR-C');
 }

@@ -196,6 +196,19 @@ PRobes and active ECM as well as basic c3 wants to always sniff around
 Heavy hitters willing to wait
 Missile boats indifferent
 
+*10 shooting: 
+Ammo heavy loadouts wants to take good shots only, exception is ammo for more then 20 turns
+Energy only loadouts are willing to take every potshot they
+Longer range with low ammo loadout will conserve more than Shorter range with low loadouts.
+
+Tag based on.
+( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+( {R Nth Turn Total Damage} {R Nth Turn Damage available} )
+( {R Nth Turn Optimum Range Damage} {R Nth Turn Damage percent at Optimum Range} {R Turn Out Of optimum Range Ammo} )
+
+low - will try to take any shot it can even with bad accuracy
+normal - will try to conserve fire
+high - will attempt to only get really good shots
 
 
 */

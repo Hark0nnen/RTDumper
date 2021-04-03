@@ -79,12 +79,13 @@ $csv_header=array("#MECH Id","Tons","Engine Rating",//x,1,2
      "AOECapable","IndirectFireCapable",//103,104
      "Armor per ton",//105
      "Nth Turn Total Damage","Nth Turn Damage available %",//106,107
+     "Nth Turn Optimum Range Damage","Nth Turn Damage percent at Optimum Range (reduction) ","Turn Out Of optimum Range Ammo",//108,109,110
      "Equipment",
 	"path");
 
 //these are processed to find mean/std dev
 $csv_min_stat=1;
-$csv_max_stat=107;
+$csv_max_stat=110;
 
 //Heat Efficency is just spare heat dissipation after alpha strike expressed as % of dissipation capacity
 //DFA Self Damage Efficency is how many a DFAs a mech can perform before both its legs break
@@ -99,7 +100,7 @@ $stats_ignore_zeros=array(
     31,32//"Physical Weapon Damage","Physical Weapon Instability" no physical weapon no physical damage
 );
 
-$ai_tags=array("ai_heat","ai_dfa","ai_melee","ai_flank","ai_lance","ai_lethalself","ai_move","ai_priority","ai_reserve");
+$ai_tags=array("ai_heat","ai_dfa","ai_melee","ai_flank","ai_lance","ai_lethalself","ai_move","ai_priority","ai_reserve","ai_shooting");
 
 $ai_tags_calc=array(
 //ai_heat={R Max Ammo Explosion damage}  {R Max Volatile Ammo Explosion damage}  {R "AMS Single Heat"}  {R "AMS Multi Heat" }  {R Heat Damage Injury}  {R Heat Efficency } {R Auto Activation Heat}
@@ -251,6 +252,16 @@ $ai_tags_calc=array(
     29,31,33,47,
     43,44,45,26,28,
     ),   
+/* ai_shooting
+( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+( {R Nth Turn Total Damage} {R Nth Turn Damage available} )
+( {R Nth Turn Optimum Range Damage} {R Nth Turn Damage percent at Optimum Range} {R Turn Out Of optimum Range Ammo} )
+*/
+    array(
+     94,95,98,
+     106,107,
+     108,109,110
+	),
 );
 
 //NEGATIVE WEIGHT ARE TREATED AS POSITIVE AND ARE A FLAG TO THE CALCULATIONs represented by {RA} in the aitag comments
@@ -408,6 +419,16 @@ $ai_tags_weights=array(
      .01,.01,.01,.07,//.1 <check> dfa/melee revisit if needed
     .03,.014,.04,.01,.006,//.1 <check>  dfa/melee revisit if needed
     ),   
+/* ai_shooting
+( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+( {R Nth Turn Total Damage} {R Nth Turn Damage available perc} )
+( {R Nth Turn Optimum Range Damage} {R Nth Turn Damage percent at Optimum Range} {R Turn Out Of optimum Range Ammo} )
+*/
+    array(
+    .7*3,.15,.15*5,
+    .2*6,.3*4,
+    .2*10,.5*26,.8*26
+	),
 );
 
 //false means larger values(or more positive) better -> i.e.  on higher values i want ai_tag high
@@ -562,6 +583,16 @@ true,true,false,false,true,false,//first two are walk run with average bias {RA}
    true,true,true,true,
    true,true,true,true,true,
     ),   
+/* ai_shooting
+( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+( {R Nth Turn Total Damage} {R Nth Turn Damage available %} )
+( {R Nth Turn Optimum Range Damage} {R Nth Turn Damage percent at Optimum Range (reduction)} {R Turn Out Of optimum Range Ammo} )
+*/
+    array(
+        false,true,false,
+        true,true,
+        true,false,true,
+	),
 );
 
 //ignore ratings of 0 , for cases where there are a large number of them throwing the stat off.
@@ -583,6 +614,7 @@ $ai_tags_skew=array(
   0.003,//ai_move
   0,//ai_priority
   -0.02,//ai_reserve
+  0,//ai_shooting
 );
 
 

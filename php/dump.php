@@ -399,7 +399,7 @@ public static function dumpMechs(){
 		Dump::getWeaponsInfo($einfo,$tonnage,$Weapons_Total_Damage,$Weapons_Best_Single_Hit_Damage,$Weapons_Overall_Optimum_Range,$Weapons_Optimum_Range_Std_Dev,$Weapons_Damage_Efficency,$Weapons_Optimum_Range_Damage,$Damage_percent_at_Optimum_Range,
 			$Weapons_Damage_Weighted_APCriticalChanceMultiplier,$CACAPProtection,
 			$Weapons_Total_Instability,$Weapons_Best_Single_Hit_Instability,
-			$AOECapable,$IndirectFireCapable,$Nth_Turn_Total_Damage,$Nth_Turn_Damage_available_perc);
+			$AOECapable,$IndirectFireCapable,$Nth_Turn_Total_Damage,$Nth_Turn_Damage_available_perc,$Nth_Turn_Optimum_Range_Damage,$Nth_Turn_Damage_percent_at_Optimum_Range,$Turn_Out_Of_optimum_Range_Ammo);
 
 		if(DUMP::$debug)
 		 		$einfo_dump=array_merge($einfo_dump, $einfo);
@@ -444,6 +444,7 @@ public static function dumpMechs(){
 			$AOECapable,$IndirectFireCapable,
 			$armor/$tonnage,
 			$Nth_Turn_Total_Damage,$Nth_Turn_Damage_available_perc,
+			$Nth_Turn_Optimum_Range_Damage,$Nth_Turn_Damage_percent_at_Optimum_Range,$Turn_Out_Of_optimum_Range_Ammo,
 			implode(" ",$equipment),
 			str_replace(Dump::$RT_Mods_dir,"",$f));
 
@@ -782,7 +783,8 @@ public static function getWeaponsInfo($einfo,$tonnage,
 	&$Weapons_Total_Damage,&$Weapons_Best_Single_Hit_Damage,&$Weapons_Overall_Optimum_Range,&$Weapons_Optimum_Range_Std_Dev,&$Weapons_Damage_Efficency,&$Weapons_Optimum_Range_Damage,&$Damage_percent_at_Optimum_Range,
 	&$Weapons_Damage_Weighted_APCriticalChanceMultiplier,&$CACAPProtection,
 	&$Weapons_Total_Instability,&$Weapons_Best_Single_Hit_Instability,
-	&$AOECapable,&$IndirectFireCapable,&$Nth_Turn_Total_Damage,&$Nth_Turn_Damage_available_perc){
+	&$AOECapable,&$IndirectFireCapable,&$Nth_Turn_Total_Damage,&$Nth_Turn_Damage_available_perc,
+	&$Nth_Turn_Optimum_Range_Damage,&$Nth_Turn_Damage_percent_at_Optimum_Range,&$Turn_Out_Of_optimum_Range_Ammo){
 			$Weapons_Total_Damage=0;
 			$Weapons_Best_Single_Hit_Damage=0;
 			$Weapons_Overall_Optimum_Range=0;
@@ -798,6 +800,9 @@ public static function getWeaponsInfo($einfo,$tonnage,
 			$IndirectFireCapable=0;
 			$Nth_Turn_Total_Damage=0;
 			$Nth_Turn_Damage_available_perc=0;
+			$Nth_Turn_Optimum_Range_Damage=0;
+			$Nth_Turn_Damage_percent_at_Optimum_Range=0;
+			$Turn_Out_Of_optimum_Range_Ammo=0;
 
 			//N for nth turn calcs
 			$Nturn=20;
@@ -902,6 +907,21 @@ public static function getWeaponsInfo($einfo,$tonnage,
 		 $Weapons_Overall_Optimum_Range=$range;
 	 }
 	}
+
+	$Turn_Out_Of_optimum_Range_Ammo=$Nturn;
+	foreach($winfo as $weapon){
+		if($weapon["WeaponCount"]==0)
+			continue;
+		if($weapon["OptimumRange"]==$Weapons_Overall_Optimum_Range){
+			if($weapon["MaxTurnsFired"]>=$Nturn){
+				$Nth_Turn_Optimum_Range_Damage+=$weapon["Damage"];	
+			}
+			if($weapon["MaxTurnsFired"]<$Turn_Out_Of_optimum_Range_Ammo){
+				$Turn_Out_Of_optimum_Range_Ammo=$weapon["MaxTurnsFired"];	
+			}
+		}
+	}
+
 	
 	if(count($ranges)>1)
 		$Weapons_Optimum_Range_Std_Dev=sd($ranges,$Weapons_Overall_Optimum_Range);
@@ -916,6 +936,8 @@ public static function getWeaponsInfo($einfo,$tonnage,
 	if($Weapons_Total_Damage>0){
 		$Damage_percent_at_Optimum_Range=$Weapons_Optimum_Range_Damage/$Weapons_Total_Damage*100;
 		$Nth_Turn_Damage_available_perc=$Nth_Turn_Total_Damage/$Weapons_Total_Damage*100;
+		$Nth_Turn_Damage_percent_at_Optimum_Range=$Nth_Turn_Optimum_Range_Damage/$Weapons_Total_Damage*100;
+		$Nth_Turn_Damage_percent_at_Optimum_Range=$Damage_percent_at_Optimum_Range-$Nth_Turn_Damage_percent_at_Optimum_Range; //reduction in damage % at optimum range at turn N
 	}
 
 	if(DUMP::$info){
@@ -933,7 +955,10 @@ public static function getWeaponsInfo($einfo,$tonnage,
 			"\t AOECapable $AOECapable".
 			"\t IndirectFireCapable $IndirectFireCapable".
 			"\t Nth_Turn_Total_Damage $Nth_Turn_Total_Damage".
-			"\t Nth_Turn_Damage_available_perc $Nth_Turn_Damage_available_perc".PHP_EOL;
+			"\t Nth_Turn_Damage_available_perc $Nth_Turn_Damage_available_perc".
+			"\t Nth_Turn_Optimum_Range_Damage $Nth_Turn_Optimum_Range_Damage".
+			"\t Nth_Turn_Damage_percent_at_Optimum_Range $Nth_Turn_Damage_percent_at_Optimum_Range".
+			"\t Turn_Out_Of_optimum_Range_Ammo $Turn_Out_Of_optimum_Range_Ammo".PHP_EOL;
 	}
 }
 
