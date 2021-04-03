@@ -853,7 +853,7 @@ public static function getWeaponsInfo($einfo,$tonnage,
 			if($weapont["StartingAmmoCapacity"]>0){
 				$weapont["MaxTurnsFired"]=$weapont["StartingAmmoCapacity"]/$weapont["ShotsWhenFired"];
 			}else if($ammokey==null){
-				$weapont["MaxTurnsFired"]=$t;		
+				$weapont["MaxTurnsFired"]=$Nturn+1;		
 			}else if($einfo[$ammokey]>=$weapont["ShotsWhenFired"]){
 				$weapont["MaxTurnsFired"]=$t;
 				$einfo[$ammokey]=$einfo[$ammokey]-$weapont["ShotsWhenFired"];
@@ -908,7 +908,7 @@ public static function getWeaponsInfo($einfo,$tonnage,
 	 }
 	}
 
-	$Turn_Out_Of_optimum_Range_Ammo=$Nturn;
+	$Turn_Out_Of_optimum_Range_Ammo=$Nturn+1;
 	foreach($winfo as $weapon){
 		if($weapon["WeaponCount"]==0)
 			continue;
