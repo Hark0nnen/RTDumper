@@ -100,7 +100,7 @@ $stats_ignore_zeros=array(
     31,32//"Physical Weapon Damage","Physical Weapon Instability" no physical weapon no physical damage
 );
 
-$ai_tags=array("ai_heat","ai_dfa","ai_melee","ai_flank","ai_lance","ai_lethalself","ai_move","ai_priority","ai_reserve","ai_shooting");
+$ai_tags=array("ai_heat","ai_dfa","ai_melee","ai_flank","ai_lance","ai_lethalself","ai_move","ai_priority","ai_reserve","ai_shooting","ai_surrounded");
 
 $ai_tags_calc=array(
 //ai_heat={R Max Ammo Explosion damage}  {R Max Volatile Ammo Explosion damage}  {R "AMS Single Heat"}  {R "AMS Multi Heat" }  {R Heat Damage Injury}  {R Heat Efficency } {R Auto Activation Heat}
@@ -261,6 +261,24 @@ $ai_tags_calc=array(
      94,95,98,
      106,107,
      108,109,110
+	),
+/*ai_surrounded
+{R Armor} {R Armor per ton} {R Tons}
+	( {R Repair Armor} )
+	( {R CACAPProtection} )
+    ( {R DamageReductionMultiplierAll} {R DamageReductionMultiplierBallistic} {R DamageReductionMultiplierMissile} {R DamageReductionMultiplierEnergy} {R DamageReductionMultiplierMelee} )
+	( {R "AMS Single Heat"}  {R "AMS Multi Heat" })
+    ( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+	( {R AOECapable} {R IndirectFireCapable} )
+    */
+    array(
+35,105,1,
+    39,
+    100,
+    48,49,50,51,52,
+    17,18,
+    94,95,98,
+    103,104,
 	),
 );
 
@@ -429,6 +447,24 @@ $ai_tags_weights=array(
     .2*6,.3*4,
     .2*10,.5*26,.8*26
 	),
+/*ai_surrounded
+{R Armor} {R Armor per ton} {R Tons}
+	( {R Repair Armor} )
+	( {R CACAPProtection} )
+    ( {R DamageReductionMultiplierAll} {R DamageReductionMultiplierBallistic} {R DamageReductionMultiplierMissile} {R DamageReductionMultiplierEnergy} {R DamageReductionMultiplierMelee} )
+	( {R "AMS Single Heat"}  {R "AMS Multi Heat" })
+    ( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+	( {R AOECapable} {R IndirectFireCapable} )
+    */
+    array(
+1.5,1.5,1.25,
+    1,
+    1,
+    1,1,1,1,1,
+    1,1,
+    6,.5,.5,
+    0.25,.75,
+	),
 );
 
 //false means larger values(or more positive) better -> i.e.  on higher values i want ai_tag high
@@ -592,6 +628,24 @@ true,true,false,false,true,false,//first two are walk run with average bias {RA}
         false,true,false,
         true,true,
         true,false,true,
+	),
+/*ai_surrounded
+{R Armor} {R Armor per ton} {R Tons}
+	( {R Repair Armor} )
+	( {R CACAPProtection} )
+    ( {R DamageReductionMultiplierAll} {R DamageReductionMultiplierBallistic} {R DamageReductionMultiplierMissile} {R DamageReductionMultiplierEnergy} {R DamageReductionMultiplierMelee} )
+	( {R "AMS Single Heat"}  {R "AMS Multi Heat" })
+    ( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+	( {R AOECapable} {R IndirectFireCapable} )
+    */
+    array(
+true,true,true,
+    true,
+    true,
+    false,false,false,false,false,
+    true,true,
+    false,true,false,
+    false,false,
 	),
 );
 

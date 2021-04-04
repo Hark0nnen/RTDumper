@@ -210,6 +210,21 @@ low - will try to take any shot it can even with bad accuracy
 normal - will try to conserve fire
 high - will attempt to only get really good shots
 
+*11 surrounded:
+Below average armor and long ranges wants to stay out of enemy firing lines as much as possible
+Heavy armors like hardened or lamellor (damage reducing stats) is more willing to stay near enemys
+
+Tag based on:
+{R Armor} {R Armor per ton} {R Tons}
+	( {R Repair Armor} )
+	( {R CACAPProtection} )
+    ( {R DamageReductionMultiplierAll} {R DamageReductionMultiplierBallistic} {R DamageReductionMultiplierMissile} {R DamageReductionMultiplierEnergy} {R DamageReductionMultiplierMelee} )
+	( {R "AMS Single Heat"}  {R "AMS Multi Heat" })
+	( {R Weapons Overall Optimum Range} {R Weapons Optimum Range Std Dev} {R Damage percent at Optimum Range} )
+	( {R AOECapable} {R IndirectFireCapable} )
+low - does not care about being surrounded and will not avoid it
+normal - will try to not get surrounded
+high - will want to stay away from enemys as much as possible (eg lrm boats)
 
 */
 
