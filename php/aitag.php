@@ -287,7 +287,8 @@ class AITag extends Config{
 					 if( in_array ($ai_tags[$x], AITag::$debug_mechs_ai_tag ))
 						$display_ai_tag="\e[1;33;40m".$display_ai_tag."\e[0m";
 				}
-				echo $display_ai_tag." MIN: ".str_pad ( $stat_min[$x],8)."  | ".str_pad ( number_format($avg-$stat_stddev_lt[$x],2),8)." < ".str_pad ( number_format($stat_avg[$x],2),8)." (AVG)> ".str_pad ( number_format($avg+$stat_stddev_gt[$x],2),8)." | MAX: ".str_pad ( $stat_max[$x],8)." N=".count($data).PHP_EOL;
+				if(AITag::$debug_single_mech || AITag::$info || count(AITag::$debug_mechs_ai_tag)>0)
+					echo $display_ai_tag." MIN: ".str_pad ( $stat_min[$x],8)."  | ".str_pad ( number_format($avg-$stat_stddev_lt[$x],2),8)." < ".str_pad ( number_format($stat_avg[$x],2),8)." (AVG)> ".str_pad ( number_format($avg+$stat_stddev_gt[$x],2),8)." | MAX: ".str_pad ( $stat_max[$x],8)." N=".count($data).PHP_EOL;
 		}	
 		$file = fopen('./Output/mechratings.csv', 'r');
 		$fp = fopen('./Output/mechaitags.csv', 'wb');
