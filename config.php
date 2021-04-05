@@ -3,11 +3,11 @@ class Config{
    public static $RT_Mods_dir="C:\games\steam\steamapps\common\BATTLETECH\Mods";
 
    #These are meant for developers
-   public static $debug=TRUE;
+   public static $debug=FALSE;
    public static $info=FALSE;
    public static $warn=FALSE;
   
-   public static $debug_single_mech='mechdef_panther_PNT-10K';
+   public static $debug_single_mech='mechdef_bessie_CTL-X';
 
    //useful to see the calculation for multiple mechs at a time when debugging the tag
    //public static $debug_mechs_ai_tag=array();

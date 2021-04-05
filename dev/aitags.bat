@@ -1,7 +1,9 @@
 @echo off
 cls
+cd..
 IF EXIST "c:\php\php.exe" (
-  echo using existing .\Output\mechs.csv	
+  echo dumping .\Output\mechs.csv	
+  c:\php\php.exe --no-php-ini -d memory_limit=4096M .\php\dump.php
   c:\php\php.exe --no-php-ini -d memory_limit=4096M .\php\dumpstats.php
   c:\php\php.exe --no-php-ini -d memory_limit=4096M .\php\aitag.php
 ) ELSE (
