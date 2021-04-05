@@ -1,4 +1,4 @@
-1. Requires PHP (>=v7) , installed to c:\php . You can get it at https://windows.php.net/downloads/releases/php-7.4.15-Win32-vc15-x64.zip (zip) and extract it to c:\php.
+1. Requires PHP (>=v7) , installed to c:\php . You can get it at https://windows.php.net/download/ (zip) and extract it to c:\php.
 
 2. Edit config.php and set your RT Mods folder.
 
