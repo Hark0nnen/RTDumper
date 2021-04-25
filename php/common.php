@@ -669,6 +669,7 @@ $ai_tags_skew=array(
   0,//ai_priority
   -0.02,//ai_reserve
   0,//ai_shooting
+  0,//ai_surrounded
 );
 
 
