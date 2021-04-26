@@ -350,6 +350,7 @@ class AITag extends Config{
 					if($minsd<$min)
 					  $minsd=$min;
 					$ignore_zeros=in_array ($ai_tags[$x] , $ai_tags_ignore_zeros );
+					$ignore_zeros=false;//LA wants dfa_low on mechs without JJ
 
 					//normalize all stats to 0-1 scale <0.2 & >0.8 are for statistical outliers <= & => avg+/-standard deviation
 					if($ignore_zeros && $data==0){
