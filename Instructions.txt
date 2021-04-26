@@ -12,3 +12,5 @@ Output Spreadsheet(s) are generated in \Output folder. Open them with you favori
 IMPORTANT: The tagtool needs to be re-run when there are changes to mechdefs, chasis defs, component defs, mod configuration .json(especially CBTBE, lowVis, ME,CombatGameConstants.)
 
 WARNING: Running the tool modifies mechdef .json(s) in your RT Mods folder, it is advisable to have a backup of them before you run the tool.
+
+NEW: TagRemovalTool.bat removes all ai_tags from mechdefs
