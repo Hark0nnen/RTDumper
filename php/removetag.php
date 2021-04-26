@@ -50,8 +50,8 @@ class RemoveTag extends Config{
 				if($should_write){
 					$mechjd["MechTags"]["items"]=$write_tags;
 					$json=json_encode_rt($mechjd);
-					if(endswith(file_get_contents($path),"\r\n")){
-					  $json=$json."\r\n";//preserve spurious ending newlines
+					if(endswith(file_get_contents($path),PHP_EOL)){
+					  $json=$json.PHP_EOL;//preserve spurious ending newlines
 					 }
 					$fp = fopen($path, 'wb');
 					fputs($fp,$json);

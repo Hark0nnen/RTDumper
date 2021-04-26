@@ -41,7 +41,7 @@ function json_encode_rt($json_obj){
             case '[':
                 if(!$in_string && $json[$c+1]!=']')
                 {
-                    $new_json .= $char . "\r\n" . str_repeat($tab, $indent_level+1);
+                    $new_json .= $char . PHP_EOL . str_repeat($tab, $indent_level+1);
                     $indent_level++;
                 }
                 else
@@ -54,7 +54,7 @@ function json_encode_rt($json_obj){
                 if(!$in_string && $json[$c-1]!='[')
                 {
                     $indent_level--;
-                    $new_json .= "\r\n" . str_repeat($tab, $indent_level) . $char;
+                    $new_json .= PHP_EOL . str_repeat($tab, $indent_level) . $char;
                 }
                 else
                 {
@@ -64,7 +64,7 @@ function json_encode_rt($json_obj){
             case ',':
                 if(!$in_string)
                 {
-                    $new_json .= ",\r\n" . str_repeat($tab, $indent_level);
+                    $new_json .= ",".PHP_EOL . str_repeat($tab, $indent_level);
                 }
                 else
                 {
