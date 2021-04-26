@@ -49,8 +49,12 @@ class WriteTag extends Config{
 				}
 				if($should_write){
 					$mechjd["MechTags"]["items"]=$write_tags;
+					$json=json_encode_rt($mechjd);
+					if(endswith(file_get_contents($path),"\r\n")){
+					  $json=$json."\r\n";//preserve spurious ending newlines
+					 }
 					$fp = fopen($path, 'wb');
-					fputs($fp,json_encode($mechjd,JSON_PRETTY_PRINT));
+					fputs($fp,$json);
 					fclose($fp);
 					$writecount++;
 				}
@@ -69,9 +73,9 @@ class WriteTag extends Config{
 		$json=preg_replace('/\,\s+\]/', ']',$json);
 		// search and remove comments like /* */ and //
 	    $json = preg_replace("#(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|([\s\t]//.*)|(^//.*)#", '', $json);
-		$json = preg_replace('/[[:^print:]]/', '', $json);
+		//$json = preg_replace('/[[:^print:]]/', '', $json);//breaks smart quotes,think they are non printable
 
-		$jd=json_decode($json, TRUE);
+		$jd=json_decode($json, TRUE,512,JSON_INVALID_UTF8_IGNORE);
 
 		if($jd==NULL){
 			if(json_last_error_msg()!="No error"){
