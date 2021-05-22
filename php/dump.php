@@ -1388,9 +1388,9 @@ public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$dissipation_
 			 echo "Activated EndMoveHeat = ".$einfo["EndMoveHeat_activated"]." |Activatable HeatSinkCapacity=".$einfo["HeatSinkCapacity_activated"]." |Activatable heatSinkMultiplier =".$einfo["heatSinkMultiplier_activated"].PHP_EOL;
 			 echo "Total Heat Generated (weapons) = $heat_generated".PHP_EOL;
 		}
-
-		//Heat Efficency is just spare heat dissipation after alpha strike expressed as % of dissipation capacity
-		$heat_efficency=($dissipation_capacity_activated-$heat_generated)/$dissipation_capacity_activated*100;
+		$combatgameconstants=json_for_pk(JSONType::MODJSON,"#CombatGameConstants");
+		//Heat Efficency is just spare heat dissipation after alpha strike expressed as % (+/-) over overheat level
+		$heat_efficency=($dissipation_capacity_activated-$heat_generated)/($combatgameconstants["Heat"]["OverheatLevel"]*$combatgameconstants["Heat"]["MaxHeat"])*100;
 }
 
 public static function lowVisSplit($s,$x){
