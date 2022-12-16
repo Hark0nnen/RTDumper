@@ -85,7 +85,7 @@ $json_type_hint = array(
 		".ChassisTags",".Description.Id"
 	),
 	JSONType::ENGINE => array (
-	".Custom.EngineCore.Rating",".Description.Id"
+	".Custom.EngineCore",".Description.Id"
 	),
 	JSONType::COMPONENT => array (
 	".ComponentType",".Description.Id"
@@ -351,7 +351,7 @@ public static function dumpMechs(){
 		 
 		
 		$tonnage=$chasisjd["Tonnage"];
-		$engine_rating=$einfo[".Custom.EngineCore.Rating"];
+		$engine_rating=$einfo[".Custom.EngineCore"];
 		if(!($engine_rating && $tonnage) )
 		{
 			//mechdef_deploy_director.json
@@ -470,9 +470,9 @@ public static function dumpMechs(){
 public static function initEquipmentInfo(){
 	$combatgameconstants=json_for_pk(JSONType::MODJSON,"#CombatGameConstants");
 	return array( // flattened list of all equipment effects and characteristics . Those starting with . are manually extracted, without are effects and auto extracted
-		".Custom.EngineCore.Rating"=>"",
+		".Custom.EngineCore"=>"",
 		".Custom.CASE.MaximumDamage"=>-1,
-		".Custom.EngineHeatBlock.HeatSinkCount"=>0,
+		".Custom.EngineHeatBlock"=>0,
 		".Custom.Cooling.HeatSinkDefId" => "Gear_HeatSink_Generic_Standard",
 		".Custom.ActivatableComponent.AutoActivateOnHeat"=>0,
 		".DissipationCapacity"=>0,
@@ -1340,7 +1340,7 @@ public static function getHeatInfo($einfo,$engine_rating,$tonnage,&$dissipation_
 		$internal_hs=(int)($engine_rating/25);
 		if($internal_hs>$MinimumHeatSinksOnMech)
 		 $internal_hs=$MinimumHeatSinksOnMech;
-		$internal_hs+= $einfo[".Custom.EngineHeatBlock.HeatSinkCount"];
+		$internal_hs+= $einfo[".Custom.EngineHeatBlock"];
 		$heatsinkjd=json_for_pk(JSONType::COMPONENT, $einfo[".Custom.Cooling.HeatSinkDefId"]);
 		$per_heatsink_dissipation=$heatsinkjd["DissipationCapacity"];
 		$dissipation_capacity_base=($internal_hs * $per_heatsink_dissipation)*(1+$einfo["heatSinkMultiplier_base"])+$einfo[".DissipationCapacity"]+$einfo["HeatSinkCapacity_base"]-$einfo["EndMoveHeat_base"];
@@ -1434,7 +1434,7 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo,&$effects,&$amm
 		array_push($e,$item["ComponentDefID"]);
 		if(endswith_i($item["ComponentDefID"],"ReportMe"))
 		{
-			$einfo[".Custom.EngineCore.Rating"]=null;
+			$einfo[".Custom.EngineCore"]=null;
 			throw new Exception("Component caused mech to be ignored ".$item["ComponentDefID"]);
 		}
 		$location="ALL";
@@ -1449,9 +1449,9 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo,&$effects,&$amm
 		//engine rating
 		$enginejd=json_for_pk(JSONType::ENGINE, $item["ComponentDefID"]);
 		if($enginejd){
-			$einfo[".Custom.EngineCore.Rating"]=$enginejd["Custom"]["EngineCore"]["Rating"];
+			$einfo[".Custom.EngineCore"]=$enginejd["Custom"]["EngineCore"];
 			if(DUMP::$info)
-				echo "EINFO[.Custom.EngineCore.Rating ] : ".$einfo[".Custom.EngineCore.Rating"].PHP_EOL;
+				echo "EINFO[.Custom.EngineCore ] : ".$einfo[".Custom.EngineCore"].PHP_EOL;
 		}
 
 		//CASE 
@@ -1511,10 +1511,10 @@ public static function gatherEquipment($jd,$json_loc,&$e,&$einfo,&$effects,&$amm
 		}
 
 		//Heat
-		if($componentjd["Custom"] && $componentjd["Custom"]["EngineHeatBlock"] && $componentjd["Custom"]["EngineHeatBlock"]["HeatSinkCount"]){
-			$einfo[".Custom.EngineHeatBlock.HeatSinkCount"]=$einfo[".Custom.EngineHeatBlock.HeatSinkCount"]+(int)$componentjd["Custom"]["EngineHeatBlock"]["HeatSinkCount"];
+		if($componentjd["Custom"] && $componentjd["Custom"]["EngineHeatBlock"]){
+			$einfo[".Custom.EngineHeatBlock"]=$einfo[".Custom.EngineHeatBlock"]+(int)$componentjd["Custom"]["EngineHeatBlock"];
 			if(DUMP::$info)
-				echo "EINFO[.Custom.EngineHeatBlock.HeatSinkCount ] : ".$einfo[".Custom.EngineHeatBlock.HeatSinkCount"].PHP_EOL;
+				echo "EINFO[.Custom.EngineHeatBlock ] : ".$einfo[".Custom.EngineHeatBlock"].PHP_EOL;
 		}
 		if($componentjd["Custom"] && $componentjd["Custom"]["Cooling"] && $componentjd["Custom"]["Cooling"]["HeatSinkDefId"]){
 			$einfo[".Custom.Cooling.HeatSinkDefId"]=$componentjd["Custom"]["Cooling"]["HeatSinkDefId"];
